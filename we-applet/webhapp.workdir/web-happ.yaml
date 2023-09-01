@@ -1,0 +1,7 @@
+---
+manifest_version: "1"
+name: FileShare Official We-applet
+ui:
+  bundled: "../../artifacts/file_share-we_applet-ui.zip"
+happ_manifest:
+  bundled: "../../artifacts/file_share.happ"

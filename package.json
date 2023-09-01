@@ -1,0 +1,79 @@
+{
+  "name": "file-share-dev",
+  "version": "0.1.0",
+  "config": {
+    "hc_version": "0.2.1",
+    "zits_version": "1.9.0",
+    "bin": "bin"
+  },
+  "private": true,
+  "workspaces": [
+    "webcomponents",
+    "webapp",
+    "we-applet"
+  ],
+  "scripts": {
+    "postinstall": "mkdir -p artifacts",
+    "install:submodules": "bash scripts/install-submodules.sh $npm_package_config_hc_version",
+    "install:rust": "bash submodules/hc-prebuilt/install-rust.sh",
+    "install:hc": "bash submodules/hc-prebuilt/install-hc-cli.sh $npm_package_config_bin $npm_package_config_hc_version",
+    "install:hash-zome": "bash submodules/hc-prebuilt/install-hash-zome.sh $npm_package_config_bin",
+    "install:zits": "cargo install zits --version $npm_package_config_zits_version",
+    "version": "$npm_package_config_bin/hc --version & holochain --version & lair-keystore --version & tsc --version",
+    "build:zome": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
+    "build:dna": "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/file_share.dna dna/workdir",
+    "build:happ": "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/file_share.happ dna/workdir",
+    "build:webapp": "npm run build -w webcomponents && npm run dist -w webapp",
+    "build:devtest": "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
+    "dev:components": "npm run build:watch -w webcomponents",
+    "devtest": "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run build:watch -w webapp\" \"npm run start\"",
+    "devtest:we": "npm run build:devtest && npm run devtest -w we-applet",
+    "network": "npm run build:happ && concurrently-repeat \"npm run start:proxied\"",
+    "network-playground": "npm run build:happ && concurrently-repeat \"npm run start:playground\"",
+    "network-mem": "npm run build:happ && concurrently-repeat \"npm run start\"",
+    "prodtest": "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:proxied": "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run start:happ:proxied\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start": "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:playground": "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run playground\" \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start-rerun": "cross-env HC_APP_PORT=8888 concurrently -k \"npm run build:watch -w webcomponents\" \"$npm_package_config_bin/hc s run 0 -p 8888\" \"npm run start:ui -w webapp\"",
+    "start:happ": "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share.happ -a file_share --run=$HC_APP_PORT network mem",
+    "start:happ:proxied": "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share.happ --run=$HC_APP_PORT -a file_share network --bootstrap https://bootstrap.holo.host/ webrtc wss://signal.holo.host",
+    "launch": "echo pass | hc-launch --piped -n 1 artifacts/file_share.webhapp network mem",
+    "launch:we": "echo pass | hc-launch --piped -n 1 artifacts/file_share-we_applet.webhapp network mem",
+
+    "test": "npm run build:happ && npm run build -w @file-share/elements && npm t -w @file-share/tests",
+    "package:webapp": "rm -rf artifacts/file_share-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/file_share-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/file_share.webhapp",
+    "package:we": "rm -rf artifacts/file_share-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/file_share-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/file_share-we_applet.webhapp",
+    "update-version": "bash scripts/update-version-number.sh $npm_package_version",
+    "dl-test-release": "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/file-share",
+    "clean": "bash scripts/clean.sh",
+    "clean:npm": "bash scripts/clean-npm.sh",
+    "clean:hc": "rm -rf .hc* && rm -rf we-applet/.hc*",
+    "clean:all": "npm run clean:hc && npm run clean:npm && npm run clean"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.1",
+    "@types/ws": "^8.5.3",
+    "bestzip": "^2.2.0",
+    "concurrently": "^6.2.1",
+    "concurrently-repeat": "^0.0.1",
+    "cross-env": "^7.0.3",
+    "jest": "^29.5.0",
+    "new-port-cli": "^1.0.0",
+    "ts-jest": "^29.1.0",
+    "tslib": "^2.4.0",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@ddd-qc/cell-proxy": "0.19.4",
+    "@ddd-qc/lit-happ": "0.19.4",
+    "@ddd-qc/path-explorer": "0.1.6",
+    "@holochain/client": "=0.14.1",
+    "@holochain-open-dev/core-types": "0.6.3",
+    "@lit-labs/context": "^0.2.0",
+    "lit": "2.6.0"
+  },
+  "engines": {
+    "npm": ">=7.0.0"
+  }
+}

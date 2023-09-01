@@ -1,0 +1,30 @@
+[workspace]
+members = [
+  #"dna/zomes/path_explorer",
+  "dna/zomes/file_share_integrity",
+  "dna/zomes/file_share",
+  #"sweettest" // Don't add this since cargo sucks at target specific compiliation in workspaces
+  ]
+
+[workspace.package]
+version = "0.1.0"
+rust-version = "1.65.0"
+edition = "2021"
+
+[workspace.dependencies]
+serde = { version = "1.0", default-features = false }
+hdi = { version = "=0.3.1", default-features = false }
+hdk = { version = "=0.2.1", default-features = false }
+
+zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-2.1" }
+#path_explorer_types = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-2.1"}
+
+[profile.dev]
+lto = false
+opt-level = 0
+overflow-checks = false
+
+[profile.release]
+opt-level = "z"
+#lto = true
+lto = false

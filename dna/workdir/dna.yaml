@@ -1,0 +1,16 @@
+---
+manifest_version: "1"
+name: dFileShare
+integrity:
+  origin_time: 2022-09-25T13:55:49.200Z
+  zomes:
+    - name: file_share_integrity
+      bundled: ../../target/wasm32-unknown-unknown/release/file_share_integrity_zome.wasm
+coordinator:
+  zomes:
+    #- name: zPathExplorer
+    #  bundled: ../../target/wasm32-unknown-unknown/release/path_explorer.wasm
+    - name: zFileShare
+      bundled: ../../target/wasm32-unknown-unknown/release/file_share_zome.wasm
+      dependencies:
+        - name: file_share_integrity
