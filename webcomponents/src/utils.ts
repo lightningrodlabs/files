@@ -1,0 +1,68 @@
+import {
+    ActionHash,
+    ActionHashB64,
+    AgentPubKey, AgentPubKeyB64, AppSignal,
+    decodeHashFromBase64,
+    encodeHashToBase64,
+    EntryHash
+} from "@holochain/client";
+
+/** */
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa( binary );
+}
+
+
+/** */
+export function base64ToArrayBuffer(base64: string): ArrayBufferLike {
+    const binary_string = window.atob(base64);
+    const len = binary_string.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+
+/** */
+async function sha256(message: string) {
+    const utf8 = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+        .map((bytes) => bytes.toString(16).padStart(2, '0'))
+        .join('');
+    return hashHex;
+}
+
+
+/** */
+function chunkSubstr(str: string, size: number): Array<string> {
+    const numChunks = Math.ceil(str.length / size);
+    const chunks = new Array<string>(numChunks);
+    for (let i = 0, y = 0; i < numChunks; ++i, y += size) {
+        chunks[i] = str.substring(y, y + size);
+    }
+    return chunks;
+}
+
+
+/** */
+export async function splitFile(full_data_string: string) {
+    const hash = await sha256(full_data_string);
+    console.log('file hash: ' + hash)
+    const chunks = chunkSubstr(full_data_string, CHUNK_MAX_SIZE);
+    return {
+        dataHash: hash,
+        numChunks: chunks.length,
+        chunks: chunks,
+    }
+}
+

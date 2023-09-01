@@ -5,12 +5,18 @@ integrity:
   origin_time: 2022-09-25T13:55:49.200Z
   zomes:
     - name: file_share_integrity
-      bundled: ../../target/wasm32-unknown-unknown/release/file_share_integrity_zome.wasm
+      bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share_integrity.wasm
+    - name: zDeliveryIntegrity
+      bundled: ../../target/wasm32-unknown-unknown/release/delivery_integrity.wasm
 coordinator:
   zomes:
     #- name: zPathExplorer
     #  bundled: ../../target/wasm32-unknown-unknown/release/path_explorer.wasm
     - name: zFileShare
-      bundled: ../../target/wasm32-unknown-unknown/release/file_share_zome.wasm
+      bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share.wasm
       dependencies:
         - name: file_share_integrity
+    - name: zDelivery
+      bundled: ../../target/wasm32-unknown-unknown/release/delivery.wasm
+      dependencies:
+        - name: zDeliveryIntegrity

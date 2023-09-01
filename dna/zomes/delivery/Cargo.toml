@@ -1,0 +1,12 @@
+[package]
+name = "delivery"
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+hdk.workspace = true
+delivery = {git = "https://github.com/ddd-mtl/delivery-zome", package = "delivery", branch = "hdk-2.1" }

@@ -1,6 +1,8 @@
 [workspace]
 members = [
   #"dna/zomes/path_explorer",
+  "dna/zomes/delivery_integrity",
+  "dna/zomes/delivery",
   "dna/zomes/file_share_integrity",
   "dna/zomes/file_share",
   #"sweettest" // Don't add this since cargo sucks at target specific compiliation in workspaces

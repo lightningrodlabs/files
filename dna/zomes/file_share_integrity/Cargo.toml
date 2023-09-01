@@ -1,0 +1,15 @@
+[package]
+name = "zome_file_share_integrity"
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = [ "cdylib", "rlib" ]
+
+[dependencies]
+serde.workspace = true
+hdi.workspace = true
+zome_utils.workspace = true
+
+zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_types", branch = "hdk-2.1" }
