@@ -7,8 +7,6 @@
 
 use hdi::prelude::*;
 
-
-
 #[hdk_entry_defs]
 #[unit_enum(SecretEntryTypes)]
 pub enum FileShareEntry {

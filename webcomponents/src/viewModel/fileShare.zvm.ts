@@ -10,6 +10,8 @@ import {AppSignal} from "@holochain/client/lib/api/app/types";
 import {ZomeViewModel} from "@ddd-qc/lit-happ";
 import {arrayBufferToBase64, splitFile} from "../utils";
 import {FileShareProxy} from "../bindings/file_share.proxy";
+import {SendFileInput} from "../bindings/file_share.types";
+import {DistributionStrategyType} from "../bindings/deps.types";
 
 
 /** */
@@ -47,28 +49,35 @@ export class SnapmailZvm extends ZomeViewModel {
 
     /** */
     async writeManifest(
-        dataHash: string,
+        //dataHash: string,
         filename: string,
         filetype: string,
         orig_filesize: number,
         chunks: EntryHash[]): Promise<ActionHash> {
         const params = {
-            data_hash: dataHash,
-            filename, filetype, orig_filesize,
+            //data_hash: dataHash,
+            filename,
+            filetype,
+            orig_filesize,
             chunks
         }
-        return this.zomeProxy.writeManifest(params);
+        return this.zomeProxy.commitFileManifest(params);
     }
 
-    /** */
-    async writeChunk(dataHash: string, chunkIndex: number, chunk: string): Promise<EntryHash> {
-        const params = {
-            data_hash: dataHash,
-            chunk_index: chunkIndex,
-            chunk
-        }
-        return this.zomeProxy.writeChunk(params);
-    }
+    // /** */
+    // async writeChunk(chunk: string): Promise<EntryHash> {
+    //     return this.zomeProxy.writeChunk(chunk);
+    // }
+
+    // /** */
+    // async writeChunk(dataHash: string, chunkIndex: number, chunk: string): Promise<EntryHash> {
+    //     const params = {
+    //         data_hash: dataHash,
+    //         chunk_index: chunkIndex,
+    //         chunk
+    //     }
+    //     return this.zomeProxy.writeChunk(params);
+    // }
 
 
     /** Perform send file action */
@@ -93,24 +102,22 @@ export class SnapmailZvm extends ZomeViewModel {
             /** Commit each chunk */
             const chunksToSend: EntryHash[] = [];
             for (let i = 0; i < splitObj.numChunks; ++i) {
-                const eh = await this.zomeProxy.writeChunk(splitObj.dataHash, i, splitObj.chunks[i]);
+                const eh = await this.zomeProxy.writeChunk(/*splitObj.dataHash, i,*/ splitObj.chunks[i]);
                 chunksToSend.push(eh);
             }
-            const ah = await this.zomeProxy.writeManifest(splitObj.dataHash, file.name, filetype, file.size, chunksToSend);
+            const ah = await this.writeManifest(/*splitObj.dataHash,*/ file.name, filetype, file.size, chunksToSend);
             filesToSend.push(ah);
         }
 
         /* Create Mail */
-        const mail: SendMailInput = {
-            subject: this.mailWriteElem.getSubject() ? this.mailWriteElem.getSubject() : "",
-            payload: this.mailWriteElem.getContent() ? this.mailWriteElem.getContent() : "",
-            reply_of: this._replyOf ? decodeHashFromBase64(this._replyOf) : undefined,
-            to: toList, cc: ccList, bcc: bccList,
-            manifest_address_list: filesToSend,
+        const mail: SendFileInput = {
+            manifest_eh: filesToSend[0], // FIXME
+            strategy: { NORMAL: null },
+            recipients: toList,
         };
         console.log('sending mail:', mail);
         /* Send Mail */
         /*const outmail_hh =*/
-        await this.zomeProxy.sendMail(mail);
+        await this.zomeProxy.sendFile(mail);
     }
 }

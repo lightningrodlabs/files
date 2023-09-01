@@ -6,6 +6,7 @@ import {
     encodeHashToBase64,
     EntryHash
 } from "@holochain/client";
+import {CHUNK_MAX_SIZE} from "./bindings/deps.types";
 
 /** */
 export function arrayBufferToBase64(buffer: ArrayBuffer): string {

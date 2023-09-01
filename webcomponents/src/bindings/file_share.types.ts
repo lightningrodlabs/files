@@ -131,6 +131,9 @@ ValidationStatus,
 ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
+/** User defined external dependencies */
+import {DistributionStrategy} from './deps.types';
+
 export interface WriteManifestInput {
   filename: string
   filetype: string
