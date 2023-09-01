@@ -132,7 +132,7 @@ ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
 /** User defined external dependencies */
-import {DistributionStrategy} from './deps.types';
+import {DistributionStrategy, ParcelManifest} from './deps.types';
 
 export interface WriteManifestInput {
   filename: string
@@ -142,10 +142,12 @@ export interface WriteManifestInput {
 }
 
 export interface SendFileInput {
-  secret_eh: EntryHash
+  manifest_eh: EntryHash
   strategy: DistributionStrategy
   recipients: AgentPubKey[]
 }
+
+export const FILE_TYPE_NAME = "split_file";
 
 export enum FileShareEntryType {
 	FileShare = 'FileShare',

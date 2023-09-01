@@ -7,6 +7,9 @@
 
 use hdi::prelude::*;
 
+
+pub const FILE_TYPE_NAME: &str = "split_file";
+
 #[hdk_entry_defs]
 #[unit_enum(SecretEntryTypes)]
 pub enum FileShareEntry {

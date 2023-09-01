@@ -7,7 +7,8 @@
 
 mod callbacks;
 mod commit_file;
-//mod get_file;
+mod get_local_files;
+mod get_file;
 //mod send_file;
 
 

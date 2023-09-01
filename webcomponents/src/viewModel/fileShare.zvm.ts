@@ -53,7 +53,7 @@ export class SnapmailZvm extends ZomeViewModel {
         filename: string,
         filetype: string,
         orig_filesize: number,
-        chunks: EntryHash[]): Promise<ActionHash> {
+        chunks: EntryHash[]): Promise<EntryHash> {
         const params = {
             //data_hash: dataHash,
             filename,
@@ -80,10 +80,9 @@ export class SnapmailZvm extends ZomeViewModel {
     // }
 
 
-    /** Perform send file action */
-    async sendAction(files: any[], toList: AgentPubKey[]): Promise<void> {
-        /** Commit each File */
-        const filesToSend: ActionHash[] = [];
+    /** */
+    async sendFiles(files: /*UploadFile*/any[], recipients: AgentPubKey[]): Promise<void> {
+        /** Commit & send each File */
         for (const file of files) {
             // /** Causes stack error on big files */
             // if (!base64regex.test(file.content)) {
@@ -94,7 +93,7 @@ export class SnapmailZvm extends ZomeViewModel {
             const content = await file.arrayBuffer();
             const contentB64 = arrayBufferToBase64(content);
 
-            const filetype = ""
+            const filetype = "unknown" // FIXME
             const splitObj = await splitFile(contentB64);
             console.log({splitObj})
 
@@ -105,19 +104,18 @@ export class SnapmailZvm extends ZomeViewModel {
                 const eh = await this.zomeProxy.writeChunk(/*splitObj.dataHash, i,*/ splitObj.chunks[i]);
                 chunksToSend.push(eh);
             }
-            const ah = await this.writeManifest(/*splitObj.dataHash,*/ file.name, filetype, file.size, chunksToSend);
-            filesToSend.push(ah);
-        }
+            const manifest_eh = await this.writeManifest(/*splitObj.dataHash,*/ file.name, filetype, file.size, chunksToSend);
 
-        /* Create Mail */
-        const mail: SendFileInput = {
-            manifest_eh: filesToSend[0], // FIXME
-            strategy: { NORMAL: null },
-            recipients: toList,
-        };
-        console.log('sending mail:', mail);
-        /* Send Mail */
-        /*const outmail_hh =*/
-        await this.zomeProxy.sendFile(mail);
+            /* Create Mail */
+            const input: SendFileInput = {
+                manifest_eh,
+                strategy: { NORMAL: null },
+                recipients,
+            };
+            console.log('sending file:', input);
+            /* Send Mail */
+            /*const outmail_hh =*/
+            await this.zomeProxy.sendFile(input);
+        }
     }
 }

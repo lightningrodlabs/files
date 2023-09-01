@@ -1,5 +1,6 @@
-
 /** From Delivery Zome */
+import {EntryHash} from "@holochain/client";
+
 
 export const CHUNK_MAX_SIZE = 200 * 1024;
 
@@ -12,4 +13,13 @@ export enum DistributionStrategyType {
   Normal = 'Normal',
   DmOnly = 'DmOnly',
   DhtOnly = 'DhtOnly',
+}
+
+
+/** WARN : Change MANIFEST_ENTRY_NAME const when renaming */
+export interface ParcelManifest {
+  name: string
+  custum_entry_type: string
+  size: number
+  chunks: EntryHash[]
 }

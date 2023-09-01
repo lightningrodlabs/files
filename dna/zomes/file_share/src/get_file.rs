@@ -5,27 +5,17 @@ use zome_delivery_types::*;
 use zome_delivery_api::*;
 use zome_file_share_integrity::*;
 
-/// Zome Function
+/// Return
 #[hdk_extern]
-pub fn get_file(eh: EntryHash) -> ExternResult<String> {
-    ///// Check inbox first
-    // debug!("get_secret() - pull_inbox");
-    // let response = call_delivery_zome("pull_inbox", ())?;
-    // let inbox_items: Vec<ActionHash> = decode_response(response)?;
-    // debug!("get_secret() - inbox_items: {}", inbox_items.len());
-    /// Try to get Secret
-    let maybe_secret: ExternResult<Secret> = get_typed_from_eh(eh.clone());
-    if let Ok(secret) = maybe_secret {
-        debug!("get_secret() - secret found");
-        return Ok(secret.value);
-    }
-    debug!("get_secret() - Secret Entry not found, could be a ParcelManifest");
+pub fn get_file(eh: EntryHash) -> ExternResult<(ParcelManifest, String)> {
+    debug!("get_file()");
     /// Not a Secret Entry, could be a Manifest
     let maybe_manifest: ExternResult<ParcelManifest> = get_typed_from_eh(eh);
-    if maybe_manifest.is_err() {
-        return error("No entry found at given EntryHash");
+    let Ok(manifest) = maybe_manifest
+        else { return error("No ParcelManifest found at given EntryHash"); };
+    if manifest.custum_entry_type != FILE_TYPE_NAME {
+        return error("ParcelManifest is not holding a File.");
     }
-    let manifest = maybe_manifest.unwrap();
     /// Get all chunks
     let set: HashSet<_> = manifest.chunks.clone().drain(..).collect(); // dedup
     let query_args = ChainQueryFilter::default()
@@ -35,55 +25,46 @@ pub fn get_file(eh: EntryHash) -> ExternResult<String> {
     if records.len() != manifest.chunks.len() {
         return error("Not all chunks have been found on chain");
     }
-    /// Concat all chunks
-    if manifest.custum_entry_type != "split_secret".to_owned() {
-        return error("Manifest of an unknown entry type");
-    }
-    let mut secret = String::new();
+    let mut file_data = String::new();
     for record in records {
         let chunk: ParcelChunk = get_typed_from_record(record)?;
-        secret += &chunk.data;
-        secret += ".";
+        file_data += &chunk.data;
     }
     /// Done
-    Ok(secret)
+    Ok((manifest, file_data))
 }
 
 
-
-/// Zome Function
 /// Return list of parcels' EntryHash from a particular Agent
 #[hdk_extern]
 pub fn get_files_from(sender: AgentPubKey) -> ExternResult<Vec<EntryHash>> {
-    debug!("get_secrets_from() START: {:?}", sender);
+    debug!("get_files_from() START: {:?}", sender);
     let response = call_delivery_zome("pull_inbox", ())?;
     let inbox_items: Vec<ActionHash> = decode_response(response)?;
-    debug!("get_secrets_from() - inbox_items: {}", inbox_items.len());
-    debug!("get_secrets_from() - query_DeliveryNotice");
+    debug!("get_files_from() - inbox_items: {}", inbox_items.len());
+    debug!("get_files_from() - query_DeliveryNotice");
     let response = call_delivery_zome(
         "query_DeliveryNotice",
         DeliveryNoticeQueryField::Sender(sender),
     )?;
     let notices: Vec<DeliveryNotice> = decode_response(response)?;
     let parcels: Vec<EntryHash> = notices.iter().map(|x| x.summary.parcel_reference.entry_address()).collect();
-    debug!("get_secrets_from() END - secret parcels found: {}", parcels.len());
+    debug!("get_files_from() END - secret parcels found: {}", parcels.len());
     Ok(parcels)
 }
 
 
-/// Zome Function
+///
 #[hdk_extern]
 pub fn refuse_file_share(parcel_eh: EntryHash) -> ExternResult<EntryHash> {
     return respond_to_file_share_notice(parcel_eh, false);
-
 }
 
 
-/// Zome Function
+///
 #[hdk_extern]
 pub fn accept_file_share(parcel_eh: EntryHash) -> ExternResult<EntryHash> {
     return respond_to_file_share_notice(parcel_eh, true);
-
 }
 
 
