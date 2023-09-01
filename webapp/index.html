@@ -8,9 +8,11 @@
       href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/themes/light.css"
     />
   </head>
-  <body style="margin:0px;">
+  <body style="margin:0px;background: #faf9ea;height:100vh;">
     <file-share-app></file-share-app>
     <script type="module">
+      //console.log("   HC_PORT:", process.env.HC_PORT);
+      //console.log("ADMIN_PORT:", process.env.ADMIN_PORT);
       import { FileShareApp } from "./";
     </script>
   </body>

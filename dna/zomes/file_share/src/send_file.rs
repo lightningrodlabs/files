@@ -16,42 +16,30 @@ pub struct SendFileInput {
 /// Zome Function
 #[hdk_extern]
 pub fn send_file(input: SendFileInput) -> ExternResult<EntryHash> {
-    debug!("send_secret() START {:?}", input.secret_eh);
-    debug!("send_secret() zome_names: {:?}", dna_info()?.zome_names);
-    debug!("send_secret() zome_index: {:?}", zome_info()?.id);
-    debug!("send_secret()  zome_name: {:?}", zome_info()?.name);
+    std::panic::set_hook(Box::new(zome_panic_hook));
+    debug!("START {:?}", input.manifest_eh);
+    debug!("zome_names: {:?}", dna_info()?.zome_names);
+    debug!("zome_index: {:?}", zome_info()?.id);
+    debug!(" zome_name: {:?}", zome_info()?.name);
 
-    /// Determine parcel type depending on Entry
-    let maybe_manifest: ExternResult<ParcelManifest> = get_typed_from_eh(input.manifest_eh.clone());
-    let zome_name =ZomeName::from("secret_integrity");
-    let parcel_ref = if let Ok(_secret) = maybe_manifest {
-        ParcelReference::AppEntry(EntryReference {
-            eh: input.manifest_eh,
-            zome_name,
-            entry_index: EntryDefIndex::from(get_variant_index:: < SecretEntry>(SecretEntryTypes::Secret)?),
-            visibility: EntryVisibility::Private,
-        }
-        )
-    } else {
-        /// Should be a Manifest
-        let _: ParcelManifest = get_typed_from_eh(input.manifest_eh.clone())?;
-        let mref = ManifestReference {
-            manifest_eh: input.manifest_eh,
-            entry_zome_name: zome_name,
-            entry_type_name: "secret".to_string(),
-        };
-        ParcelReference::Manifest(mref)
-    };
+    // TODO: Make sure manifest exists and is of File type.
 
+    /// Form Parcel Reference
+    let parcel_ref = ParcelReference::Manifest(ManifestReference {
+        manifest_eh: input.manifest_eh,
+        entry_zome_name: ZomeName::from("file_share_integrity"),
+        entry_type_name: FILE_TYPE_NAME.to_string(),
+    });
+    /// Form Distribution
     let distribution = DistributeParcelInput {
         recipients: input.recipients,
         strategy: input.strategy,
         parcel_ref,
     };
-    debug!("send_secret() calling distribute_parcel() with: {:?}", distribution);
+    /// Distribute
+    debug!("calling distribute_parcel() with: {:?}", distribution);
     let response = call_delivery_zome("distribute_parcel", distribution)?;
-    // distribute_parcel(distribution)?;
     let eh: EntryHash = decode_response(response)?;
-    debug!("send_secret() END");
+    debug!("END");
     Ok(eh)
 }

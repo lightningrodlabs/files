@@ -174,6 +174,14 @@ export class FileShareProxy extends ZomeProxy {
     return this.call('get_local_files', null);
   }
 
+  async getUnrepliedNotices(): Promise<[AgentPubKey, EntryHash, number][]> {
+    return this.call('get_unreplied_notices', null);
+  }
+
+  async processInbox(): Promise<void> {
+    return this.call('process_inbox', null);
+  }
+
   async sendFile(input: SendFileInput): Promise<EntryHash> {
     return this.call('send_file', input);
   }

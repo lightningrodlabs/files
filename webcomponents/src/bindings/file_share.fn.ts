@@ -16,6 +16,8 @@ export const fileShareFunctionNames: FunctionName[] = [
 	"refuse_file_share",
 	"accept_file_share",
 	"get_local_files",
+	"get_unreplied_notices",
+	"process_inbox",
 	"send_file",];
 
 

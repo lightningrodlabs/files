@@ -10,6 +10,7 @@ use zome_delivery_api::*;
 #[hdk_extern]
 pub fn write_chunk(data: String) -> ExternResult<EntryHash> {
     debug!(" write_chunk() {:?}", data);
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let response = call_delivery_zome("commit_parcel_chunk", data)?;
     let eh: EntryHash = decode_response(response)?;
     Ok(eh)
@@ -29,6 +30,7 @@ pub struct WriteManifestInput {
 ///
 #[hdk_extern]
 pub fn commit_file_manifest(input: WriteManifestInput) -> ExternResult<EntryHash> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     /// Commit Manifest
     let manifest = ParcelManifest {
         name: input.filename,
