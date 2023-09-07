@@ -138,8 +138,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         } else {
             this._myProfile = this._profilesZvm.getMyProfile();
             if (!this._myProfile) {
-                this._myProfile = { nickname: "guest" + Math.floor(Math.random() * 100), fields: {}};
-                this,this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
+                this._myProfile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
+                this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
             }
         }
 

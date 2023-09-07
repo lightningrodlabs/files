@@ -1,5 +1,4 @@
 import {DEFAULT_FILESHARE_DEF} from "@file-share/elements/dist/viewModels/happDef";
-import {OVERRIDE_HVM_DEF} from "./file-share-app";
 
 
 /** -- BUILD_MODE & IS_ELECTRON -- */
@@ -34,6 +33,16 @@ try {
 } catch (e) {
   console.log("HC_APP_PORT not defined")
 }
+
+export let OVERRIDE_HVM_DEF = false;
+try {
+  OVERRIDE_HVM_DEF = Boolean(process.env.ADD_PROFILES);
+} catch (e) {
+  console.log("ADD_PROFILES not defined")
+}
+console.log("OVERRIDE_HVM_DEF =", OVERRIDE_HVM_DEF)
+
+
 
 
 console.log("HAPP_ID =", DEFAULT_FILESHARE_DEF.id)

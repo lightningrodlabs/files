@@ -5,13 +5,13 @@ import {FileShareDvm} from "./fileShare.dvm";
 import {ProfilesDvm} from "./profiles.dvm";
 
 
-export var DEFAULT_FILESHARE_DEF: HvmDef = {
+export const DEFAULT_FILESHARE_DEF: HvmDef = {
   id: "FileShare",
   dvmDefs: [{ctor: FileShareDvm, isClonable: false}],
 }
 
 export const DEFAULT_FILESHAREDEV_DEF: HvmDef = {
-  id: "FileShare",
+  id: "FileShareDev",
   dvmDefs: [{ctor: FileShareDvm, isClonable: false}, {ctor: ProfilesDvm, isClonable: false}],
 }
 

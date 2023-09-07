@@ -26,11 +26,10 @@ import {
   globalProfilesContext,
   ProfilesDvm
 } from "@file-share/elements";
-import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
+import {HC_ADMIN_PORT, HC_APP_PORT, OVERRIDE_HVM_DEF} from "./globals";
 import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
 
-export var OVERRIDE_HVM_DEF = true;
 
 /**
  *
