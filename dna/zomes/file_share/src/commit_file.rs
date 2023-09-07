@@ -34,7 +34,7 @@ pub fn commit_file_manifest(input: WriteManifestInput) -> ExternResult<EntryHash
     /// Commit Manifest
     let manifest = ParcelManifest {
         name: input.filename,
-        custum_entry_type: format!("split_file_{}", input.filetype),
+        custum_entry_type: format!("split_file::{}", input.filetype),
         size: input.orig_filesize,
         chunks: input.chunks,
     };

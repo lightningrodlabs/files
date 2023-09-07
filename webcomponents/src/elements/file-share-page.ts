@@ -123,6 +123,12 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
     /** */
+    async refresh() {
+        await this._dvm.fileShareZvm.getLocalFiles();
+    }
+
+
+    /** */
     render() {
         console.log("<semantic-threads-page>.render()", this._initialized, this._profilesZvm);
 
@@ -175,7 +181,11 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         /** Render all */
         return html`
       <div>
-        <h1>FileShare Central <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button></h1>
+        <h1>
+            FileShare Central 
+            <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
+            <button type="button" @click=${() => {this.refresh();}}>refresh</button>
+        </h1>
         <label>Send File:</label>
         <select id="localFileSelector">
           ${fileOptions}

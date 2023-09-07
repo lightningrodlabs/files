@@ -59,10 +59,14 @@ export class FileShareZvm extends ZomeViewModel {
 
     /** */
     async initializePerspectiveOffline(): Promise<void> {
+        await this.getLocalFiles();
+    }
+    async getLocalFiles(): Promise<void> {
         const pairs = await this.zomeProxy.getLocalFiles();
         for (const [eh, manifest] of pairs) {
             this._perspective.localFiles[encodeHashToBase64(eh)] = manifest;
         }
+        this.notifySubscribers();
     }
 
     /** */
@@ -130,7 +134,7 @@ export class FileShareZvm extends ZomeViewModel {
             const eh = await this.zomeProxy.writeChunk(/*splitObj.dataHash, i,*/ splitObj.chunks[i]);
             chunksToSend.push(eh);
         }
-        const manifest_eh = await this.writeManifest(/*splitObj.dataHash,*/ file.name, FILE_TYPE_NAME, file.size, chunksToSend);
+        const manifest_eh = await this.writeManifest(/*splitObj.dataHash,*/ file.name, file.type, file.size, chunksToSend);
         const ehb64 = encodeHashToBase64(manifest_eh);
 
         this._perspective.localFiles[ehb64] = {
