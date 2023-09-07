@@ -19,10 +19,18 @@ import {
   AppProxy,
   DvmDef, DnaViewModel
 } from "@ddd-qc/lit-happ";
-import {FileShareDvm, globalProfilesContext, ProfilesDvm} from "@file-share/elements";
+import {
+  DEFAULT_FILESHARE_DEF,
+  DEFAULT_FILESHAREDEV_DEF,
+  FileShareDvm,
+  globalProfilesContext,
+  ProfilesDvm
+} from "@file-share/elements";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
 import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
+
+export var OVERRIDE_HVM_DEF = true;
 
 /**
  *
@@ -34,15 +42,13 @@ export class FileShareApp extends HappElement {
   @state() private _offlinePerspectiveloaded = false;
 
   /** HvmDef */
-  static readonly HVM_DEF: HvmDef = {
-    id: "FileShare",
-    dvmDefs: [{ctor: FileShareDvm, isClonable: true}],
-  };
+  static readonly HVM_DEF: HvmDef = OVERRIDE_HVM_DEF? DEFAULT_FILESHAREDEV_DEF : DEFAULT_FILESHARE_DEF;
 
 
   /** All arguments should be provided when constructed explicity */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public showCommentThreadOnly?: boolean) {
     super(appWs? appWs : HC_APP_PORT, appId);
+    console.log("FileShareApp.HVM_DEF", FileShareApp.HVM_DEF);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
@@ -95,9 +101,14 @@ export class FileShareApp extends HappElement {
         //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("createProfilesDvm() dvm", dvm);
+    this.setupProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
+  }
+
+  /** */
+  async setupProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64) {
     this._profilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
-    const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(agent);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
@@ -150,6 +161,11 @@ export class FileShareApp extends HappElement {
     this._allAppEntryTypes = await this.fileShare.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
     // TODO: Fix issue: zTasker entry_defs() not found. Maybe confusion with integrity zome name?
+
+    if (OVERRIDE_HVM_DEF) {
+      await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this._cell.agentPubKey);
+    }
+
     /** Done */
     this._loaded = true;
   }

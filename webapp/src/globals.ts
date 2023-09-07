@@ -1,4 +1,5 @@
 import {DEFAULT_FILESHARE_DEF} from "@file-share/elements/dist/viewModels/happDef";
+import {OVERRIDE_HVM_DEF} from "./file-share-app";
 
 
 /** -- BUILD_MODE & IS_ELECTRON -- */
@@ -38,7 +39,6 @@ try {
 console.log("HAPP_ID =", DEFAULT_FILESHARE_DEF.id)
 console.log("HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);
-
 
 /** Remove console.log() in PROD */
 // if (BUILD_MODE === 'prod') {

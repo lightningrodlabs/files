@@ -134,8 +134,13 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
+            //this._myProfile = { nickname: "dummy" + Math.floor(Math.random() * 100), fields: {}};
         } else {
             this._myProfile = this._profilesZvm.getMyProfile();
+            if (!this._myProfile) {
+                this._myProfile = { nickname: "guest" + Math.floor(Math.random() * 100), fields: {}};
+                this,this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
+            }
         }
 
         /** This agent's profile info */

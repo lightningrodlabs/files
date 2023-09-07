@@ -1,0 +1,19 @@
+---
+manifest_version: "1"
+name: FileShare
+description: File sharing happ
+roles:
+  - name: rFileShare
+    provisioning:
+      strategy: create
+      deferred: true
+    dna:
+      bundled: "../../artifacts/file_share.dna"
+      clone_limit: 0
+  - name: profiles
+    provisioning:
+      strategy: create
+      deferred: true
+    dna:
+      bundled: "../../artifacts/profiles.dna"
+      clone_limit: 0
