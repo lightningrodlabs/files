@@ -1,20 +1,6 @@
-import { html } from "lit";
+import { html, css } from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {
-  HvmDef,
-  HappElement,
-  HCL,
-  ViewCellContext,
-  CellDef,
-  CellContext,
-  delay,
-  Cell,
-  BaseRoleName,
-  CloneId,
-  AppProxy,
-  DvmDef,
-  DnaViewModel
-} from "@ddd-qc/lit-happ";
+import {ContextProvider} from "@lit-labs/context";
 import {
   AdminWebsocket,
   AgentPubKeyB64,
@@ -24,10 +10,18 @@ import {
   InstalledAppId,
   RoleName, ZomeName
 } from "@holochain/client";
+import {
+  HvmDef, HappElement, HCL,
+  ViewCellContext,
+  CellDef, CellContext, delay, Cell,
+  BaseRoleName,
+  CloneId,
+  AppProxy,
+  DvmDef, DnaViewModel
+} from "@ddd-qc/lit-happ";
 import {FileShareDvm, globalProfilesContext, ProfilesDvm} from "@file-share/elements";
-import {HC_APP_PORT} from "./globals";
+import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
 import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
-import {ContextProvider} from "@lit-labs/context";
 
 
 /**
@@ -37,10 +31,11 @@ import {ContextProvider} from "@lit-labs/context";
 export class FileShareApp extends HappElement {
 
   @state() private _hasStartingProfile = false;
+  @state() private _offlinePerspectiveloaded = false;
 
   /** HvmDef */
   static readonly HVM_DEF: HvmDef = {
-    id: "hFileShare",
+    id: "FileShare",
     dvmDefs: [{ctor: FileShareDvm, isClonable: true}],
   };
 
@@ -134,24 +129,50 @@ export class FileShareApp extends HappElement {
 
   /** */
   async hvmConstructed() {
-    console.log("hvmConstructed()")
-    //new ContextProvider(this, cellContext, this.taskerDvm.cell);
+    console.log("hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
     /** Authorize all zome calls */
-    const adminWs = await AdminWebsocket.connect(`ws://localhost:${process.env.ADMIN_PORT}`);
-    console.log({adminWs});
-    await this.hvm.authorizeAllZomeCalls(adminWs);
-    console.log("*** Zome call authorization complete");
-    this._dnaDef = await adminWs.getDnaDefinition(this.fileShare.cell.id[0]);
-    console.log("happInitialized() dnaDef", this._dnaDef);
+    if (!this._adminWs && this._canAuthorizeZfns) {
+      this._adminWs = await AdminWebsocket.connect(`ws://localhost:${HC_ADMIN_PORT}`);
+      console.log("hvmConstructed() connect() called", this._adminWs);
+    }
+    if (this._adminWs && this._canAuthorizeZfns) {
+      await this.hvm.authorizeAllZomeCalls(this._adminWs);
+      console.log("*** Zome call authorization complete");
+    } else {
+      if (!this._canAuthorizeZfns) {
+        console.warn("No adminWebsocket provided (Zome call authorization done)")
+      } else {
+        console.log("Zome call authorization done externally")
+      }
+    }
     /** Probe */
-    this._cell = this.fileShare.cell;
-    await this.hvm.probeAll();
+    this._cell = this.fileShare.cell; // ???
     this._allAppEntryTypes = await this.fileShare.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
     // TODO: Fix issue: zTasker entry_defs() not found. Maybe confusion with integrity zome name?
     /** Done */
     this._loaded = true;
   }
+
+
+  /** */
+  async perspectiveInitializedOffline(): Promise<void> {
+    console.log("<fileshare-app>.perspectiveInitializedOffline()");
+    /** Done */
+    this._offlinePerspectiveloaded = true;
+  }
+
+
+  /** */
+  async perspectiveInitializedOnline(): Promise<void> {
+    console.log("<fileshare-app>.perspectiveInitializedOnline()");
+
+    await this.hvm.probeAll();
+
+    /** Done */
+    //this._loaded = true;
+  }
+
 
 
   /** */
@@ -163,7 +184,7 @@ export class FileShareApp extends HappElement {
 
   /** */
   render() {
-    console.log("*** <secret-app> render()", this._loaded)
+    console.log("*** <fileshare-app> render()", this._loaded)
     if (!this._loaded) {
       return html`<span>Loading...</span>`;
     }

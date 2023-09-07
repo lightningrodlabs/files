@@ -71,6 +71,11 @@ export class FileShareZvm extends ZomeViewModel {
     }
 
 
+    async getFile(eh: EntryHashB64): Promise<[ParcelManifest, string]> {
+        return this.zomeProxy.getFile(decodeHashFromBase64(eh));
+    }
+
+
     /** */
     async writeManifest(
         //dataHash: string,
@@ -104,8 +109,8 @@ export class FileShareZvm extends ZomeViewModel {
     // }
 
 
-    async commitFile(file: File): Promise<void> {
-        console.log('sendAction: ', file)
+    async commitFile(file: File): Promise<EntryHashB64> {
+        console.log('commitFile: ', file)
 
         // /** Causes stack error on big files */
         // if (!base64regex.test(file.content)) {
@@ -126,8 +131,9 @@ export class FileShareZvm extends ZomeViewModel {
             chunksToSend.push(eh);
         }
         const manifest_eh = await this.writeManifest(/*splitObj.dataHash,*/ file.name, FILE_TYPE_NAME, file.size, chunksToSend);
+        const ehb64 = encodeHashToBase64(manifest_eh);
 
-        this._perspective.localFiles[encodeHashToBase64(manifest_eh)] = {
+        this._perspective.localFiles[ehb64] = {
             name: file.name,
             custum_entry_type: FILE_TYPE_NAME,
             size: file.size,
@@ -135,11 +141,13 @@ export class FileShareZvm extends ZomeViewModel {
         } as ParcelManifest;
 
         this.notifySubscribers();
+
+        return ehb64;
     }
 
 
     /** */
-    async sendFile(manifest_eh: EntryHashB64, recipient: AgentPubKeyB64): Promise<void> {
+    async sendFile(manifest_eh: EntryHashB64, recipient: AgentPubKeyB64): Promise<EntryHashB64> {
         const input: SendFileInput = {
             manifest_eh: decodeHashFromBase64(manifest_eh),
             strategy: { NORMAL: null },
@@ -148,6 +156,7 @@ export class FileShareZvm extends ZomeViewModel {
         console.log('sending file:', input);
         /* Send Mail */
         /*const outmail_hh =*/
-        await this.zomeProxy.sendFile(input);
+        const eh = await this.zomeProxy.sendFile(input);
+        return encodeHashToBase64(eh)
     }
 }

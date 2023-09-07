@@ -1,3 +1,4 @@
+export * from './bindings/file_share.proxy';
 export * from './viewModels/fileShare.zvm';
 export * from './viewModels/fileShare.dvm';
 

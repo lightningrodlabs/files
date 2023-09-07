@@ -21,6 +21,7 @@ import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {emptyAppletId, getInitials} from "../utils";
+import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 
 /**
  * @element
@@ -45,6 +46,10 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     @property() appletId: EntryHashB64;
 
 
+    /** Observed perspective from zvm */
+    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+    fileSharePerspective!: FileSharePerspective;
+
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
 
@@ -56,6 +61,22 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** AppletId -> AppletInfo */
     @state() private _appletInfos: Dictionary<AppletInfo> = {}
+
+
+    /**
+     * In dvmUpdated() this._dvm is not already set!
+     * Subscribe to fileShareZvm
+     */
+    protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
+        console.log("<file-view>.dvmUpdated()");
+        if (oldDvm) {
+            console.log("\t Unsubscribed to fileShareZvm's roleName = ", oldDvm.fileShareZvm.cell.name)
+            oldDvm.fileShareZvm.unsubscribe(this);
+        }
+        newDvm.fileShareZvm.subscribe(this, 'fileSharePerspective');
+        console.log("\t Subscribed fileShareZvm's roleName = ", newDvm.fileShareZvm.cell.name)
+        //newDvm.fileShareZvm.probeAll();
+    }
 
 
     /** After first render only */
@@ -71,8 +92,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         //await this._dvm.threadsZvm.generateTestData(this.appletId);
 
         /** */
-        const leftSide = this.shadowRoot.getElementById("leftSide");
-        leftSide.style.background = "#B9CCE7";
+        //const leftSide = this.shadowRoot.getElementById("leftSide");
+        //leftSide.style.background = "#B9CCE7";
 
         this.requestUpdate();
     }
@@ -85,14 +106,14 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         if (fileInput.files.length > 0) {
             let res = await this._dvm.fileShareZvm.commitFile(fileInput.files[0]);
             console.log("onAddFile() res:", res);
-            //fileInput.files = [];
+            fileInput.value = "";
         }
     }
 
 
     /** */
     async onSendFile(e: any) {
-        const localFileInput = this.shadowRoot!.getElementById("localFileInput") as HTMLSelectElement;
+        const localFileInput = this.shadowRoot!.getElementById("localFileSelector") as HTMLSelectElement;
         const agentSelect = this.shadowRoot!.getElementById("recipientSelector") as HTMLSelectElement;
         console.log("onSendFile():", localFileInput.value, agentSelect.value);
         let res = await this._dvm.fileShareZvm.sendFile(localFileInput.value, agentSelect.value);
@@ -135,6 +156,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
             }
         )
 
+        console.log("localFiles found:", Object.entries(this._dvm.fileShareZvm.perspective.localFiles).length);
+
         const fileOptions = Object.entries(this._dvm.fileShareZvm.perspective.localFiles).map(
             ([eh, manifest]) => {
                 //console.log("" + index + ". " + agentIdB64)
@@ -145,19 +168,18 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         const fileList = Object.entries(this._dvm.fileShareZvm.perspective.localFiles).map(
             ([eh, manifest]) => {
                 //console.log("" + index + ". " + agentIdB64)
-                return html `<ui value="${eh}">${manifest.name}</ui>`
+                return html `<li value="${eh}">${manifest.name}</li>`
             }
         )
 
         /** Render all */
         return html`
       <div>
-        <h1>FileShare Central<button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button></h1>
+        <h1>FileShare Central <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button></h1>
         <label>Send File:</label>
-        <input type="text" id="localFileInput" name="content">
-          File: <select id="localFileSelector">
+        <select id="localFileSelector">
           ${fileOptions}
-      </select>
+        </select>
           to: <select id="recipientSelector">
             ${AgentOptions}
           </select>

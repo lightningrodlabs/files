@@ -9,7 +9,7 @@ use zome_delivery_api::*;
 /// Write data to source chain as a base64 string
 #[hdk_extern]
 pub fn write_chunk(data: String) -> ExternResult<EntryHash> {
-    debug!(" write_chunk() {:?}", data);
+    debug!(" write_chunk() size: {}", data.len());
     std::panic::set_hook(Box::new(zome_panic_hook));
     let response = call_delivery_zome("commit_parcel_chunk", data)?;
     let eh: EntryHash = decode_response(response)?;
