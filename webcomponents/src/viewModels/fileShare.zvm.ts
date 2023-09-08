@@ -21,8 +21,6 @@ export interface FileSharePerspective {
     filesReceivedByAgent: Record<AgentPubKeyB64, EntryHashB64[]>,
     /** manifest_eh -> Manifest */
     localFiles: Record<EntryHashB64, ParcelManifest>,
-    /** AgentPubKey -> notice_eh */
-    inboundRequests: Record<AgentPubKeyB64, EntryHashB64>,
 }
 
 
@@ -41,7 +39,7 @@ export class FileShareZvm extends ZomeViewModel {
 
     /** -- ViewModel -- */
 
-    private _perspective: FileSharePerspective = {filesReceivedByAgent: {}, localFiles: {}, inboundRequests: {}};
+    private _perspective: FileSharePerspective = {filesReceivedByAgent: {}, localFiles: {}};
 
 
     /* */
@@ -61,6 +59,10 @@ export class FileShareZvm extends ZomeViewModel {
     async initializePerspectiveOffline(): Promise<void> {
         await this.getLocalFiles();
     }
+
+
+
+    /** */
     async getLocalFiles(): Promise<void> {
         const pairs = await this.zomeProxy.getLocalFiles();
         for (const [eh, manifest] of pairs) {
@@ -75,6 +77,7 @@ export class FileShareZvm extends ZomeViewModel {
     }
 
 
+    /** */
     async getFile(eh: EntryHashB64): Promise<[ParcelManifest, string]> {
         return this.zomeProxy.getFile(decodeHashFromBase64(eh));
     }

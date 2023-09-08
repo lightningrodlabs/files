@@ -2,7 +2,8 @@ use hdk::prelude::*;
 use zome_utils::*;
 use zome_delivery_api::*;
 
-/// Process inbox
+/// Client should call Delivery zome's "pull_inbox" directly.
+/// This exists just in case the client can't for some reason.
 #[hdk_extern]
 pub fn process_inbox(_: ()) -> ExternResult<()> {
     debug!("START");
