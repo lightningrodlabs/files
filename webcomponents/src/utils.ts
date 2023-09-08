@@ -10,6 +10,18 @@ import {CHUNK_MAX_SIZE} from "./bindings/deps.types";
 
 
 /** */
+export function prettyFileSize(size: number): string {
+    const kib = Math.ceil(size / 1024);
+    const mib = Math.ceil(kib / 1024 * 10) / 10;
+    if (mib >= 1) {
+        return `${mib} MiB`;
+    } else {
+        return `${kib} KiB`;
+    }
+}
+
+
+/** */
 export async function emptyAppletId(): Promise<EntryHash> {
     const zeroBytes = new Uint8Array(36).fill(0);
     return new Uint8Array([0x84, 0x21, 0x24, ...zeroBytes]);

@@ -20,7 +20,7 @@ import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {base64ToArrayBuffer, emptyAppletId, getInitials} from "../utils";
+import {base64ToArrayBuffer, emptyAppletId, getInitials, prettyFileSize} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {ParcelReferenceVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 
@@ -169,6 +169,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         }
     }
 
+
     /** */
     render() {
         console.log("<file-share-page>.render()", this._initialized, this._dvm.deliveryZvm.perspective);
@@ -224,7 +225,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                 //console.log("" + index + ". " + agentIdB64)
                 return html `
                     <li value="${eh}">
-                        ${manifest.name}
+                        ${manifest.name} | ${prettyFileSize(manifest.size)}
                         <button type="button" @click=${() => {this.downloadFile(eh);}}>download</button>
                     </li>`
             }
@@ -234,8 +235,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         }
 
 
-        /** Unreplied requests */
-        let inboundList = Object.entries(this._dvm.perspective.unrepliedRequests).map(
+        /** Unreplied inbounds */
+        let inboundList = Object.entries(this._dvm.perspective.unrepliedInbounds).map(
             ([senderKey, noticeEh]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 const [_ts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
@@ -247,14 +248,38 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                 // ${(notice.summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.entry_type_name}
                 return html `
                     <li value="${noticeEh}">
-                        From: ${sender} | ${Math.ceil(notice.summary.parcel_size / 1024)} KiB
-                        <button type="button" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh); this.requestUpdate();}}>accept</button>
-                        <button type="button" @click=${() => {this._dvm.deliveryZvm.declineDelivery(noticeEh); this.requestUpdate();}}>decline</button>
+                        From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)}
+                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.acceptDelivery(noticeEh); this.requestUpdate();}}>accept</button>
+                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.declineDelivery(noticeEh); this.requestUpdate();}}>decline</button>
                     </li>`
             }
         )
         if (inboundList.length == 0) {
             inboundList[0] = html`No files inbound`;
+        }
+
+
+        /** Unreplied outbounds */
+        let outboundList = Object.entries(this._dvm.perspective.unrepliedOutbounds).map(
+            ([distribEh, [ts, deliveries]]) => {
+                //console.log("" + index + ". " + agentIdB64)
+                const [_ts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
+                const senderProfile = this._profilesZvm.getProfile(senderKey);
+                let sender = senderKey;
+                if (senderProfile) {
+                    sender = senderProfile.nickname
+                }
+                // ${(notice.summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.entry_type_name}
+                return html `
+                    <li value="${distribEh}">
+                        From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)}
+                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.acceptDelivery(noticeEh); this.requestUpdate();}}>accept</button>
+                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.declineDelivery(noticeEh); this.requestUpdate();}}>decline</button>
+                    </li>`
+            }
+        )
+        if (outboundList.length == 0) {
+            outboundList[0] = html`No files outbound`;
         }
 
 
@@ -275,19 +300,23 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
           </select>
         <input type="button" value="send" @click=${this.onSendFile}>
           <hr/>
-          <label for="addFile">Add file to source-chain:</label>
-          <input type="file" id="addFile" name="addFile" />
-          <input type="button" value="Add" @click=${this.onAddFile}>
-          <hr/>
           <h2>Local files</h2>
           <ul>
               ${fileList}
           </ul>
+          <label for="addFile">Add file to source-chain:</label>
+          <input type="file" id="addFile" name="addFile" />
+          <input type="button" value="Add" @click=${this.onAddFile}>          
           <hr/>
           <h2>Inbound files:</h2>
           <ul>
               ${inboundList}
           </ul>
+          <hr/>
+          <h2>Outbound files:</h2>
+          <ul>
+              ${outboundList}
+          </ul>          
     `;
     }
 

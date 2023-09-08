@@ -1,6 +1,13 @@
 import { DnaViewModel, ZvmDef } from "@ddd-qc/lit-happ";
-import {DeliveryZvm, SignalProtocol, SignalProtocolType} from "@ddd-qc/delivery";
-import {AgentPubKeyB64, AppSignalCb, encodeHashToBase64, EntryHashB64} from "@holochain/client";
+import {
+    DeliveryState,
+    DeliveryStateType,
+    DeliveryZvm,
+    DistributionStateType,
+    SignalProtocol,
+    SignalProtocolType
+} from "@ddd-qc/delivery";
+import {AgentPubKeyB64, AppSignalCb, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 import {FileSharePerspective, FileShareZvm} from "./fileShare.zvm";
 import {NoticeStateType} from "@ddd-qc/delivery";
@@ -9,8 +16,11 @@ import {NoticeStateType} from "@ddd-qc/delivery";
 /** */
 export interface FileShareDvmPerspective {
     /** AgentPubKey -> notice_eh */
-    unrepliedRequests: Record<AgentPubKeyB64, EntryHashB64>,
+    unrepliedInbounds: Record<AgentPubKeyB64, EntryHashB64>,
+    /** distrib_eh -> [Timestamp , AgentPubKey -> DeliveryState] */
+    unrepliedOutbounds: Record<EntryHashB64, [Timestamp, Record<AgentPubKeyB64, DeliveryState>]>,
 }
+
 
 /**
  *
@@ -35,7 +45,7 @@ export class FileShareDvm extends DnaViewModel {
 
     /** -- ViewModel Interface -- */
 
-    private _perspective: FileShareDvmPerspective = {unrepliedRequests: {}};
+    private _perspective: FileShareDvmPerspective = {unrepliedInbounds: {}, unrepliedOutbounds: {}};
 
 
     protected hasChanged(): boolean {return true}
@@ -69,22 +79,45 @@ export class FileShareDvm extends DnaViewModel {
     /** */
     async processInbox(): Promise<void> {
         await this.deliveryZvm.probeInbox();
-        await this.determineUnrepliedRequests();
+        await this.determineUnrepliedInbounds();
+        await this.determineUnrepliedOutbounds();
     }
 
 
     /** */
-    async determineUnrepliedRequests(): Promise<void> {
-        this._perspective.unrepliedRequests = {};
-        console.log("determineUnrepliedRequests allNotices count", Object.entries(this.deliveryZvm.perspective.allNotices).length);
+    async determineUnrepliedInbounds(): Promise<void> {
+        this._perspective.unrepliedInbounds = {};
+        console.log("determineUnrepliedInbounds allNotices count", Object.entries(this.deliveryZvm.perspective.allNotices).length);
         for (const [eh, [_ts, notice]] of Object.entries(this.deliveryZvm.perspective.allNotices)) {
             const state = await this.deliveryZvm.getNoticeState(encodeHashToBase64(notice.distribution_eh));
-            console.log("determineUnrepliedRequests state", state);
+            console.log("determineUnrepliedInbounds state", state);
             if (NoticeStateType.Unreplied in state) {
-                this._perspective.unrepliedRequests[encodeHashToBase64(notice.sender)] = eh;
+                this._perspective.unrepliedInbounds[encodeHashToBase64(notice.sender)] = eh;
             }
         }
-        console.log("determineUnrepliedRequests count", Object.values(this._perspective.unrepliedRequests));
+        console.log("determineUnrepliedInbounds count", Object.values(this._perspective.unrepliedInbounds));
     }
 
+
+    /** */
+    async determineUnrepliedOutbounds(): Promise<void> {
+        this._perspective.unrepliedOutbounds = {};
+        console.log("determineUnrepliedOutbounds allDistributions count", Object.entries(this.deliveryZvm.perspective.allDistributions).length);
+        for (const [eh, [ts, distrib]] of Object.entries(this.deliveryZvm.perspective.allDistributions)) {
+            const state = await this.deliveryZvm.getDistributionState(eh);
+            console.log("determineUnrepliedOutbounds distrib state", state);
+            if (DistributionStateType.Unsent in state || DistributionStateType.AllNoticesSent in state || DistributionStateType.AllNoticeReceived in state) {
+                console.log("determineUnrepliedOutbounds recipients", distrib.recipients.length);
+                let deliveries = {};
+                for (const recipient of distrib.recipients) {
+                    const agentB64 = encodeHashToBase64(recipient);
+                    const deliveryState = await this.deliveryZvm.getDeliveryState(eh, agentB64);
+                    console.log("determineUnrepliedOutbounds state", deliveryState, agentB64);
+                    deliveries[agentB64] = deliveryState;
+                }
+                this._perspective.unrepliedOutbounds[eh] = [ts, deliveries];
+            }
+        }
+        console.log("determineUnrepliedOutbounds count", Object.values(this._perspective.unrepliedOutbounds));
+    }
 }
