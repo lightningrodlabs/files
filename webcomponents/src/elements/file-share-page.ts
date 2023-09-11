@@ -23,6 +23,7 @@ import {globalProfilesContext} from "../viewModels/happDef";
 import {base64ToArrayBuffer, emptyAppletId, getInitials, prettyFileSize} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {ParcelReferenceVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
+import {DeliveryPerspective} from "@ddd-qc/delivery";
 
 /**
  * @element
@@ -51,6 +52,9 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     fileSharePerspective!: FileSharePerspective;
 
+    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+    deliveryPerspective!: DeliveryPerspective;
+
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
 
@@ -71,18 +75,16 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
         console.log("<file-view>.dvmUpdated()");
         if (oldDvm) {
-            console.log("\t Unsubscribed to fileShareZvm's roleName = ", oldDvm.fileShareZvm.cell.name)
+            console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.fileShareZvm.cell.name)
             oldDvm.fileShareZvm.unsubscribe(this);
+            oldDvm.deliveryZvm.unsubscribe(this);
         }
         newDvm.fileShareZvm.subscribe(this, 'fileSharePerspective');
-        console.log("\t Subscribed fileShareZvm's roleName = ", newDvm.fileShareZvm.cell.name)
+        newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
+        console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name)
         //newDvm.fileShareZvm.probeAll();
     }
 
-
-    // updated() {
-    //     this._dvm.postProcess();
-    // }
 
     /** After first render only */
     async firstUpdated() {
@@ -97,8 +99,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         //await this._dvm.threadsZvm.generateTestData(this.appletId);
 
 
-        await delay(50)
-        await this._dvm.postProcess();
+        // await delay(50)
+        // await this._dvm.postProcess();
 
         /** */
         //const leftSide = this.shadowRoot.getElementById("leftSide");
@@ -127,13 +129,13 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         console.log("onSendFile():", localFileInput.value, agentSelect.value);
         let res = await this._dvm.fileShareZvm.sendFile(localFileInput.value, agentSelect.value);
         console.log("onSendFile() res:", res);
-        //localFileInput.value = "";
+        localFileInput.value = "";
     }
 
 
     /** */
     async refresh() {
-        await this._dvm.processInbox();
+        await this._dvm.probeAll();
         await this._dvm.fileShareZvm.getLocalFiles();
         await this._dvm.deliveryZvm.queryAll();
         this.requestUpdate();
@@ -180,7 +182,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** */
     render() {
-        console.log("<file-share-page>.render()", this._initialized, this._dvm.deliveryZvm.perspective);
+        console.log("<file-share-page>.render()", this._initialized, this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
         this.printNoticeReceived();
 
         if (!this._profilesZvm) {
@@ -244,31 +246,68 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
         /** Unreplied inbounds */
-        let inboundList = Object.entries(this._dvm.perspective.unrepliedInbounds).map(
-            ([senderKey, noticeEh]) => {
-                //console.log("" + index + ". " + agentIdB64)
-                const [_ts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
-                const senderProfile = this._profilesZvm.getProfile(senderKey);
-                let sender = senderKey;
-                if (senderProfile) {
-                    sender = senderProfile.nickname
+        let inboundList = Object.entries(this.deliveryPerspective.unrepliedInbounds).map(
+            ([senderKey, noticeMap]) => {
+                let res = [];
+                for (const [noticeEh, _ts] of Object.entries(noticeMap)) {
+                    //console.log("" + index + ". " + agentIdB64)
+                    const [_ts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
+                    const senderProfile = this._profilesZvm.getProfile(senderKey);
+                    let sender = senderKey;
+                    if (senderProfile) {
+                        sender = senderProfile.nickname
+                    }
+                    // ${(notice.summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.entry_type_name}
+                    const tmpl = html`
+                        <li id="inbound_${noticeEh}">
+                            From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)}
+                            <button type="button" @click=${async () => {
+                                await this._dvm.deliveryZvm.acceptDelivery(noticeEh);
+                                await this.refresh();
+                            }}>accept
+                            </button>
+                            <button type="button" @click=${async () => {
+                                await this._dvm.deliveryZvm.declineDelivery(noticeEh);
+                                await this.refresh();
+                            }}>decline
+                            </button>
+                        </li>`
+                    res.push(tmpl);
                 }
-                // ${(notice.summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.entry_type_name}
-                return html `
-                    <li value="${noticeEh}">
-                        From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)}
-                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.acceptDelivery(noticeEh); await this._dvm.processInbox();}}>accept</button>
-                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.declineDelivery(noticeEh); await this._dvm.processInbox();}}>decline</button>
-                    </li>`
+                return res;
             }
-        )
-        if (inboundList.length == 0) {
-            inboundList[0] = html`No files inbound`;
+        ).flat();
+
+        /** Unreplied inbounds */
+        let pendingInboundList = Object.entries(this.deliveryPerspective.pendingInbounds).map(
+            ([senderKey, noticeMap]) => {
+                let res = [];
+                for (const [noticeEh, _ts] of Object.entries(noticeMap)) {
+                    //console.log("" + index + ". " + agentIdB64)
+                    const [_ts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
+                    const senderProfile = this._profilesZvm.getProfile(senderKey);
+                    let sender = senderKey;
+                    if (senderProfile) {
+                        sender = senderProfile.nickname
+                    }
+                    // ${(notice.summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.entry_type_name}
+                    const tmpl = html`
+                        <li id="pending_inbound_${noticeEh}">
+                            From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)} | PENDING
+                        </li>`
+                    res.push(tmpl);
+                }
+                return res;
+            }
+        ).flat();
+
+        if (inboundList.length + pendingInboundList.length == 0) {
+            inboundList[0] = [html`No files inbound`];
         }
 
 
         /** Unreplied outbounds */
-        let outboundList = Object.entries(this._dvm.perspective.unrepliedOutbounds).map(
+        let outboundList = Object.entries(this.deliveryPerspective.unrepliedOutbounds).map(
             ([distribEh, [ts, deliveries]]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 const [_, distrib] = this._dvm.deliveryZvm.perspective.allDistributions[distribEh];
@@ -295,13 +334,17 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                     }
                 })
 
-                return html `
-                    <li>
-                        <div>${manifest.name} (${prettyFileSize(manifest.size)}) [${date_str}]</div>
-                        <ul id="outboud_${distribEh}">
-                            ${outboundItems}
-                        </ul>
-                    </li>`
+                if (outboundItems.length == 0) {
+                    return html``;
+                } else {
+                    return html`
+                        <li>
+                            <div>${manifest.name} (${prettyFileSize(manifest.size)}) [${date_str}]</div>
+                            <ul id="outboud_${distribEh}">
+                                ${outboundItems}
+                            </ul>
+                        </li>`
+                }
             }
         )
         if (outboundList.length == 0) {
@@ -336,6 +379,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
           <h2>Inbound files:</h2>
           <ul>
               ${inboundList}
+              ${pendingInboundList}
           </ul>
           <hr/>
           <h2>Outbound files:</h2>

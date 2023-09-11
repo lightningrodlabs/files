@@ -13,13 +13,13 @@ import {FileSharePerspective, FileShareZvm} from "./fileShare.zvm";
 import {NoticeStateType} from "@ddd-qc/delivery";
 
 
-/** */
-export interface FileShareDvmPerspective {
-    /** AgentPubKey -> notice_eh */
-    unrepliedInbounds: Record<AgentPubKeyB64, EntryHashB64>,
-    /** distrib_eh -> [Timestamp , AgentPubKey -> DeliveryState] */
-    unrepliedOutbounds: Record<EntryHashB64, [Timestamp, Record<AgentPubKeyB64, DeliveryState>]>,
-}
+// /** */
+// export interface FileShareDvmPerspective {
+//     /** AgentPubKey -> notice_eh */
+//     unrepliedInbounds: Record<AgentPubKeyB64, EntryHashB64>,
+//     /** distrib_eh -> [Timestamp , AgentPubKey -> DeliveryState] */
+//     unrepliedOutbounds: Record<EntryHashB64, [Timestamp, Record<AgentPubKeyB64, DeliveryState>]>,
+// }
 
 
 /**
@@ -45,28 +45,32 @@ export class FileShareDvm extends DnaViewModel {
 
     /** -- ViewModel Interface -- */
 
-    private _perspective: FileShareDvmPerspective = {unrepliedInbounds: {}, unrepliedOutbounds: {}};
+    //private _perspective: FileShareDvmPerspective = {unrepliedInbounds: {}, unrepliedOutbounds: {}};
 
 
     /** */
     protected hasChanged(): boolean {
-        //console.log("fileShareDvm.hasChanged()");
-        if (!this._previousPerspective) {
-            return true;
-        }
-        const prev = this._previousPerspective as FileShareDvmPerspective;
-        if (Object.values(this._perspective.unrepliedOutbounds).length != Object.values(prev.unrepliedOutbounds).length) {
-            return true;
-        }
-        if (Object.values(this._perspective.unrepliedInbounds).length != Object.values(prev.unrepliedInbounds).length) {
-            return true;
-        }
-        return false;
+        return true;
+        // //console.log("fileShareDvm.hasChanged()");
+        // if (!this._previousPerspective) {
+        //     return true;
+        // }
+        // const prev = this._previousPerspective as FileShareDvmPerspective;
+        // if (Object.values(this._perspective.unrepliedOutbounds).length != Object.values(prev.unrepliedOutbounds).length) {
+        //     return true;
+        // }
+        // if (Object.values(this._perspective.unrepliedInbounds).length != Object.values(prev.unrepliedInbounds).length) {
+        //     return true;
+        // }
+        // // TODO implement faster deep compare
+        // return JSON.stringify(this._perspective) == JSON.stringify(prev);
+        // //return false;
     }
 
 
     /** */
-    get perspective(): FileShareDvmPerspective { return this._perspective }
+    //get perspective(): FileShareDvmPerspective { return this._perspective }
+    get perspective(): unknown { return {} }
 
 
     /** -- Methods -- */
@@ -74,7 +78,8 @@ export class FileShareDvm extends DnaViewModel {
     /** */
     mySignalHandler(signal: AppSignal): void {
         console.log("FileShareDvm received signal", signal);
-        // const deliverySignal = signal.payload as SignalProtocol;
+        const deliverySignal = signal.payload as SignalProtocol;
+        this.notifySubscribers();
         // if (SignalProtocolType.ReceivedNotice in deliverySignal) {
         //     console.log("ADDING DeliveryNotice", deliverySignal.ReceivedNotice);
         //     const noticeEh = encodeHashToBase64(deliverySignal.ReceivedNotice[0]);
@@ -83,67 +88,19 @@ export class FileShareDvm extends DnaViewModel {
         // if (SignalProtocolType.ReceivedReply in deliverySignal) {
         //     console.log("ADDING ReplyReceived", deliverySignal.ReceivedReply);
         // }
-        // if (SignalProtocolType.ReceivedParcel in deliverySignal) {
-        //     console.log("ADDING ParcelReceived", deliverySignal.ReceivedParcel);
-        // }
+        if (SignalProtocolType.ReceivedParcel in deliverySignal) {
+            console.log("signal ParcelReceived", deliverySignal.ReceivedParcel);
+            this.fileShareZvm.getLocalFiles();
+            //this.notifySubscribers();
+        }
         // if (SignalProtocolType.ReceivedReceipt in deliverySignal) {
         //     console.log("ADDING DeliveryReceipt", deliverySignal.ReceivedReceipt);
         // }
     }
 
 
-    /** */
-    async processInbox(): Promise<void> {
-        await this.deliveryZvm.probeInbox();
-        await this.determineUnrepliedInbounds();
-        await this.determineUnrepliedOutbounds();
-    }
-
-
-    /** */
-    postProcess(): void {
-        console.log("allProbed called");
-        this.determineUnrepliedInbounds();
-        this.determineUnrepliedOutbounds();
-    };
-
-
-    /** */
-    async determineUnrepliedInbounds(): Promise<void> {
-        this._perspective.unrepliedInbounds = {};
-        console.log("determineUnrepliedInbounds() allNotices count", Object.entries(this.deliveryZvm.perspective.allNotices).length);
-        for (const [eh, [_ts, notice]] of Object.entries(this.deliveryZvm.perspective.allNotices)) {
-            const state = await this.deliveryZvm.getNoticeState(encodeHashToBase64(notice.distribution_eh));
-            console.log("determineUnrepliedInbounds() state", state);
-            if (NoticeStateType.Unreplied in state) {
-                this._perspective.unrepliedInbounds[encodeHashToBase64(notice.sender)] = eh;
-            }
-        }
-        console.log("determineUnrepliedInbounds() count", Object.values(this._perspective.unrepliedInbounds));
-        this.notifySubscribers();
-    }
-
-
-    /** */
-    async determineUnrepliedOutbounds(): Promise<void> {
-        this._perspective.unrepliedOutbounds = {};
-        console.log("determineUnrepliedOutbounds() allDistributions count", Object.entries(this.deliveryZvm.perspective.allDistributions).length);
-        for (const [eh, [ts, distrib]] of Object.entries(this.deliveryZvm.perspective.allDistributions)) {
-            const state = await this.deliveryZvm.getDistributionState(eh);
-            console.log("determineUnrepliedOutbounds() distrib state", state);
-            if (DistributionStateType.Unsent in state || DistributionStateType.AllNoticesSent in state || DistributionStateType.AllNoticeReceived in state) {
-                console.log("determineUnrepliedOutbounds() recipients", distrib.recipients.length);
-                let deliveries = {};
-                for (const recipient of distrib.recipients) {
-                    const agentB64 = encodeHashToBase64(recipient);
-                    const deliveryState = await this.deliveryZvm.getDeliveryState(eh, agentB64);
-                    console.log("determineUnrepliedOutbounds() state", deliveryState, agentB64);
-                    deliveries[agentB64] = deliveryState;
-                }
-                this._perspective.unrepliedOutbounds[eh] = [ts, deliveries];
-            }
-        }
-        console.log("determineUnrepliedOutbounds() count", Object.values(this._perspective.unrepliedOutbounds));
-        this.notifySubscribers();
-    }
+    // /** */
+    // async processInbox(): Promise<void> {
+    //     await this.deliveryZvm.probeAll();
+    // }
 }
