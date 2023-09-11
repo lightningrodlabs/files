@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {
     ActionHashB64,
@@ -80,6 +80,10 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     }
 
 
+    // updated() {
+    //     this._dvm.postProcess();
+    // }
+
     /** After first render only */
     async firstUpdated() {
         // this._initialized = true;
@@ -91,6 +95,10 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
             console.warn("no appletId provided. A fake one has been generated", this.appletId);
         }
         //await this._dvm.threadsZvm.generateTestData(this.appletId);
+
+
+        await delay(50)
+        await this._dvm.postProcess();
 
         /** */
         //const leftSide = this.shadowRoot.getElementById("leftSide");
@@ -249,8 +257,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                 return html `
                     <li value="${noticeEh}">
                         From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)}
-                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.acceptDelivery(noticeEh); this.requestUpdate();}}>accept</button>
-                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.declineDelivery(noticeEh); this.requestUpdate();}}>decline</button>
+                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.acceptDelivery(noticeEh); await this._dvm.processInbox();}}>accept</button>
+                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.declineDelivery(noticeEh); await this._dvm.processInbox();}}>decline</button>
                     </li>`
             }
         )
@@ -263,25 +271,42 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         let outboundList = Object.entries(this._dvm.perspective.unrepliedOutbounds).map(
             ([distribEh, [ts, deliveries]]) => {
                 //console.log("" + index + ". " + agentIdB64)
-                const [_ts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
-                const senderProfile = this._profilesZvm.getProfile(senderKey);
-                let sender = senderKey;
-                if (senderProfile) {
-                    sender = senderProfile.nickname
-                }
-                // ${(notice.summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.entry_type_name}
+                const [_, distrib] = this._dvm.deliveryZvm.perspective.allDistributions[distribEh];
+                const manifestEh = (distrib.delivery_summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.manifest_eh;
+                const manifest = this._dvm.fileShareZvm.perspective.localFiles[encodeHashToBase64(manifestEh)];
+                const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+                const date_str = date.toLocaleString('en-US', {hour12: false});
+
+                const outboundItems = Object.entries(deliveries).map( ([recipientKey, state]) => {
+                    //const [_nts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
+                    const profile = this._profilesZvm.getProfile(recipientKey);
+                    let recipient = recipientKey;
+                    if (profile) {
+                        recipient = profile.nickname
+                    }
+                    if ("Unsent" in state) {
+                        return html`<li>${recipient} | Delivery notice unsent</li>`
+                    }
+                    if ("PendingNotice" in state) {
+                        return html`<li>${recipient} | Delivery notice Pending reception</li>`
+                    }
+                    if ("NoticeDelivered" in state) {
+                        return html`<li>${recipient} | Waiting for reply</li>`
+                    }
+                })
+
                 return html `
-                    <li value="${distribEh}">
-                        From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)}
-                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.acceptDelivery(noticeEh); this.requestUpdate();}}>accept</button>
-                        <button type="button" @click=${async() => {await this._dvm.deliveryZvm.declineDelivery(noticeEh); this.requestUpdate();}}>decline</button>
+                    <li>
+                        <div>${manifest.name} (${prettyFileSize(manifest.size)}) [${date_str}]</div>
+                        <ul id="outboud_${distribEh}">
+                            ${outboundItems}
+                        </ul>
                     </li>`
             }
         )
         if (outboundList.length == 0) {
             outboundList[0] = html`No files outbound`;
         }
-
 
         /** Render all */
         return html`
