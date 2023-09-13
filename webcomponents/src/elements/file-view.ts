@@ -112,7 +112,7 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
         return html`
             <h4 style="margin-left: 5px;">${pm.name}</h4>
             <div>Size: ${pm.size} bytes</div>
-            <div>type: ${pm.custum_entry_type}</div>
+            <div>type: ${pm.data_type}</div>
             ${this.showActionBar
                     ? html`<input type="button" value="Download">`
                     : html``

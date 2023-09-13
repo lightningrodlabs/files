@@ -19,7 +19,8 @@ export enum DistributionStrategyType {
 /** WARN : Change MANIFEST_ENTRY_NAME const when renaming */
 export interface ParcelManifest {
   name: string
-  custum_entry_type: string
+  data_type: string
+  data_hash: string,
   size: number
   chunks: EntryHash[]
 }

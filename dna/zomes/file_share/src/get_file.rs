@@ -12,8 +12,8 @@ pub fn get_file(eh: EntryHash) -> ExternResult<(ParcelManifest, String)> {
     let maybe_manifest: ExternResult<ParcelManifest> = get_typed_from_eh(eh);
     let Ok(manifest) = maybe_manifest
         else { return error("No ParcelManifest found at given EntryHash"); };
-    debug!("get_file(): {}", manifest.custum_entry_type);
-    if &manifest.custum_entry_type[..FILE_TYPE_NAME.len()] != FILE_TYPE_NAME {
+    debug!("get_file(): {}", manifest.data_type);
+    if &manifest.data_type[..FILE_TYPE_NAME.len()] != FILE_TYPE_NAME {
         return error("ParcelManifest is not holding a File.");
     }
     /// Get all chunks

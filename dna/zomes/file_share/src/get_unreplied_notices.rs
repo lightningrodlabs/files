@@ -15,7 +15,7 @@ pub fn get_unreplied_notices(_:()) -> ExternResult<Vec<(AgentPubKey, EntryHash, 
     for (notice_eh, _ts, notice) in all_notices {
         let ParcelReference::Manifest(mref) = notice.summary.parcel_reference
             else { continue };
-        if mref.entry_type_name != FILE_TYPE_NAME {
+        if mref.data_type != FILE_TYPE_NAME {
             continue;
         }
         let response = call_delivery_zome("get_notice_state", notice_eh.clone())?;

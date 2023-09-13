@@ -137,6 +137,7 @@ import {DistributionStrategy, ParcelManifest} from './deps.types';
 export interface WriteManifestInput {
   filename: string
   filetype: string
+  data_hash: string
   orig_filesize: number
   chunks: EntryHash[]
 }

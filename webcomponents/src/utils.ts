@@ -88,7 +88,14 @@ function chunkSubstr(str: string, size: number): Array<string> {
 
 
 /** */
-export async function splitFile(full_data_string: string) {
+export interface SplitObject {
+    dataHash: string,
+    numChunks: number,
+    chunks: string[],
+}
+
+/** */
+export async function splitFile(full_data_string: string): Promise<SplitObject> {
     const hash = await sha256(full_data_string);
     console.log('file hash: ' + hash)
     const chunks = chunkSubstr(full_data_string, CHUNK_MAX_SIZE);
@@ -96,6 +103,6 @@ export async function splitFile(full_data_string: string) {
         dataHash: hash,
         numChunks: chunks.length,
         chunks: chunks,
-    }
+    };
 }
 

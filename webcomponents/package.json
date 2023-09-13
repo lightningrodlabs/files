@@ -25,6 +25,6 @@
     "@msgpack/msgpack": "^2.7.2",
     "@shoelace-style/shoelace": "^2.4.0",
     "eslint-plugin-html": "^7.1.0",
-    "@ddd-qc/delivery": "=0.1.7"
+    "@ddd-qc/delivery": "=0.2.6"
   }
 }

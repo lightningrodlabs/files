@@ -182,7 +182,7 @@ export class FileShareProxy extends ZomeProxy {
     return this.call('process_inbox', null);
   }
 
-  async sendFile(input: SendFileInput): Promise<EntryHash> {
+  async sendFile(input: SendFileInput): Promise<ActionHash> {
     return this.call('send_file', input);
   }
 }

@@ -3,14 +3,16 @@ import {
     DeliveryState,
     DeliveryStateType,
     DeliveryZvm,
-    DistributionStateType,
+    DistributionStateType, ParcelManifest,
     SignalProtocol,
     SignalProtocolType
 } from "@ddd-qc/delivery";
-import {AgentPubKeyB64, AppSignalCb, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
+import {AgentPubKeyB64, AppSignalCb, encodeHashToBase64, EntryHash, EntryHashB64, Timestamp} from "@holochain/client";
 import {AppSignal} from "@holochain/client/lib/api/app/types";
+
 import {FileSharePerspective, FileShareZvm} from "./fileShare.zvm";
-import {NoticeStateType} from "@ddd-qc/delivery";
+import {arrayBufferToBase64, splitFile} from "../utils";
+import {FILE_TYPE_NAME} from "../bindings/file_share.types";
 
 
 // /** */
@@ -79,28 +81,36 @@ export class FileShareDvm extends DnaViewModel {
     mySignalHandler(signal: AppSignal): void {
         console.log("FileShareDvm received signal", signal);
         const deliverySignal = signal.payload as SignalProtocol;
-        this.notifySubscribers();
-        // if (SignalProtocolType.ReceivedNotice in deliverySignal) {
-        //     console.log("ADDING DeliveryNotice", deliverySignal.ReceivedNotice);
-        //     const noticeEh = encodeHashToBase64(deliverySignal.ReceivedNotice[0]);
-        //     this._perspective.newDeliveryNotices[noticeEh] = deliverySignal.ReceivedNotice[1];
-        // }
-        // if (SignalProtocolType.ReceivedReply in deliverySignal) {
-        //     console.log("ADDING ReplyReceived", deliverySignal.ReceivedReply);
-        // }
-        if (SignalProtocolType.ReceivedParcel in deliverySignal) {
-            console.log("signal ParcelReceived", deliverySignal.ReceivedParcel);
+        if (SignalProtocolType.NewReceptionProof in deliverySignal) {
+            console.log("signal NewReceptionProof", deliverySignal.NewReceptionProof);
             this.fileShareZvm.getLocalFiles();
-            //this.notifySubscribers();
         }
-        // if (SignalProtocolType.ReceivedReceipt in deliverySignal) {
-        //     console.log("ADDING DeliveryReceipt", deliverySignal.ReceivedReceipt);
-        // }
     }
 
 
-    // /** */
-    // async processInbox(): Promise<void> {
-    //     await this.deliveryZvm.probeAll();
-    // }
+    /** */
+    async commitFile(file: File): Promise<EntryHashB64> {
+        console.log('dvm.commitFile: ', file)
+
+        // /** Causes stack error on big files */
+        // if (!base64regex.test(file.content)) {
+        //   const invalid_hash = sha256(file.content);
+        //   console.error("File '" + file.name + "' is invalid base64. hash is: " + invalid_hash);
+        // }
+
+        const content = await file.arrayBuffer();
+        const contentB64 = arrayBufferToBase64(content);
+
+        const splitObj = await splitFile(contentB64);
+        console.log({splitObj})
+
+        /** Check if file already present */
+        if (this.deliveryZvm.perspective.manifestByData[splitObj.dataHash]) {
+            console.warn("File already stored locally");
+            return this.deliveryZvm.perspective.manifestByData[splitObj.dataHash];
+        }
+
+        const ehb64 = await this.fileShareZvm.commitFile(file, splitObj);
+        return ehb64;
+    }
 }

@@ -13,9 +13,9 @@ pub struct SendFileInput {
     pub recipients: Vec<AgentPubKey>,
 }
 
-/// Zome Function
+/// Return Distribution ActionHash
 #[hdk_extern]
-pub fn send_file(input: SendFileInput) -> ExternResult<EntryHash> {
+pub fn send_file(input: SendFileInput) -> ExternResult<ActionHash> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("START {:?}", input.manifest_eh);
     debug!("zome_names: {:?}", dna_info()?.zome_names);
@@ -27,8 +27,8 @@ pub fn send_file(input: SendFileInput) -> ExternResult<EntryHash> {
     /// Form Parcel Reference
     let parcel_ref = ParcelReference::Manifest(ManifestReference {
         manifest_eh: input.manifest_eh,
-        entry_zome_name: ZomeName::from("file_share_integrity"),
-        entry_type_name: FILE_TYPE_NAME.to_string(),
+        from_zome: ZomeName::from("file_share_integrity"),
+        data_type: FILE_TYPE_NAME.to_string(),
     });
     /// Form Distribution
     let distribution = DistributeParcelInput {
@@ -39,7 +39,7 @@ pub fn send_file(input: SendFileInput) -> ExternResult<EntryHash> {
     /// Distribute
     debug!("calling distribute_parcel() with: {:?}", distribution);
     let response = call_delivery_zome("distribute_parcel", distribution)?;
-    let eh: EntryHash = decode_response(response)?;
+    let ah: ActionHash = decode_response(response)?;
     debug!("END");
-    Ok(eh)
+    Ok(ah)
 }

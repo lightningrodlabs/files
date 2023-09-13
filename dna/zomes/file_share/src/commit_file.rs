@@ -22,6 +22,7 @@ pub struct WriteManifestInput {
     //pub data_hash: String,
     pub filename: String,
     pub filetype: String,
+    pub data_hash: String,
     pub orig_filesize: usize,
     pub chunks: Vec<EntryHash>,
 }
@@ -34,7 +35,8 @@ pub fn commit_file_manifest(input: WriteManifestInput) -> ExternResult<EntryHash
     /// Commit Manifest
     let manifest = ParcelManifest {
         name: input.filename,
-        custum_entry_type: format!("split_file::{}", input.filetype),
+        data_type: format!("split_file::{}", input.filetype),
+        data_hash: input.data_hash,
         size: input.orig_filesize,
         chunks: input.chunks,
     };

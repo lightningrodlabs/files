@@ -22,8 +22,7 @@ import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {base64ToArrayBuffer, emptyAppletId, getInitials, prettyFileSize} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
-import {ParcelReferenceVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
-import {DeliveryPerspective} from "@ddd-qc/delivery";
+import {DeliveryPerspective, DeliveryStateType, ParcelReferenceVariantManifest} from "@ddd-qc/delivery";
 
 /**
  * @element
@@ -70,7 +69,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /**
      * In dvmUpdated() this._dvm is not already set!
-     * Subscribe to fileShareZvm
+     * Subscribe to ZVMs
      */
     protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
         console.log("<file-view>.dvmUpdated()");
@@ -115,7 +114,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         const fileInput = this.shadowRoot!.getElementById("addFile") as HTMLInputElement;
         console.log("onAddFile():", fileInput.files.length);
         if (fileInput.files.length > 0) {
-            let res = await this._dvm.fileShareZvm.commitFile(fileInput.files[0]);
+            let res = await this._dvm.commitFile(fileInput.files[0]);
             console.log("onAddFile() res:", res);
             fileInput.value = "";
         }
@@ -127,8 +126,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         const localFileInput = this.shadowRoot!.getElementById("localFileSelector") as HTMLSelectElement;
         const agentSelect = this.shadowRoot!.getElementById("recipientSelector") as HTMLSelectElement;
         console.log("onSendFile():", localFileInput.value, agentSelect.value);
-        let res = await this._dvm.fileShareZvm.sendFile(localFileInput.value, agentSelect.value);
-        console.log("onSendFile() res:", res);
+        let distribAh = await this._dvm.fileShareZvm.sendFile(localFileInput.value, agentSelect.value);
+        console.log("onSendFile() distribAh:", distribAh);
         localFileInput.value = "";
     }
 
@@ -153,9 +152,9 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         //   console.error("File '" + manifest.filename + "' is invalid base64. hash is: " + invalid_hash);
         // }
 
-         console.log("downloadFile()", manifest.custum_entry_type);
+         console.log("downloadFile()", manifest.data_type);
 
-        let filetype = manifest.custum_entry_type;
+        let filetype = manifest.data_type;
         const fields = filetype.split(':');
         if (fields.length > 1) {
             const types = fields[1].split(';');
@@ -174,8 +173,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** */
     printNoticeReceived() {
-        for (const [eh, received] of Object.entries(this._dvm.deliveryZvm.perspective.allReceivedNotices)) {
-            console.log(` - "${eh}": distrib = "${encodeHashToBase64(received.distribution_eh)}"; recipient = "${encodeHashToBase64(received.recipient)}"`)
+        for (const [distribAh, noticeAck] of Object.entries(this._dvm.deliveryZvm.perspective.noticeAcks)) {
+            console.log(` - "${distribAh}": distrib = "${encodeHashToBase64(noticeAck.distribution_ah)}"; recipient = "${encodeHashToBase64(noticeAck.recipient)}"`)
         }
     }
 
@@ -246,90 +245,66 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
         /** Unreplied inbounds */
-        let inboundList = Object.entries(this.deliveryPerspective.unrepliedInbounds).map(
-            ([senderKey, noticeMap]) => {
-                let res = [];
-                for (const [noticeEh, _ts] of Object.entries(noticeMap)) {
-                    //console.log("" + index + ". " + agentIdB64)
-                    const [_ts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
-                    const senderProfile = this._profilesZvm.getProfile(senderKey);
-                    let sender = senderKey;
-                    if (senderProfile) {
-                        sender = senderProfile.nickname
-                    }
-                    // ${(notice.summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.entry_type_name}
-                    const tmpl = html`
+        let inboundList = Object.entries(this._dvm.deliveryZvm.inbounds()).map(
+            ([noticeEh, [notice, ts, pct]]) => {
+                console.log("" + noticeEh, this.deliveryPerspective.notices[noticeEh]);
+                const senderKey = encodeHashToBase64(notice.sender);
+                const senderProfile = this._profilesZvm.getProfile(senderKey);
+                let sender = senderKey;
+                if (senderProfile) {
+                    sender = senderProfile.nickname
+                }
+                if (pct == -1) {
+                    return html`
                         <li id="inbound_${noticeEh}">
-                            From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)}
+                            "${notice.summary.parcel_name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_size)}
                             <button type="button" @click=${async () => {
-                                await this._dvm.deliveryZvm.acceptDelivery(noticeEh);
-                                await this.refresh();
-                            }}>accept
+                                console.log("Accepting", noticeEh);
+                        await this._dvm.deliveryZvm.acceptDelivery(noticeEh);
+                        //await this.refresh();
+                    }}>accept
                             </button>
                             <button type="button" @click=${async () => {
-                                await this._dvm.deliveryZvm.declineDelivery(noticeEh);
-                                await this.refresh();
-                            }}>decline
+                        await this._dvm.deliveryZvm.declineDelivery(noticeEh);
+                        //await this.refresh();
+                    }}>decline
                             </button>
                         </li>`
-                    res.push(tmpl);
+                } else {
+                    return html`<li id="inbound_${noticeEh}">
+                            "${notice.summary.parcel_name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_size)} | RETRIEVING ${pct}%
+                    </li>`;
                 }
-                return res;
-            }
-        ).flat();
+            });
 
-        /** Unreplied inbounds */
-        let pendingInboundList = Object.entries(this.deliveryPerspective.pendingInbounds).map(
-            ([senderKey, noticeMap]) => {
-                let res = [];
-                for (const [noticeEh, _ts] of Object.entries(noticeMap)) {
-                    //console.log("" + index + ". " + agentIdB64)
-                    const [_ts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
-                    const senderProfile = this._profilesZvm.getProfile(senderKey);
-                    let sender = senderKey;
-                    if (senderProfile) {
-                        sender = senderProfile.nickname
-                    }
-                    // ${(notice.summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.entry_type_name}
-                    const tmpl = html`
-                        <li id="pending_inbound_${noticeEh}">
-                            From: ${sender} | ${prettyFileSize(notice.summary.parcel_size)} | PENDING
-                        </li>`
-                    res.push(tmpl);
-                }
-                return res;
-            }
-        ).flat();
-
-        if (inboundList.length + pendingInboundList.length == 0) {
-            inboundList[0] = [html`No files inbound`];
+        if (inboundList.length == 0) {
+            inboundList = [html`No files inbound`];
         }
 
 
         /** Unreplied outbounds */
-        let outboundList = Object.entries(this.deliveryPerspective.unrepliedOutbounds).map(
-            ([distribEh, [ts, deliveries]]) => {
+        let outboundList = Object.entries(this._dvm.deliveryZvm.outbounds()).map(
+            ([distribEh, [distrib, ts, deliveryStates]]) => {
                 //console.log("" + index + ". " + agentIdB64)
-                const [_, distrib] = this._dvm.deliveryZvm.perspective.allDistributions[distribEh];
                 const manifestEh = (distrib.delivery_summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.manifest_eh;
                 const manifest = this._dvm.fileShareZvm.perspective.localFiles[encodeHashToBase64(manifestEh)];
                 const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
                 const date_str = date.toLocaleString('en-US', {hour12: false});
 
-                const outboundItems = Object.entries(deliveries).map( ([recipientKey, state]) => {
+                const outboundItems = Object.entries(deliveryStates).map( ([recipientKey, state]) => {
                     //const [_nts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
                     const profile = this._profilesZvm.getProfile(recipientKey);
                     let recipient = recipientKey;
                     if (profile) {
                         recipient = profile.nickname
                     }
-                    if ("Unsent" in state) {
+                    if (DeliveryStateType.Unsent in state) {
                         return html`<li>${recipient} | Delivery notice unsent</li>`
                     }
-                    if ("PendingNotice" in state) {
-                        return html`<li>${recipient} | Delivery notice Pending reception</li>`
+                    if (DeliveryStateType.PendingNotice in state) {
+                        return html`<li>${recipient} | Delivery notice pending reception</li>`
                     }
-                    if ("NoticeDelivered" in state) {
+                    if (DeliveryStateType.NoticeDelivered in state) {
                         return html`<li>${recipient} | Waiting for reply</li>`
                     }
                 })
@@ -379,7 +354,6 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
           <h2>Inbound files:</h2>
           <ul>
               ${inboundList}
-              ${pendingInboundList}
           </ul>
           <hr/>
           <h2>Outbound files:</h2>

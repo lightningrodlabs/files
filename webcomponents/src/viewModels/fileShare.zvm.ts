@@ -8,10 +8,9 @@ import {
 } from '@holochain/client';
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 import {ZomeViewModel} from "@ddd-qc/lit-happ";
-import {arrayBufferToBase64, splitFile} from "../utils";
+import {arrayBufferToBase64, splitFile, SplitObject} from "../utils";
 import {FileShareProxy} from "../bindings/file_share.proxy";
 import {FILE_TYPE_NAME, SendFileInput} from "../bindings/file_share.types";
-import {DistributionStrategyType} from "../bindings/deps.types";
 import {ParcelManifest} from "@ddd-qc/delivery";
 
 
@@ -88,12 +87,14 @@ export class FileShareZvm extends ZomeViewModel {
         //dataHash: string,
         filename: string,
         filetype: string,
+        data_hash: string,
         orig_filesize: number,
         chunks: EntryHash[]): Promise<EntryHash> {
         const params = {
             //data_hash: dataHash,
             filename,
             filetype,
+            data_hash,
             orig_filesize,
             chunks
         }
@@ -116,20 +117,8 @@ export class FileShareZvm extends ZomeViewModel {
     // }
 
 
-    async commitFile(file: File): Promise<EntryHashB64> {
-        console.log('commitFile: ', file)
-
-        // /** Causes stack error on big files */
-        // if (!base64regex.test(file.content)) {
-        //   const invalid_hash = sha256(file.content);
-        //   console.error("File '" + file.name + "' is invalid base64. hash is: " + invalid_hash);
-        // }
-
-        const content = await file.arrayBuffer();
-        const contentB64 = arrayBufferToBase64(content);
-
-        const splitObj = await splitFile(contentB64);
-        console.log({splitObj})
+    async commitFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {
+        console.log('zvm.commitFile: ', splitObj)
 
         /** Commit each chunk */
         const chunksToSend: EntryHash[] = [];
@@ -137,12 +126,12 @@ export class FileShareZvm extends ZomeViewModel {
             const eh = await this.zomeProxy.writeChunk(/*splitObj.dataHash, i,*/ splitObj.chunks[i]);
             chunksToSend.push(eh);
         }
-        const manifest_eh = await this.writeManifest(/*splitObj.dataHash,*/ file.name, file.type, file.size, chunksToSend);
+        const manifest_eh = await this.writeManifest(file.name, file.type, splitObj.dataHash, file.size, chunksToSend);
         const ehb64 = encodeHashToBase64(manifest_eh);
 
         this._perspective.localFiles[ehb64] = {
             name: file.name,
-            custum_entry_type: FILE_TYPE_NAME,
+            data_type: FILE_TYPE_NAME,
             size: file.size,
             chunks: chunksToSend,
         } as ParcelManifest;
@@ -154,7 +143,7 @@ export class FileShareZvm extends ZomeViewModel {
 
 
     /** */
-    async sendFile(manifest_eh: EntryHashB64, recipient: AgentPubKeyB64): Promise<EntryHashB64> {
+    async sendFile(manifest_eh: EntryHashB64, recipient: AgentPubKeyB64): Promise<ActionHashB64> {
         const input: SendFileInput = {
             manifest_eh: decodeHashFromBase64(manifest_eh),
             strategy: { NORMAL: null },
@@ -163,7 +152,7 @@ export class FileShareZvm extends ZomeViewModel {
         console.log('sending file:', input);
         /* Send Mail */
         /*const outmail_hh =*/
-        const eh = await this.zomeProxy.sendFile(input);
-        return encodeHashToBase64(eh)
+        const ah = await this.zomeProxy.sendFile(input);
+        return encodeHashToBase64(ah)
     }
 }

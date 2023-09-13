@@ -14,7 +14,7 @@ pub fn get_local_files(_:()) -> ExternResult<Vec<(EntryHash, ParcelManifest)>> {
     let manifests: Vec<(EntryHash, ParcelManifest)> = decode_response(response)?;
     debug!("manifests found: {}", manifests.len());
     let file_manifests = manifests.into_iter()
-        .filter(|(_eh, manifest)| &manifest.custum_entry_type[..FILE_TYPE_NAME.len()] == FILE_TYPE_NAME)
+        .filter(|(_eh, manifest)| &manifest.data_type[..FILE_TYPE_NAME.len()] == FILE_TYPE_NAME)
         .collect();
     Ok(file_manifests)
 }
