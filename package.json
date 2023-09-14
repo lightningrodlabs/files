@@ -42,7 +42,7 @@
 
    "prodtest"           :  "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
    "start"              :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
-   "start:local"        :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run start:happ:local\" \"sleep 7 && npm run start:ui -w webapp\"",
+   "start:local"        :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run start:happ:local\" \"sleep 7 && npm run start:ui -w webapp\"",
    "start:proxied"      :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run start:happ:proxied\" \"sleep 7 && npm run start:ui -w webapp\"",
    "start:playground"   :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run playground\" \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
    "start-rerun"        :  "cross-env HC_APP_PORT=8888 concurrently -k \"npm run build:watch -w webcomponents\" \"$npm_package_config_bin/hc s run 0 -p 8888\" \"npm run start:ui -w webapp\"",
@@ -51,10 +51,17 @@
    "start:happ:local"   :  "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ --run=$HC_APP_PORT -a FileShareDev network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
 
    "serve:run"          :  "hc run-local-services --bootstrap-port $BOOT_PORT --signal-port $SIGNAL_PORT",
-   "serve"              :  "cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run start:happ:local\"",
-   "network:local2"     :  "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run start:local\" \"sleep 1 && npm run start:local\"",
-   "network:local3"     :  "npm run clean:hc & cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run start:local\" \"npm run start:local\" \"npm run start:local\"",
+   "serve:save"         :  "echo SIGNAL_PORT=$SIGNAL_PORT && echo $SIGNAL_PORT > .hc_signalenv && echo $BOOT_PORT > .hc_bootenv && echo BOOT_PORT=$BOOT_PORT",
+   "serve"              :  "cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"npm run start:happ:local\"",
+   "network:local2"     :  "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"npm run start:local\" \"sleep 1 && npm run start:local\"",
+   "network:local3"     :  "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"npm run start:local\" \"npm run start:local\" \"npm run start:local\"",
    "network:we"         :  "npm run clean:hc & npm run network:local2 -w we-applet",
+
+   "happ:local"         :  "echo INDEX=$INDEX & RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT run $INDEX --ports $HC_APP_PORT",
+   "local"              :  "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run serve:run\" \"npm run happ:local\" \"sleep 7 && npm run start:ui-only -w webapp\"",
+   "local0"             :  "cross-env INDEX=0 npm run local",
+   "local1"             :  "cross-env INDEX=1 npm run local",
+   "local2"             :  "cross-env INDEX=2 npm run local",
 
    "launch"             :  "echo pass | hc-launch --piped -n 1 artifacts/file_share.webhapp network mem",
    "launch:we"          :  "echo pass | hc-launch --piped -n 1 artifacts/file_share-we_applet.webhapp network mem",

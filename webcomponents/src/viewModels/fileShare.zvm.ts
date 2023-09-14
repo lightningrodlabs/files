@@ -153,6 +153,6 @@ export class FileShareZvm extends ZomeViewModel {
         /* Send Mail */
         /*const outmail_hh =*/
         const ah = await this.zomeProxy.sendFile(input);
-        return encodeHashToBase64(ah)
+        return encodeHashToBase64(ah);
     }
 }
