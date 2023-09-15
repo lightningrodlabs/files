@@ -122,6 +122,16 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
     /** */
+    async onPublishFile(e: any) {
+        const localFileInput = this.shadowRoot!.getElementById("publishFileSelector") as HTMLSelectElement;
+        console.log("onPublishFile():", localFileInput.value);
+        let distribAh = await this._dvm.fileShareZvm.publishFile(localFileInput.value);
+        console.log("onSendFile() distribAh:", distribAh);
+        localFileInput.value = "";
+    }
+
+
+    /** */
     async onSendFile(e: any) {
         const localFileInput = this.shadowRoot!.getElementById("localFileSelector") as HTMLSelectElement;
         const agentSelect = this.shadowRoot!.getElementById("recipientSelector") as HTMLSelectElement;
@@ -328,38 +338,51 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
         /** Render all */
         return html`
-          <div><abbr title="${this.cell.agentPubKey}">${this._myProfile.nickname}</abbr></div>
-          <h1>
-            FileShare Central 
-            <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
-            <button type="button" @click=${() => {this.refresh();}}>refresh</button>               
+        <div><abbr title="${this.cell.agentPubKey}">${this._myProfile.nickname}</abbr></div>
+        <h1>
+          FileShare Central 
+          <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
+          <button type="button" @click=${() => {this.refresh();}}>refresh</button>               
         </h1>
-        <label>Send File:</label>
-        <select id="localFileSelector">
-          ${fileOptions}
-        </select>
-          to: <select id="recipientSelector">
-            ${AgentOptions}
+        <div>
+          <label>Publish File:</label>
+          <select id="publishFileSelector">
+            ${fileOptions}
           </select>
-        <input type="button" value="send" @click=${this.onSendFile}>
-          <hr/>
-          <h2>Local files</h2>
-          <ul>
-              ${fileList}
-          </ul>
-          <label for="addFile">Add file to source-chain:</label>
-          <input type="file" id="addFile" name="addFile" />
-          <input type="button" value="Add" @click=${this.onAddFile}>          
-          <hr/>
-          <h2>Inbound files:</h2>
-          <ul>
-              ${inboundList}
-          </ul>
-          <hr/>
-          <h2>Outbound files:</h2>
-          <ul>
-              ${outboundList}
-          </ul>          
+          <input type="button" value="publish" @click=${this.onPublishFile}>
+        </div>
+
+        <div style="margin-top:20px;">
+          <label>Send File:</label>
+          <select id="localFileSelector">
+            ${fileOptions}
+          </select>
+            to: <select id="recipientSelector">
+              ${AgentOptions}
+          </select>
+          <input type="button" value="send" @click=${this.onSendFile}>
+        </div>
+        
+        <hr/>
+        <h2>Local files</h2>
+        <ul>
+            ${fileList}
+        </ul>
+        <label for="addFile">Add file to source-chain:</label>
+        <input type="file" id="addFile" name="addFile" />
+        <input type="button" value="Add" @click=${this.onAddFile}>   
+          
+        <hr/>
+        <h2>Inbound files:</h2>
+        <ul>
+          ${inboundList}
+        </ul>
+          
+        <hr/>
+        <h2>Outbound files:</h2>
+        <ul>
+          ${outboundList}
+        </ul>          
     `;
     }
 

@@ -13,9 +13,9 @@ pub fn get_unreplied_notices(_:()) -> ExternResult<Vec<(AgentPubKey, EntryHash, 
     let response = call_delivery_zome("query_all_DeliveryNotice", ())?;
     let all_notices: Vec<(EntryHash, Timestamp, DeliveryNotice)> = decode_response(response)?;
     for (notice_eh, _ts, notice) in all_notices {
-        let ParcelReference::Manifest(mref) = notice.summary.parcel_reference
+        let ParcelKind::Manifest(data_type) = notice.summary.parcel_description.reference.kind_info
             else { continue };
-        if mref.data_type != FILE_TYPE_NAME {
+        if data_type != FILE_TYPE_NAME {
             continue;
         }
         let response = call_delivery_zome("get_notice_state", notice_eh.clone())?;

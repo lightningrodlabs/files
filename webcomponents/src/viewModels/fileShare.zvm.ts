@@ -77,21 +77,13 @@ export class FileShareZvm extends ZomeViewModel {
 
 
     /** */
-    async getFile(eh: EntryHashB64): Promise<[ParcelManifest, string]> {
-        return this.zomeProxy.getFile(decodeHashFromBase64(eh));
-    }
-
-
-    /** */
     async writeManifest(
-        //dataHash: string,
         filename: string,
         filetype: string,
         data_hash: string,
         orig_filesize: number,
         chunks: EntryHash[]): Promise<EntryHash> {
         const params = {
-            //data_hash: dataHash,
             filename,
             filetype,
             data_hash,
@@ -150,9 +142,17 @@ export class FileShareZvm extends ZomeViewModel {
             recipients: [decodeHashFromBase64(recipient)],
         };
         console.log('sending file:', input);
-        /* Send Mail */
-        /*const outmail_hh =*/
+        /* Send File */
         const ah = await this.zomeProxy.sendFile(input);
+        return encodeHashToBase64(ah);
+    }
+
+
+    /** */
+    async publishFile(manifest_eh: EntryHashB64): Promise<ActionHashB64> {
+        // FIXME
+        //const ah = await this.zomeProxy.publishFile(manifest_eh);
+        const ah = new Uint8Array();
         return encodeHashToBase64(ah);
     }
 }

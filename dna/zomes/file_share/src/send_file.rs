@@ -25,20 +25,22 @@ pub fn send_file(input: SendFileInput) -> ExternResult<ActionHash> {
     // TODO: Make sure manifest exists and is of File type.
 
     /// Form Parcel Reference
-    let parcel_ref = ParcelReference::Manifest(ManifestReference {
-        manifest_eh: input.manifest_eh,
-        from_zome: ZomeName::from("file_share_integrity"),
-        data_type: FILE_TYPE_NAME.to_string(),
-    });
+    let parcel_ref = ParcelReference {
+        eh: input.manifest_eh,
+        zome_origin: ZomeName::from("file_share_integrity"),
+        visibility: EntryVisibility:Private,
+        kind_info: ParcelKind::Manifest(FILE_TYPE_NAME.to_string()),
+    };
     /// Form Distribution
-    let distribution = DistributeParcelInput {
+    let distribute_input = DistributeParcelInput {
         recipients: input.recipients,
         strategy: input.strategy,
+        parcel_name:
         parcel_ref,
     };
     /// Distribute
     debug!("calling distribute_parcel() with: {:?}", distribution);
-    let response = call_delivery_zome("distribute_parcel", distribution)?;
+    let response = call_delivery_zome("distribute_parcel", distribute_input)?;
     let ah: ActionHash = decode_response(response)?;
     debug!("END");
     Ok(ah)

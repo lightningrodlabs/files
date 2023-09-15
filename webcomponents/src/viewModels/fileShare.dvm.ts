@@ -7,7 +7,15 @@ import {
     SignalProtocol,
     SignalProtocolType
 } from "@ddd-qc/delivery";
-import {AgentPubKeyB64, AppSignalCb, encodeHashToBase64, EntryHash, EntryHashB64, Timestamp} from "@holochain/client";
+import {
+    AgentPubKeyB64,
+    AppSignalCb,
+    decodeHashFromBase64,
+    encodeHashToBase64,
+    EntryHash,
+    EntryHashB64,
+    Timestamp
+} from "@holochain/client";
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 import {FileSharePerspective, FileShareZvm} from "./fileShare.zvm";
@@ -113,4 +121,13 @@ export class FileShareDvm extends DnaViewModel {
         const ehb64 = await this.fileShareZvm.commitFile(file, splitObj);
         return ehb64;
     }
+
+    /** */
+    async getFile(ppEh: EntryHashB64): Promise<[ParcelManifest, string]> {
+
+        const [] = await this.deliveryZvm.pullParcel(ppEh);
+        return this.zomeProxy.getFile(decodeHashFromBase64(eh));
+    }
+
+
 }
