@@ -4,6 +4,12 @@ import {ProfilesZvm} from "./profiles.zvm";
 import {FileShareDvm} from "./fileShare.dvm";
 import {ProfilesDvm} from "./profiles.dvm";
 
+///** DNA PROPERTIES (must be set to this in dna.yaml */
+// export const maxChunkSize = 204800;
+// export const maxParcelSize = 104857600;
+// export const maxParcelNameLength = 256;
+// export const minParcelNameLength = 1;
+
 
 export const DEFAULT_FILESHARE_DEF: HvmDef = {
   id: "FileShare",

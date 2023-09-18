@@ -22,7 +22,8 @@ import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {base64ToArrayBuffer, emptyAppletId, getInitials, prettyFileSize} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
-import {DeliveryPerspective, DeliveryStateType, ParcelReferenceVariantManifest} from "@ddd-qc/delivery";
+import {DeliveryPerspective, DeliveryStateType} from "@ddd-qc/delivery";
+import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 
 /**
  * @element
@@ -111,10 +112,10 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** */
     async onAddFile(e: any) {
-        const fileInput = this.shadowRoot!.getElementById("addFile") as HTMLInputElement;
+        const fileInput = this.shadowRoot!.getElementById("addLocalFile") as HTMLInputElement;
         console.log("onAddFile():", fileInput.files.length);
         if (fileInput.files.length > 0) {
-            let res = await this._dvm.commitFile(fileInput.files[0]);
+            let res = await this._dvm.commitPrivateFile(fileInput.files[0]);
             console.log("onAddFile() res:", res);
             fileInput.value = "";
         }
@@ -123,11 +124,20 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** */
     async onPublishFile(e: any) {
-        const localFileInput = this.shadowRoot!.getElementById("publishFileSelector") as HTMLSelectElement;
-        console.log("onPublishFile():", localFileInput.value);
-        let distribAh = await this._dvm.fileShareZvm.publishFile(localFileInput.value);
-        console.log("onSendFile() distribAh:", distribAh);
-        localFileInput.value = "";
+        const fileInput = this.shadowRoot!.getElementById("publishFile") as HTMLInputElement;
+        console.log("onPublishFile():", fileInput.files.length);
+        let distribAh = await this._dvm.publishFile(fileInput.files[0]);
+        console.log("onPublishFile() distribAh:", distribAh);
+        fileInput.value = "";
+    }
+
+    /** */
+    async onPublishPrivateFile(e: any) {
+        //     const localFileInput = this.shadowRoot!.getElementById("publishFileSelector") as HTMLSelectElement;
+        //     console.log("onPublishLocalFile():", localFileInput.value);
+        //     let distribAh = await this._dvm.publishPrivateFile(localFileInput.value);
+        //     console.log("onPublishLocalFile() distribAh:", distribAh);
+        //     localFileInput.value = "";
     }
 
 
@@ -145,16 +155,17 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     /** */
     async refresh() {
         await this._dvm.probeAll();
-        await this._dvm.fileShareZvm.getLocalFiles();
+        await this._dvm.probePublicFiles();
+        await this._dvm.fileShareZvm.getPrivateFiles();
         await this._dvm.deliveryZvm.queryAll();
         this.requestUpdate();
     }
 
-
+    
     /** */
     async downloadFile(manifestEh: EntryHashB64): Promise<void> {
         /** Get File on source chain */
-        const [manifest, data] = await this._dvm.fileShareZvm.getFile(manifestEh);
+        const [manifest, data] = await this._dvm.getLocalFile(manifestEh);
 
         /** DEBUG - check if content is valid base64 */
         // if (!base64regex.test(data)) {
@@ -162,9 +173,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         //   console.error("File '" + manifest.filename + "' is invalid base64. hash is: " + invalid_hash);
         // }
 
-         console.log("downloadFile()", manifest.data_type);
-
-        let filetype = manifest.data_type;
+        let filetype = (manifest.description.kind_info as ParcelKindVariantManifest).Manifest;
+        console.log("downloadFile()", filetype);
         const fields = filetype.split(':');
         if (fields.length > 1) {
             const types = fields[1].split(';');
@@ -175,7 +185,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = manifest.name || 'download';
+        a.download = manifest.description.name || 'download';
         a.addEventListener('click', () => {}, false);
         a.click();
     }
@@ -229,28 +239,63 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
             }
         )
 
-        console.log("localFiles found:", Object.entries(this._dvm.fileShareZvm.perspective.localFiles).length);
+        console.log("localFiles found:", Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).length);
 
-        const fileOptions = Object.entries(this._dvm.fileShareZvm.perspective.localFiles).map(
+        const fileOptions = Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(
             ([eh, manifest]) => {
                 //console.log("" + index + ". " + agentIdB64)
-                return html `<option value="${eh}">${manifest.name}</option>`
+                return html `<option value="${eh}">${manifest.description.name}</option>`
             }
         )
 
-        /** Local files list */
-        let fileList = Object.entries(this._dvm.fileShareZvm.perspective.localFiles).map(
+        /** Public files list */
+        let publicFileList = Object.entries(this._dvm.perspective.publicFiles).map(
+            ([_dataHash, ppEh]) => {
+                const description = this._dvm.deliveryZvm.perspective.publicParcels[ppEh];
+                console.log("description", description);
+                // FIXME check if we also have file locally (with data_hash)
+                if (!description) {
+                    return html``;
+                }
+                return html `
+                    <li>
+                        ${description.name} | ${prettyFileSize(description.size)}
+                        <button type="button" @click=${() => {this.downloadFile(ppEh);}}>download</button>
+                    </li>`
+            }
+        )
+        if (publicFileList.length == 0) {
+            publicFileList[0] = html`No files found`;
+        }
+
+        /** Local public files list */
+        let localPublicFileList = Object.entries(this._dvm.fileShareZvm.perspective.localPublicFiles).map(
             ([eh, manifest]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 return html `
                     <li value="${eh}">
-                        ${manifest.name} | ${prettyFileSize(manifest.size)}
+                        ${manifest.description.name} | ${prettyFileSize(manifest.description.size)}
                         <button type="button" @click=${() => {this.downloadFile(eh);}}>download</button>
                     </li>`
             }
         )
-        if (fileList.length == 0) {
-            fileList[0] = html`No files found`;
+        if (localPublicFileList.length == 0) {
+            localPublicFileList[0] = html`No files found`;
+        }
+
+        /** Local files list */
+        let privateFileList = Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(
+            ([eh, manifest]) => {
+                //console.log("" + index + ". " + agentIdB64)
+                return html `
+                    <li value="${eh}">
+                        ${manifest.description.name} | ${prettyFileSize(manifest.description.size)}
+                        <button type="button" @click=${() => {this.downloadFile(eh);}}>download</button>
+                    </li>`
+            }
+        )
+        if (privateFileList.length == 0) {
+            privateFileList[0] = html`No files found`;
         }
 
 
@@ -267,7 +312,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                 if (pct == -1) {
                     return html`
                         <li id="inbound_${noticeEh}">
-                            "${notice.summary.parcel_name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_size)}
+                            "${notice.summary.parcel_reference.description.name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_reference.description.size)}
                             <button type="button" @click=${async () => {
                                 console.log("Accepting", noticeEh);
                         await this._dvm.deliveryZvm.acceptDelivery(noticeEh);
@@ -282,7 +327,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                         </li>`
                 } else {
                     return html`<li id="inbound_${noticeEh}">
-                            "${notice.summary.parcel_name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_size)} | RETRIEVING ${pct}%
+                            "${notice.summary.parcel_reference.description.name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_reference.description.size)} | RETRIEVING ${pct}%
                     </li>`;
                 }
             });
@@ -296,8 +341,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         let outboundList = Object.entries(this._dvm.deliveryZvm.outbounds()).map(
             ([distribEh, [distrib, ts, deliveryStates]]) => {
                 //console.log("" + index + ". " + agentIdB64)
-                const manifestEh = (distrib.delivery_summary.parcel_reference as ParcelReferenceVariantManifest).Manifest.manifest_eh;
-                const manifest = this._dvm.fileShareZvm.perspective.localFiles[encodeHashToBase64(manifestEh)];
+                const manifestEh = encodeHashToBase64(distrib.delivery_summary.parcel_reference.eh);
+                const manifest = this._dvm.fileShareZvm.perspective.privateFiles[manifestEh];
                 const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
                 const date_str = date.toLocaleString('en-US', {hour12: false});
 
@@ -324,7 +369,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                 } else {
                     return html`
                         <li>
-                            <div>${manifest.name} (${prettyFileSize(manifest.size)}) [${date_str}]</div>
+                            <div>${manifest.description.name} (${prettyFileSize(manifest.description.size)}) [${date_str}]</div>
                             <ul id="outboud_${distribEh}">
                                 ${outboundItems}
                             </ul>
@@ -345,12 +390,17 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
           <button type="button" @click=${() => {this.refresh();}}>refresh</button>               
         </h1>
         <div>
-          <label>Publish File:</label>
+            <label for="publishFile">Publish new file:</label>
+            <input type="file" id="publishFile" name="publishFile" />
+            <input type="button" value="Publish" @click=${this.onPublishFile}>
+        </div>        
+        <!--<div>
+          <label>Publish local file:</label>
           <select id="publishFileSelector">
             ${fileOptions}
           </select>
-          <input type="button" value="publish" @click=${this.onPublishFile}>
-        </div>
+          <input type="button" value="publish" @click=${this.onPublishPrivateFile}>
+        </div>-->
 
         <div style="margin-top:20px;">
           <label>Send File:</label>
@@ -362,14 +412,24 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
           </select>
           <input type="button" value="send" @click=${this.onSendFile}>
         </div>
-        
+
         <hr/>
-        <h2>Local files</h2>
+        <h2>Public files</h2>
         <ul>
-            ${fileList}
+            ${publicFileList}
         </ul>
-        <label for="addFile">Add file to source-chain:</label>
-        <input type="file" id="addFile" name="addFile" />
+        
+        <h2>My public files</h2>
+        <ul>
+            ${localPublicFileList}
+        </ul>
+        
+        <h2>Private files</h2>
+        <ul>
+            ${privateFileList}
+        </ul>
+        <label for="addLocalFile">Add private file to source-chain:</label>
+        <input type="file" id="addLocalFile" name="addLocalFile" />
         <input type="button" value="Add" @click=${this.onAddFile}>   
           
         <hr/>

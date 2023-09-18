@@ -6,7 +6,6 @@ import {
     encodeHashToBase64,
     EntryHash
 } from "@holochain/client";
-import {CHUNK_MAX_SIZE} from "./bindings/deps.types";
 
 
 /** */
@@ -94,11 +93,28 @@ export interface SplitObject {
     chunks: string[],
 }
 
+
 /** */
-export async function splitFile(full_data_string: string): Promise<SplitObject> {
+export async function splitFile(file: File, chunkMaxSize: number): Promise<SplitObject> {
+    // /** Causes stack error on big files */
+    // if (!base64regex.test(file.content)) {
+    //   const invalid_hash = sha256(file.content);
+    //   console.error("File '" + file.name + "' is invalid base64. hash is: " + invalid_hash);
+    // }
+    const content = await file.arrayBuffer();
+    const contentB64 = arrayBufferToBase64(content);
+    const splitObj = await splitData(contentB64, chunkMaxSize);
+    console.log("splitObj: ", splitObj);
+    return splitObj;
+}
+
+
+/** */
+export async function splitData(full_data_string: string, chunkMaxSize: number): Promise<SplitObject> {
     const hash = await sha256(full_data_string);
-    console.log('file hash: ' + hash)
-    const chunks = chunkSubstr(full_data_string, CHUNK_MAX_SIZE);
+    console.log('file hash: ' + hash);
+    console.log('splitFile()', chunkMaxSize);
+    const chunks = chunkSubstr(full_data_string, chunkMaxSize);
     return {
         dataHash: hash,
         numChunks: chunks.length,

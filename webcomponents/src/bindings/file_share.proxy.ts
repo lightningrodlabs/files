@@ -133,7 +133,7 @@ ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
 /** User defined external dependencies */
-import {DistributionStrategy, ParcelManifest} from './deps.types';
+import {DistributionStrategy, ParcelManifest, ParcelDescription, ParcelKind, ParcelReference} from '@ddd-qc/delivery';
 
 import {ZomeProxy} from '@ddd-qc/lit-happ';
 import {fileShareFunctionNames} from './file_share.fn';
@@ -150,16 +150,12 @@ export class FileShareProxy extends ZomeProxy {
     return this.call('write_chunk', data);
   }
 
-  async commitFileManifest(input: WriteManifestInput): Promise<EntryHash> {
-    return this.call('commit_file_manifest', input);
+  async commitPrivateFile(input: WriteManifestInput): Promise<[EntryHash, ParcelDescription]> {
+    return this.call('commit_private_file', input);
   }
 
-  async getFile(eh: EntryHash): Promise<[ParcelManifest, string]> {
-    return this.call('get_file', eh);
-  }
-
-  async getFilesFrom(sender: AgentPubKey): Promise<EntryHash[]> {
-    return this.call('get_files_from', sender);
+  async getPrivateFilesFrom(sender: AgentPubKey): Promise<EntryHash[]> {
+    return this.call('get_private_files_from', sender);
   }
 
   async refuseFileShare(parcelEh: EntryHash): Promise<EntryHash> {
@@ -170,16 +166,32 @@ export class FileShareProxy extends ZomeProxy {
     return this.call('accept_file_share', parcelEh);
   }
 
-  async getLocalFiles(): Promise<[EntryHash, ParcelManifest][]> {
-    return this.call('get_local_files', null);
+  async getPrivateFiles(): Promise<[EntryHash, ParcelManifest][]> {
+    return this.call('get_private_files', null);
+  }
+
+  async getLocalPublicFiles(): Promise<[EntryHash, ParcelManifest][]> {
+    return this.call('get_local_public_files', null);
   }
 
   async getUnrepliedNotices(): Promise<[AgentPubKey, EntryHash, number][]> {
     return this.call('get_unreplied_notices', null);
   }
 
+  async probeFiles(): Promise<ParcelReference[]> {
+    return this.call('probe_files', null);
+  }
+
   async processInbox(): Promise<void> {
     return this.call('process_inbox', null);
+  }
+
+  async writePublicChunk(data: string): Promise<EntryHash> {
+    return this.call('write_public_chunk', data);
+  }
+
+  async publishFileManifest(input: WriteManifestInput): Promise<[EntryHash, ParcelDescription]> {
+    return this.call('publish_file_manifest', input);
   }
 
   async sendFile(input: SendFileInput): Promise<ActionHash> {

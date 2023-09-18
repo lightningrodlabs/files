@@ -3,11 +3,6 @@ manifest_version: "1"
 name: dProfiles
 integrity:
   origin_time: 2022-09-25T13:55:49.200Z
-  properties:
-    maxChunkSize: 204800
-    maxParcelSize: 104857600
-    maxParcelNameLength: 256
-    minParcelNameLength: 1
   zomes:
     - name: profiles_integrity
       bundled: ../../target/wasm32-unknown-unknown/release/profiles_integrity_zome.wasm

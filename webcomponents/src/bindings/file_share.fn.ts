@@ -10,14 +10,17 @@ export const fileShareFunctionNames: FunctionName[] = [
 	"get_dna_info",
 
 	"write_chunk",
-	"commit_file_manifest",
-	"get_file",
-	"get_files_from",
+	"commit_private_file",
+	"get_private_files_from",
 	"refuse_file_share",
 	"accept_file_share",
-	"get_local_files",
+	"get_private_files",
+	"get_local_public_files",
 	"get_unreplied_notices",
+	"probe_files",
 	"process_inbox",
+	"write_public_chunk",
+	"publish_file_manifest",
 	"send_file",];
 
 

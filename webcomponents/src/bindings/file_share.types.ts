@@ -132,7 +132,7 @@ ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
 /** User defined external dependencies */
-import {DistributionStrategy, ParcelManifest} from './deps.types';
+import {DistributionStrategy, ParcelManifest, ParcelDescription, ParcelKind, ParcelReference} from '@ddd-qc/delivery';
 
 export interface WriteManifestInput {
   filename: string
@@ -142,6 +142,7 @@ export interface WriteManifestInput {
   chunks: EntryHash[]
 }
 
+/**  */
 export interface SendFileInput {
   manifest_eh: EntryHash
   strategy: DistributionStrategy

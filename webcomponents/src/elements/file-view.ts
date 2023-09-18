@@ -22,6 +22,7 @@ import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {emptyAppletId, getInitials} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
+import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 
 
 /**
@@ -103,16 +104,16 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
             return html`
                 <div style="color:#c10a0a">No file selected</div>`;
         }
-        const pm = this.fileSharePerspective.localFiles[this.hash];
-        if (!pm) {
+        const manifest = this.fileSharePerspective.privateFiles[this.hash];
+        if (!manifest) {
             return html`<div style="color:#c10a0a">File not found</div>`;
         }
 
         /** render all */
         return html`
-            <h4 style="margin-left: 5px;">${pm.name}</h4>
-            <div>Size: ${pm.size} bytes</div>
-            <div>type: ${pm.data_type}</div>
+            <h4 style="margin-left: 5px;">${manifest.description.name}</h4>
+            <div>Size: ${manifest.description.size} bytes</div>
+            <div>type: ${(manifest.description.kind_info as ParcelKindVariantManifest).Manifest}</div>
             ${this.showActionBar
                     ? html`<input type="button" value="Download">`
                     : html``

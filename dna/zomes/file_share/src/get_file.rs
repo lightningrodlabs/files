@@ -9,13 +9,9 @@ use zome_delivery_api::*;
 // #[hdk_extern]
 // pub fn get_file(eh: EntryHash) -> ExternResult<(ParcelManifest, String)> {
 //     /// Not a Secret Entry, could be a Manifest
-//     let maybe_manifest: ExternResult<ParcelManifest> = get_typed_from_eh(eh);
-//     let Ok(manifest) = maybe_manifest
-//         else { return error("No ParcelManifest found at given EntryHash"); };
-//     debug!("get_file(): {}", manifest.data_type);
-//     if &manifest.data_type[..FILE_TYPE_NAME.len()] != FILE_TYPE_NAME {
-//         return error("ParcelManifest is not holding a File.");
-//     }
+//     let manifest: ParcelManifest = get_typed_from_eh(eh)?;
+//     ensure_file_manifest(&manifest)?;
+//
 //     /// Get all chunks
 //     let set: HashSet<_> = manifest.chunks.clone().drain(..).collect(); // dedup
 //     let query_args = ChainQueryFilter::default()
@@ -39,7 +35,7 @@ use zome_delivery_api::*;
 
 /// Return list of parcels' EntryHash from a particular Agent
 #[hdk_extern]
-pub fn get_files_from(sender: AgentPubKey) -> ExternResult<Vec<EntryHash>> {
+pub fn get_private_files_from(sender: AgentPubKey) -> ExternResult<Vec<EntryHash>> {
     debug!("get_files_from() START: {:?}", sender);
     let response = call_delivery_zome("pull_inbox", ())?;
     let inbox_items: Vec<ActionHash> = decode_response(response)?;
@@ -50,7 +46,7 @@ pub fn get_files_from(sender: AgentPubKey) -> ExternResult<Vec<EntryHash>> {
         DeliveryNoticeQueryField::Sender(sender),
     )?;
     let notices: Vec<DeliveryNotice> = decode_response(response)?;
-    let parcels: Vec<EntryHash> = notices.iter().map(|x| x.summary.parcel_description.reference.eh).collect();
+    let parcels: Vec<EntryHash> = notices.iter().map(|x| x.summary.parcel_reference.eh.clone()).collect();
     debug!("get_files_from() END - secret parcels found: {}", parcels.len());
     Ok(parcels)
 }

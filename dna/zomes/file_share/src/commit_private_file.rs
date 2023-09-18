@@ -3,7 +3,8 @@ use zome_utils::*;
 
 use zome_delivery_types::*;
 use zome_delivery_api::*;
-//use zome_file_share_integrity::*;
+use zome_file_share_integrity::*;
+
 
 
 /// Write data to source chain as a base64 string
@@ -23,25 +24,31 @@ pub struct WriteManifestInput {
     pub filename: String,
     pub filetype: String,
     pub data_hash: String,
-    pub orig_filesize: usize,
+    pub orig_filesize: u64,
     pub chunks: Vec<EntryHash>,
 }
 
 
 ///
 #[hdk_extern]
-pub fn commit_file_manifest(input: WriteManifestInput) -> ExternResult<EntryHash> {
+pub fn commit_private_file(input: WriteManifestInput) -> ExternResult<(EntryHash, ParcelDescription)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
+    /// Form Description
+    let description = ParcelDescription {
+        name: input.filename,
+        size: input.orig_filesize,
+        zome_origin: "file_share_integrity".into(),
+        visibility: EntryVisibility::Private,
+        kind_info: ParcelKind::Manifest(format!("{}::{}", FILE_TYPE_NAME, input.filetype)),
+    };
     /// Commit Manifest
     let manifest = ParcelManifest {
-        name: input.filename,
-        data_type: format!("split_file::{}", input.filetype),
         data_hash: input.data_hash,
-        size: input.orig_filesize,
         chunks: input.chunks,
+        description: description.clone(),
     };
     let response = call_delivery_zome("commit_parcel_manifest", manifest)?;
     let eh: EntryHash = decode_response(response)?;
     /// Done
-    return Ok(eh);
+    return Ok((eh, description));
 }

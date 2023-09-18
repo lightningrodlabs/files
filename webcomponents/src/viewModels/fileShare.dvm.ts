@@ -1,9 +1,10 @@
 import { DnaViewModel, ZvmDef } from "@ddd-qc/lit-happ";
 import {
+    DeliveryProperties,
     DeliveryState,
     DeliveryStateType,
     DeliveryZvm,
-    DistributionStateType, ParcelManifest,
+    DistributionStateType, ParcelDescription, ParcelManifest,
     SignalProtocol,
     SignalProtocolType
 } from "@ddd-qc/delivery";
@@ -19,17 +20,16 @@ import {
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 import {FileSharePerspective, FileShareZvm} from "./fileShare.zvm";
-import {arrayBufferToBase64, splitFile} from "../utils";
-import {FILE_TYPE_NAME} from "../bindings/file_share.types";
+import {arrayBufferToBase64, splitData, splitFile} from "../utils";
+import { decode } from "@msgpack/msgpack";
+import {Dictionary} from "@ddd-qc/cell-proxy";
 
 
-// /** */
-// export interface FileShareDvmPerspective {
-//     /** AgentPubKey -> notice_eh */
-//     unrepliedInbounds: Record<AgentPubKeyB64, EntryHashB64>,
-//     /** distrib_eh -> [Timestamp , AgentPubKey -> DeliveryState] */
-//     unrepliedOutbounds: Record<EntryHashB64, [Timestamp, Record<AgentPubKeyB64, DeliveryState>]>,
-// }
+/** */
+export interface FileShareDvmPerspective {
+    /* DataHash -> pp_eh */
+    publicFiles: Record<string, EntryHashB64>,
+}
 
 
 /**
@@ -55,7 +55,7 @@ export class FileShareDvm extends DnaViewModel {
 
     /** -- ViewModel Interface -- */
 
-    //private _perspective: FileShareDvmPerspective = {unrepliedInbounds: {}, unrepliedOutbounds: {}};
+    private _perspective: FileShareDvmPerspective = {publicFiles: {}};
 
 
     /** */
@@ -79,9 +79,15 @@ export class FileShareDvm extends DnaViewModel {
 
 
     /** */
-    //get perspective(): FileShareDvmPerspective { return this._perspective }
-    get perspective(): unknown { return {} }
+    get perspective(): FileShareDvmPerspective { return this._perspective }
+    //get perspective(): unknown { return {} }
 
+
+    get dnaProperties(): DeliveryProperties {
+        const properties = decode(this.cell.dnaModifiers.properties as Uint8Array) as DeliveryProperties;
+        console.log('properties', properties);
+        return properties;
+    }
 
     /** -- Methods -- */
 
@@ -91,42 +97,69 @@ export class FileShareDvm extends DnaViewModel {
         const deliverySignal = signal.payload as SignalProtocol;
         if (SignalProtocolType.NewReceptionProof in deliverySignal) {
             console.log("signal NewReceptionProof", deliverySignal.NewReceptionProof);
-            this.fileShareZvm.getLocalFiles();
+            this.fileShareZvm.getPrivateFiles();
+        }
+        if (SignalProtocolType.NewPublicParcel in deliverySignal) {
+            console.log("signal NewPublicParcel", deliverySignal.NewPublicParcel);
+            const ppEh = encodeHashToBase64(deliverySignal.NewPublicParcel.eh);
+            this.deliveryZvm.zomeProxy.pullManifest(decodeHashFromBase64(ppEh)).then((manifest: ParcelManifest) => {
+                this._perspective.publicFiles[manifest.data_hash] = ppEh;
+                this.notifySubscribers();
+            })
         }
     }
 
 
     /** */
-    async commitFile(file: File): Promise<EntryHashB64> {
-        console.log('dvm.commitFile: ', file)
-
-        // /** Causes stack error on big files */
-        // if (!base64regex.test(file.content)) {
-        //   const invalid_hash = sha256(file.content);
-        //   console.error("File '" + file.name + "' is invalid base64. hash is: " + invalid_hash);
-        // }
-
-        const content = await file.arrayBuffer();
-        const contentB64 = arrayBufferToBase64(content);
-
-        const splitObj = await splitFile(contentB64);
-        console.log({splitObj})
-
-        /** Check if file already present */
-        if (this.deliveryZvm.perspective.manifestByData[splitObj.dataHash]) {
-            console.warn("File already stored locally");
-            return this.deliveryZvm.perspective.manifestByData[splitObj.dataHash];
+    async probePublicFiles(): Promise<Dictionary<string>> {
+        let publicFiles: Dictionary<string> = {};
+        const pds = Object.entries(this.deliveryZvm.perspective.publicParcels);
+        console.log("probePublicFiles() PublicParcels count", Object.entries(pds).length);
+        for (const [ppEh, pd] of pds) {
+            if (pd.zome_origin == "file_share_integrity") {
+                const manifest = await this.deliveryZvm.zomeProxy.pullManifest(decodeHashFromBase64(ppEh));
+                publicFiles[manifest.data_hash] = ppEh;
+            }
         }
+        this._perspective.publicFiles = publicFiles;
+        this.notifySubscribers();
+        return publicFiles;
+    }
 
-        const ehb64 = await this.fileShareZvm.commitFile(file, splitObj);
+
+    /** */
+    async commitPrivateFile(file: File): Promise<EntryHashB64> {
+        console.log('dvm.commitPrivateFile: ', file);
+        const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
+        /** Check if file already present */
+        if (this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash]) {
+            console.warn("File already stored locally");
+            return this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
+        }
+        const ehb64 = await this.fileShareZvm.commitPrivateFile(file, splitObj);
         return ehb64;
     }
 
-    /** */
-    async getFile(ppEh: EntryHashB64): Promise<[ParcelManifest, string]> {
 
-        const [] = await this.deliveryZvm.pullParcel(ppEh);
-        return this.zomeProxy.getFile(decodeHashFromBase64(eh));
+    /** */
+    async publishFile(file: File): Promise<EntryHashB64> {
+        console.log('dvm.commitPublicFile: ', file);
+        const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
+        /** Check if file already present */
+        if (this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash]) {
+            console.warn("File already stored locally");
+            return this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
+        }
+        const ehb64 = await this.fileShareZvm.publishFile(file, splitObj);
+        return ehb64;
+    }
+
+
+    /** */
+    async getLocalFile(ppEh: EntryHashB64): Promise<[ParcelManifest, string]> {
+        const manifest = await this.deliveryZvm.zomeProxy.pullManifest(decodeHashFromBase64(ppEh));
+        const dataB64 = await this.deliveryZvm.pullParcelData(ppEh);
+        return [manifest, dataB64];
     }
 
 
