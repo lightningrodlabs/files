@@ -101,17 +101,19 @@ export class FileShareDvm extends DnaViewModel {
             const manifestEh = this.deliveryZvm.perspective.localManifestByData[chunk.data_hash];
             if (!manifestEh) {
                 /** We are the original creator of this file */
+                this._curChunks.push(deliverySignal.NewChunk[0]);
                 const index = this._curChunks.length;
-                this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: this._curSplitObj.dataHash, data: this._curSplitObj.chunks[index]}).then((eh) => {
-                    this._curChunks.push(eh);
-                    if (this._curChunks.length == this._curSplitObj.numChunks) {
-                        this.fileShareZvm.commitPrivateManifest(this._curFile, this._curSplitObj.dataHash, this._curChunks).then((eh) => {
-                            this._curChunks = [];
-                            this._curSplitObj = undefined;
-                            this._curFile = undefined;
-                        });
-                    }
-                });
+                /** Commit manifest if it was the last chunk */
+                if (this._curChunks.length == this._curSplitObj.numChunks) {
+                    this.fileShareZvm.commitPrivateManifest(this._curFile, this._curSplitObj.dataHash, this._curChunks).then((_eh) => {
+                        this._curChunks = [];
+                        this._curSplitObj = undefined;
+                        this._curFile = undefined;
+                    });
+                } else {
+                    /** Otherwise commit next one */
+                    this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: this._curSplitObj.dataHash, data: this._curSplitObj.chunks[index]});
+                }
             }
         }
         if (SignalProtocolType.NewReceptionProof in deliverySignal) {
@@ -168,8 +170,7 @@ export class FileShareDvm extends DnaViewModel {
         this._curFile = file;
         this.deliveryZvm.perspective.chunkCounts[splitObj.dataHash] = 0;
         /** Initial write chunk loop */
-        const eh = await this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
-        this._curChunks.push(eh);
+        this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
         ///*const ehb64 =*/ await this.fileShareZvm.commitPrivateFile(file, splitObj);
         //return ehb64;
         return splitObj;

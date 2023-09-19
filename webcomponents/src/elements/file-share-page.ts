@@ -45,7 +45,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** -- Fields -- */
     @state() private _initialized = false;
-    @state() private _uploading?: string; // data_hash
+    @state() private _uploading?: SplitObject; // data_hash
     @property() appletId: EntryHashB64;
 
 
@@ -112,13 +112,14 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
     /** */
-    async onAddFile(): Promise<SplitObject> {
+    async onAddFile(): Promise<SplitObject | undefined> {
         const fileInput = this.shadowRoot!.getElementById("addLocalFile") as HTMLInputElement;
         console.log("onAddFile():", fileInput.files.length);
         if (fileInput.files.length > 0) {
             let res = await this._dvm.startCommitPrivateFile(fileInput.files[0]);
             console.log("onAddFile() res:", res);
             fileInput.value = "";
+            return res;
         }
     }
 
@@ -232,6 +233,13 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
 
+
+        if (this._uploading) {
+            const maybeManifest = this._dvm.deliveryZvm.perspective.localManifestByData[this._uploading.dataHash];
+            if (maybeManifest) {
+                this._uploading = undefined;
+            }
+        }
 
         const AgentOptions = Object.entries(this._profilesZvm.perspective.profiles).map(
             ([agentIdB64, profile]) => {
@@ -429,12 +437,14 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         <ul>
             ${privateFileList}
         </ul>
-        ${this._uploading? html`Uploading...${this._dvm.perspective[]}` : html`
+        ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
         <label for="addLocalFile">Add private file to source-chain:</label>
         <input type="file" id="addLocalFile" name="addLocalFile" />
         <input type="button" value="Add" @click=${async() => {
-            await this.onAddFile();
-            this._uploading = true;
+            const maybeSplitObj = await this.onAddFile();
+            if (maybeSplitObj) {
+                this._uploading = maybeSplitObj;
+            }
             //this._uploading = false;
         }
         }>`}   
