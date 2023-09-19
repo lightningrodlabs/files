@@ -7,12 +7,13 @@ import {
     EntryHash, EntryHashB64
 } from '@holochain/client';
 import {AppSignal} from "@holochain/client/lib/api/app/types";
-import {ZomeViewModel} from "@ddd-qc/lit-happ";
+import {delay, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {arrayBufferToBase64, splitData, SplitObject} from "../utils";
 import {FileShareProxy} from "../bindings/file_share.proxy";
 import {FILE_TYPE_NAME, SendFileInput} from "../bindings/file_share.types";
 import {ParcelManifest} from "@ddd-qc/delivery";
 
+//import WebWorker from 'web-worker:./commitPrivateFile.ts';
 
 /** */
 export interface FileSharePerspective {
@@ -32,6 +33,8 @@ export class FileShareZvm extends ZomeViewModel {
     static readonly ZOME_PROXY = FileShareProxy;
 
     private _allAppletIds: EntryHashB64[] = [];
+
+    //private _worker = new Worker("./commitPrivateFile.ts");
 
     get zomeProxy(): FileShareProxy {
         return this._zomeProxy as FileShareProxy;
@@ -57,9 +60,23 @@ export class FileShareZvm extends ZomeViewModel {
 
 
     /** */
+    async initializePerspectiveOnline(): Promise<void> {
+        // FIXME
+    }
+
+
+    /** */
     async initializePerspectiveOffline(): Promise<void> {
         await this.getPrivateFiles();
         await this.getLocalPublicFiles();
+
+        //console.log("Can worker", window.Worker);
+        // this._worker.onmessage = (event) => {
+        //     console.log('Worker said: ' + event.data);
+        //     //this._perspective.privateFiles[event.data.ehb64] = event.data.manifest;
+        //     this.notifySubscribers();
+        // };
+        // console.log("worker", this._worker);
     }
 
 
@@ -88,10 +105,6 @@ export class FileShareZvm extends ZomeViewModel {
         this.notifySubscribers();
     }
 
-    /** */
-    async initializePerspectiveOnline(): Promise<void> {
-        // FIXME
-    }
 
 
     // /** */
@@ -110,29 +123,35 @@ export class FileShareZvm extends ZomeViewModel {
     // }
 
 
+    // /** */
+    // commitPrivateFile(file: File, splitObj: SplitObject): void {
+    //     console.log('zvm.commitPrivateFile: ', splitObj);
+    //     this._worker.postMessage({file, splitObj, zomeProxy: this.zomeProxy});
+    // }
+
+
     /** */
-    async commitPrivateFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {
-        console.log('zvm.commitPrivateFile: ', splitObj)
-        /** Commit each chunk */
-        const chunksToSend: EntryHash[] = [];
-        for (let i = 0; i < splitObj.numChunks; ++i) {
-            const eh = await this.zomeProxy.writeChunk(/*splitObj.dataHash, i,*/ splitObj.chunks[i]);
-            chunksToSend.push(eh);
-        }
-        /** Commit file manifest */
+    // async commitPrivateChunk(dataHash: string, data: string): Promise<EntryHashB64> {
+    //     const eh = await this.zomeProxy.writeFileChunk({data_hash: dataHash, data});
+    //     return encodeHashToBase64(eh);
+    // }
+
+
+    /** */
+    async commitPrivateManifest(file: File, dataHash: string, chunks: EntryHash[]): Promise<EntryHashB64> {
         const params = {
             filename: file.name,
             filetype: file.type,
-            data_hash: splitObj.dataHash,
+            data_hash: dataHash,
             orig_filesize: file.size,
-            chunks: chunksToSend,
+            chunks,
         }
-        const [manifest_eh, description] = await this.zomeProxy.commitPrivateFile(params);
+        const [manifest_eh, description] =  await this.zomeProxy.commitPrivateFile(params);
         const ehb64 = encodeHashToBase64(manifest_eh);
         /** Store new manifest */
         this._perspective.privateFiles[ehb64] = {
-            data_hash: splitObj.dataHash,
-            chunks: chunksToSend,
+            data_hash: dataHash,
+            chunks,
             description,
         } as ParcelManifest;
         /** Done */
@@ -140,6 +159,36 @@ export class FileShareZvm extends ZomeViewModel {
         return ehb64;
     }
 
+    /** */
+    async commitPrivateFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {
+      /** Commit each chunk */
+      const chunksToSend: EntryHash[] = [];
+      for (let i = 0; i < splitObj.numChunks; ++i) {
+        const eh = await this.zomeProxy.writeFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[i]});
+        chunksToSend.push(eh);
+        //await delay(splitObj.numChunks);
+        await delay(40);
+      }
+      /** Commit file manifest */
+      const params = {
+        filename: file.name,
+        filetype: file.type,
+        data_hash: splitObj.dataHash,
+        orig_filesize: file.size,
+        chunks: chunksToSend,
+      }
+      const [manifest_eh, description] =  await this.zomeProxy.commitPrivateFile(params);
+      const ehb64 = encodeHashToBase64(manifest_eh);
+      /** Store new manifest */
+      this._perspective.privateFiles[ehb64] = {
+        data_hash: splitObj.dataHash,
+        chunks: chunksToSend,
+        description,
+      } as ParcelManifest;
+      /** Done */
+      this.notifySubscribers();
+      return ehb64;
+    }
 
     /** */
     async publishFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {
@@ -147,7 +196,7 @@ export class FileShareZvm extends ZomeViewModel {
         /** Commit each chunk */
         const chunksToSend: EntryHash[] = [];
         for (let i = 0; i < splitObj.numChunks; ++i) {
-            const eh = await this.zomeProxy.writePublicChunk(/*splitObj.dataHash, i,*/ splitObj.chunks[i]);
+            const eh = await this.zomeProxy.writePublicFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[i]});
             chunksToSend.push(eh);
         }
         /** Commit file manifest */

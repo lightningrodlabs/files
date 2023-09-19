@@ -20,7 +20,7 @@ import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {base64ToArrayBuffer, emptyAppletId, getInitials, prettyFileSize} from "../utils";
+import {base64ToArrayBuffer, emptyAppletId, getInitials, prettyFileSize, SplitObject} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {DeliveryPerspective, DeliveryStateType} from "@ddd-qc/delivery";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
@@ -45,6 +45,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** -- Fields -- */
     @state() private _initialized = false;
+    @state() private _uploading?: string; // data_hash
     @property() appletId: EntryHashB64;
 
 
@@ -111,11 +112,11 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
     /** */
-    async onAddFile(e: any) {
+    async onAddFile(): Promise<SplitObject> {
         const fileInput = this.shadowRoot!.getElementById("addLocalFile") as HTMLInputElement;
         console.log("onAddFile():", fileInput.files.length);
         if (fileInput.files.length > 0) {
-            let res = await this._dvm.commitPrivateFile(fileInput.files[0]);
+            let res = await this._dvm.startCommitPrivateFile(fileInput.files[0]);
             console.log("onAddFile() res:", res);
             fileInput.value = "";
         }
@@ -161,7 +162,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         this.requestUpdate();
     }
 
-    
+
     /** */
     async downloadFile(manifestEh: EntryHashB64): Promise<void> {
         /** Get File on source chain */
@@ -428,9 +429,15 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         <ul>
             ${privateFileList}
         </ul>
+        ${this._uploading? html`Uploading...${this._dvm.perspective[]}` : html`
         <label for="addLocalFile">Add private file to source-chain:</label>
         <input type="file" id="addLocalFile" name="addLocalFile" />
-        <input type="button" value="Add" @click=${this.onAddFile}>   
+        <input type="button" value="Add" @click=${async() => {
+            await this.onAddFile();
+            this._uploading = true;
+            //this._uploading = false;
+        }
+        }>`}   
           
         <hr/>
         <h2>Inbound files:</h2>

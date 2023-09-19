@@ -20,7 +20,7 @@ import {
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 import {FileSharePerspective, FileShareZvm} from "./fileShare.zvm";
-import {arrayBufferToBase64, splitData, splitFile} from "../utils";
+import {arrayBufferToBase64, splitData, splitFile, SplitObject} from "../utils";
 import { decode } from "@msgpack/msgpack";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 
@@ -85,7 +85,7 @@ export class FileShareDvm extends DnaViewModel {
 
     get dnaProperties(): DeliveryProperties {
         const properties = decode(this.cell.dnaModifiers.properties as Uint8Array) as DeliveryProperties;
-        console.log('properties', properties);
+        //console.log('properties', properties);
         return properties;
     }
 
@@ -95,6 +95,25 @@ export class FileShareDvm extends DnaViewModel {
     mySignalHandler(signal: AppSignal): void {
         console.log("FileShareDvm received signal", signal);
         const deliverySignal = signal.payload as SignalProtocol;
+        if (SignalProtocolType.NewChunk in deliverySignal) {
+            console.log("signal NewChunk", deliverySignal.NewChunk);
+            const chunk = deliverySignal.NewChunk[1];
+            const manifestEh = this.deliveryZvm.perspective.localManifestByData[chunk.data_hash];
+            if (!manifestEh) {
+                /** We are the original creator of this file */
+                const index = this._curChunks.length;
+                this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: this._curSplitObj.dataHash, data: this._curSplitObj.chunks[index]}).then((eh) => {
+                    this._curChunks.push(eh);
+                    if (this._curChunks.length == this._curSplitObj.numChunks) {
+                        this.fileShareZvm.commitPrivateManifest(this._curFile, this._curSplitObj.dataHash, this._curChunks).then((eh) => {
+                            this._curChunks = [];
+                            this._curSplitObj = undefined;
+                            this._curFile = undefined;
+                        });
+                    }
+                });
+            }
+        }
         if (SignalProtocolType.NewReceptionProof in deliverySignal) {
             console.log("signal NewReceptionProof", deliverySignal.NewReceptionProof);
             this.fileShareZvm.getPrivateFiles();
@@ -102,7 +121,7 @@ export class FileShareDvm extends DnaViewModel {
         if (SignalProtocolType.NewPublicParcel in deliverySignal) {
             console.log("signal NewPublicParcel", deliverySignal.NewPublicParcel);
             const ppEh = encodeHashToBase64(deliverySignal.NewPublicParcel.eh);
-            this.deliveryZvm.zomeProxy.pullManifest(decodeHashFromBase64(ppEh)).then((manifest: ParcelManifest) => {
+            this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh)).then((manifest: ParcelManifest) => {
                 this._perspective.publicFiles[manifest.data_hash] = ppEh;
                 this.notifySubscribers();
             })
@@ -117,7 +136,7 @@ export class FileShareDvm extends DnaViewModel {
         console.log("probePublicFiles() PublicParcels count", Object.entries(pds).length);
         for (const [ppEh, pd] of pds) {
             if (pd.zome_origin == "file_share_integrity") {
-                const manifest = await this.deliveryZvm.zomeProxy.pullManifest(decodeHashFromBase64(ppEh));
+                const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh));
                 publicFiles[manifest.data_hash] = ppEh;
             }
         }
@@ -127,17 +146,33 @@ export class FileShareDvm extends DnaViewModel {
     }
 
 
+    private _curFile?: File;
+    private _curSplitObj?: SplitObject;
+    private _curChunks: EntryHash[] = [];
+
     /** */
-    async commitPrivateFile(file: File): Promise<EntryHashB64> {
+    async startCommitPrivateFile(file: File): Promise<SplitObject> {
         console.log('dvm.commitPrivateFile: ', file);
+        if (this._curSplitObj) {
+            return Promise.reject("File commit already in progress");
+        }
         const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
         /** Check if file already present */
         if (this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash]) {
             console.warn("File already stored locally");
-            return this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
+            //return this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
+            return;
         }
-        const ehb64 = await this.fileShareZvm.commitPrivateFile(file, splitObj);
-        return ehb64;
+        this._curSplitObj = splitObj;
+        this._curChunks = [];
+        this._curFile = file;
+        this.deliveryZvm.perspective.chunkCounts[splitObj.dataHash] = 0;
+        /** Initial write chunk loop */
+        const eh = await this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
+        this._curChunks.push(eh);
+        ///*const ehb64 =*/ await this.fileShareZvm.commitPrivateFile(file, splitObj);
+        //return ehb64;
+        return splitObj;
     }
 
 
@@ -157,8 +192,9 @@ export class FileShareDvm extends DnaViewModel {
 
     /** */
     async getLocalFile(ppEh: EntryHashB64): Promise<[ParcelManifest, string]> {
-        const manifest = await this.deliveryZvm.zomeProxy.pullManifest(decodeHashFromBase64(ppEh));
-        const dataB64 = await this.deliveryZvm.pullParcelData(ppEh);
+        const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh));
+        this.deliveryZvm.perspective.chunkCounts[manifest.data_hash] = 0;
+        const dataB64 = await this.deliveryZvm.getParcelData(ppEh);
         return [manifest, dataB64];
     }
 

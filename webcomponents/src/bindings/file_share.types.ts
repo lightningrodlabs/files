@@ -132,7 +132,7 @@ ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
 /** User defined external dependencies */
-import {DistributionStrategy, ParcelManifest, ParcelDescription, ParcelKind, ParcelReference} from '@ddd-qc/delivery';
+import {DistributionStrategy, ParcelManifest, ParcelChunk, ParcelDescription, ParcelKind, ParcelReference} from '@ddd-qc/delivery';
 
 export interface WriteManifestInput {
   filename: string

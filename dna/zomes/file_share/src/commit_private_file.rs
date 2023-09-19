@@ -9,10 +9,10 @@ use zome_file_share_integrity::*;
 
 /// Write data to source chain as a base64 string
 #[hdk_extern]
-pub fn write_chunk(data: String) -> ExternResult<EntryHash> {
-    debug!(" write_chunk() size: {}", data.len());
+pub fn write_file_chunk(chunk: ParcelChunk) -> ExternResult<EntryHash> {
+    debug!(" write_file_chunk() size: {}", chunk.data.len());
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let response = call_delivery_zome("commit_parcel_chunk", data)?;
+    let response = call_delivery_zome("commit_parcel_chunk", chunk)?;
     let eh: EntryHash = decode_response(response)?;
     Ok(eh)
 }

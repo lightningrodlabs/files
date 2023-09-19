@@ -133,7 +133,7 @@ ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
 /** User defined external dependencies */
-import {DistributionStrategy, ParcelManifest, ParcelDescription, ParcelKind, ParcelReference} from '@ddd-qc/delivery';
+import {DistributionStrategy, ParcelManifest, ParcelChunk, ParcelDescription, ParcelKind, ParcelReference} from '@ddd-qc/delivery';
 
 import {ZomeProxy} from '@ddd-qc/lit-happ';
 import {fileShareFunctionNames} from './file_share.fn';
@@ -146,8 +146,8 @@ export class FileShareProxy extends ZomeProxy {
   static readonly FN_NAMES = fileShareFunctionNames
  
 
-  async writeChunk(data: string): Promise<EntryHash> {
-    return this.call('write_chunk', data);
+  async writeFileChunk(chunk: ParcelChunk): Promise<EntryHash> {
+    return this.call('write_file_chunk', chunk);
   }
 
   async commitPrivateFile(input: WriteManifestInput): Promise<[EntryHash, ParcelDescription]> {
@@ -186,8 +186,8 @@ export class FileShareProxy extends ZomeProxy {
     return this.call('process_inbox', null);
   }
 
-  async writePublicChunk(data: string): Promise<EntryHash> {
-    return this.call('write_public_chunk', data);
+  async writePublicFileChunk(chunk: ParcelChunk): Promise<EntryHash> {
+    return this.call('write_public_file_chunk', chunk);
   }
 
   async publishFileManifest(input: WriteManifestInput): Promise<[EntryHash, ParcelDescription]> {

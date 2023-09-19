@@ -30,6 +30,9 @@ import {HC_ADMIN_PORT, HC_APP_PORT, OVERRIDE_HVM_DEF} from "./globals";
 import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
 
+//import WebWorker from './myworker.js';
+
+
 
 /**
  *
@@ -51,6 +54,8 @@ export class FileShareApp extends HappElement {
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
+    //const worker = new WebWorker();
+    //worker.postMessage({type: 'init', args: 'This instance was created in a worker'});
   }
 
 

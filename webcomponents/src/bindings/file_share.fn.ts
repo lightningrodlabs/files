@@ -9,7 +9,7 @@ export const fileShareFunctionNames: FunctionName[] = [
 	"get_zome_info", 
 	"get_dna_info",
 
-	"write_chunk",
+	"write_file_chunk",
 	"commit_private_file",
 	"get_private_files_from",
 	"refuse_file_share",
@@ -19,7 +19,7 @@ export const fileShareFunctionNames: FunctionName[] = [
 	"get_unreplied_notices",
 	"probe_files",
 	"process_inbox",
-	"write_public_chunk",
+	"write_public_file_chunk",
 	"publish_file_manifest",
 	"send_file",];
 

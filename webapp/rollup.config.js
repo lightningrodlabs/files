@@ -6,6 +6,8 @@ import copy from "rollup-plugin-copy";
 //import builtins from "rollup-plugin-node-builtins";
 //import globals from "rollup-plugin-node-globals";
 
+import workerLoader from 'rollup-plugin-web-worker-loader';
+
 import babel from "@rollup/plugin-babel";
 import html from "@web/rollup-plugin-html";
 //import { importMetaAssets } from "@web/rollup-plugin-import-meta-assets";
@@ -103,6 +105,7 @@ export default {
     //   runtimeCaching: [{ urlPattern: "polyfills/*.js", handler: "CacheFirst" }],
     // }),
     commonjs(),
+    workerLoader(),
     copy({
       copyOnce: true,
       targets: [
