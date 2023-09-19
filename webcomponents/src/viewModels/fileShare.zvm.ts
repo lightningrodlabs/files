@@ -17,8 +17,8 @@ import {ParcelManifest} from "@ddd-qc/delivery";
 
 /** */
 export interface FileSharePerspective {
-    /** AgentPubKey -> manifest_eh */
-    privateFilesReceivedByAgent: Record<AgentPubKeyB64, EntryHashB64[]>,
+    ///** AgentPubKey -> manifest_eh */
+    //privateFilesReceivedByAgent: Record<AgentPubKeyB64, EntryHashB64[]>,
     /** manifest_eh -> Manifest */
     privateFiles: Record<EntryHashB64, ParcelManifest>,
     /** manifest_eh -> Manifest */
@@ -43,7 +43,7 @@ export class FileShareZvm extends ZomeViewModel {
 
     /** -- ViewModel -- */
 
-    private _perspective: FileSharePerspective = {privateFilesReceivedByAgent: {}, privateFiles: {}, localPublicFiles: {}};
+    private _perspective: FileSharePerspective = {/*privateFilesReceivedByAgent: {},*/ privateFiles: {}, localPublicFiles: {}};
 
 
     /* */
@@ -158,6 +158,30 @@ export class FileShareZvm extends ZomeViewModel {
         this.notifySubscribers();
         return ehb64;
     }
+
+
+    /** */
+    async publishFileManifest(file: File, dataHash: string, chunks: EntryHash[]): Promise<EntryHashB64> {
+        const params = {
+            filename: file.name,
+            filetype: file.type,
+            data_hash: dataHash,
+            orig_filesize: file.size,
+            chunks,
+        }
+        const [manifest_eh, description] =  await this.zomeProxy.publishFileManifest(params);
+        const ehb64 = encodeHashToBase64(manifest_eh);
+        /** Store new manifest */
+        this._perspective.localPublicFiles[ehb64] = {
+            data_hash: dataHash,
+            chunks,
+            description,
+        } as ParcelManifest;
+        /** Done */
+        this.notifySubscribers();
+        return ehb64;
+    }
+
 
     /** */
     async commitPrivateFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {

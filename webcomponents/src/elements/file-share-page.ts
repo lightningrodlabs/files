@@ -125,12 +125,13 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
     /** */
-    async onPublishFile(e: any) {
+    async onPublishFile(): Promise<SplitObject | undefined> {
         const fileInput = this.shadowRoot!.getElementById("publishFile") as HTMLInputElement;
         console.log("onPublishFile():", fileInput.files.length);
-        let distribAh = await this._dvm.publishFile(fileInput.files[0]);
-        console.log("onPublishFile() distribAh:", distribAh);
+        const splitObj = await this._dvm.startPublishFile(fileInput.files[0]);
+        console.log("onPublishFile() splitObj:", splitObj);
         fileInput.value = "";
+        return splitObj;
     }
 
     /** */
@@ -398,11 +399,18 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
           <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
           <button type="button" @click=${() => {this.refresh();}}>refresh</button>               
         </h1>
-        <div>
-            <label for="publishFile">Publish new file:</label>
-            <input type="file" id="publishFile" name="publishFile" />
-            <input type="button" value="Publish" @click=${this.onPublishFile}>
-        </div>        
+         ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+            <div>
+                <label for="publishFile">Publish new file:</label>
+                <input type="file" id="publishFile" name="publishFile" />
+                <input type="button" value="Publish" @click=${async () => {
+                    const maybeSplitObj = await this.onPublishFile();
+                    if (maybeSplitObj) {
+                        this._uploading = maybeSplitObj;
+                    }
+        }}>
+            </div>`
+        };  
         <!--<div>
           <label>Publish local file:</label>
           <select id="publishFileSelector">
