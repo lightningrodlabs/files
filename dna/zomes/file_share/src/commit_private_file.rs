@@ -7,20 +7,8 @@ use zome_file_share_integrity::*;
 
 
 
-/// Write data to source chain as a base64 string
-#[hdk_extern]
-pub fn write_file_chunk(chunk: ParcelChunk) -> ExternResult<EntryHash> {
-    debug!(" write_file_chunk() size: {}", chunk.data.len());
-    std::panic::set_hook(Box::new(zome_panic_hook));
-    let response = call_delivery_zome("commit_parcel_chunk", chunk)?;
-    let eh: EntryHash = decode_response(response)?;
-    Ok(eh)
-}
-
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct WriteManifestInput {
-    //pub data_hash: String,
     pub filename: String,
     pub filetype: String,
     pub data_hash: String,
@@ -29,7 +17,7 @@ pub struct WriteManifestInput {
 }
 
 
-///
+/// Helper for commit_parcel_manifest()
 #[hdk_extern]
 pub fn commit_private_file(input: WriteManifestInput) -> ExternResult<(EntryHash, ParcelDescription)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
@@ -37,7 +25,7 @@ pub fn commit_private_file(input: WriteManifestInput) -> ExternResult<(EntryHash
     let description = ParcelDescription {
         name: input.filename,
         size: input.orig_filesize,
-        zome_origin: "file_share_integrity".into(),
+        zome_origin: FILE_SHARE_ZOME_NAME.into(),
         visibility: EntryVisibility::Private,
         kind_info: ParcelKind::Manifest(format!("{}::{}", FILE_TYPE_NAME, input.filetype)),
     };

@@ -6,7 +6,7 @@ use zome_delivery_api::*;
 use crate::utils::ensure_parcel_is_file;
 
 
-///
+/// Wrapper for pull_public_parcels()
 #[hdk_extern]
 pub fn probe_files(_:()) -> ExternResult<Vec<ParcelReference>> {
     std::panic::set_hook(Box::new(zome_panic_hook));

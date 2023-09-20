@@ -151,6 +151,12 @@ export interface SendFileInput {
 
 export const FILE_TYPE_NAME = "split_file";
 
+export const FILE_SHARE_ZOME_NAME = "file_share_integrity";
+
+/**
+ * Integrity zome is not really necessary but it is defined because the holochain ecosystem
+ * does not support well a zome that does not have one.
+ */
 export enum FileShareEntryType {
 	FileShare = 'FileShare',
 }

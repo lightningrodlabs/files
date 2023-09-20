@@ -9,19 +9,19 @@ export const fileShareFunctionNames: FunctionName[] = [
 	"get_zome_info", 
 	"get_dna_info",
 
-	"write_file_chunk",
 	"commit_private_file",
-	"get_private_files_from",
-	"refuse_file_share",
-	"accept_file_share",
 	"get_private_files",
 	"get_local_public_files",
+	"get_private_files_from",
 	"get_unreplied_notices",
 	"probe_files",
 	"process_inbox",
-	"write_public_file_chunk",
 	"publish_file_manifest",
-	"send_file",];
+	"refuse_file_share",
+	"accept_file_share",
+	"send_file",
+	"write_private_file_chunk",
+	"write_public_file_chunk",];
 
 
 /** Generate tuple array of function names with given zomeName */

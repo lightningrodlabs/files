@@ -1,10 +1,48 @@
 # File-share applet
 
-We applet for sharing files between agents of a We group
+[We-applet](https://github.com/lightningrodlabs/we) for sharing files between agents of a We group.
+Provides the `File` attachable type.
 
-##  Background
+##  Design Goal
 
-FIXME
+Enable sharing of files between agents by using the [Delivery zome module](https://github.com/ddd-mtl/delivery-zome).
+
+### Features
+
+- Store a file privately on source-chain
+- Send a file privately to another agent
+- Share a file publicly (ON DHT).
+- Accept or decline a file sent from another agent (and store it on source-chain)
+- Download a file shared publicly
+
+#### Affordances
+
+- See status of pending distributions (outbounds). Trigger send data.
+- See status of pending deliveries (inbounds). Trigger a request data.
+- See source-chain size.
+- See publicly available files.
+- See the files stored on my source-chain.
+- See the files I publicly shared.
+- See incomplete sharing of public files. Re-upload file.
+- Scan for incomplete/pending parcels
+
+##### Activity timeline
+- General Activity timeline
+- See "activity" history with a recipient
+- See "activity" history for a File
+- See "activity" history for a distribution
+
+##### Notifications
+
+###### Real-time only
+- New file $FILE_NAME shared publicly by $PROFILE
+- Delivery reception complete
+- Distribution to a recipient complete
+- Upload complete (public sharing)
+
+###### Any time
+- New Delivery notice received
+- Reply received
 
 ## Dev testing
 
@@ -24,13 +62,13 @@ FIXME
 
 ## Network
 
-To bootstrap a network of N agents:
+To bootstrap a local network of 3 agents:
 
 ``` bash
-npm run network 3
+npm run network:local3
 ```
 
-Replace the "3" for the number of agents you want to bootstrap.
+
 ## Package
 
 To package the web-happ:
@@ -46,12 +84,16 @@ All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifact
 
 | Directory                                  | Description                                                                                                                 |
 |:-------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
+| `/artifacts/`                              | Output folder
 | `/dna/`                                    | DNA source code
+| &nbsp;&nbsp;&nbsp;&nbsp;`workdir/`         | Release DNA work directory
+| &nbsp;&nbsp;&nbsp;&nbsp;`workdir_dev/`     | Dev DNA work directory (includes profiles zome)
 | `/scripts/`                                | Tool chain
+| `/we-applet/`                              | The we-applet source code
+| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | we-applet work directory
 | `/webapp/`                                 | The webapp source code
 | &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | webhapp work directory
 | `/webcomponents/`                          | The web components source code
-| `/we-applet/`                              | The applet for We integration
 
 ## License
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)

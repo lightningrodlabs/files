@@ -188,7 +188,7 @@ export class FileShareZvm extends ZomeViewModel {
       /** Commit each chunk */
       const chunksToSend: EntryHash[] = [];
       for (let i = 0; i < splitObj.numChunks; ++i) {
-        const eh = await this.zomeProxy.writeFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[i]});
+        const eh = await this.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[i]});
         chunksToSend.push(eh);
         //await delay(splitObj.numChunks);
         await delay(40);

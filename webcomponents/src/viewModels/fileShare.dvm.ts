@@ -122,7 +122,7 @@ export class FileShareDvm extends DnaViewModel {
                     }
                 } else {
                     /** Otherwise commit next one */
-                    this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: this._curSplitObj.dataHash, data: this._curSplitObj.chunks[index]});
+                    this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: this._curSplitObj.dataHash, data: this._curSplitObj.chunks[index]});
                 }
             }
         }
@@ -183,7 +183,7 @@ export class FileShareDvm extends DnaViewModel {
         this._curIsPrivate = true;
         //this.deliveryZvm.perspective.chunkCounts[splitObj.dataHash] = 0;
         /** Initial write chunk loop */
-        this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
+        this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
         ///*const ehb64 =*/ await this.fileShareZvm.commitPrivateFile(file, splitObj);
         //return ehb64;
         return splitObj;
@@ -208,7 +208,7 @@ export class FileShareDvm extends DnaViewModel {
         this._curIsPrivate = false;
         //this.deliveryZvm.perspective.chunkCounts[splitObj.dataHash] = 0;
         /** Initial write chunk loop */
-        this.fileShareZvm.zomeProxy.writeFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
+        this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
         ///*const ehb64 =*/ await this.fileShareZvm.commitPrivateFile(file, splitObj);
         //return ehb64;
         return splitObj;

@@ -13,7 +13,7 @@ pub struct SendFileInput {
     pub recipients: Vec<AgentPubKey>,
 }
 
-
+/// Wrapper for distribute_parcel()
 /// Return Distribution ActionHash
 #[hdk_extern]
 pub fn send_file(input: SendFileInput) -> ExternResult<ActionHash> {

@@ -3,29 +3,18 @@ use zome_utils::*;
 
 use zome_delivery_types::*;
 use zome_delivery_api::*;
-use zome_file_share_integrity::FILE_TYPE_NAME;
+use zome_file_share_integrity::{FILE_SHARE_ZOME_NAME, FILE_TYPE_NAME};
 use crate::commit_private_file::WriteManifestInput;
 
 
-/// Write data to source chain as a base64 string
-#[hdk_extern]
-pub fn write_public_file_chunk(chunk: ParcelChunk) -> ExternResult<EntryHash> {
-    debug!(" write_public_file_chunk() size: {}", chunk.data.len());
-    std::panic::set_hook(Box::new(zome_panic_hook));
-    let response = call_delivery_zome("publish_chunk", chunk)?;
-    let eh: EntryHash = decode_response(response)?;
-    Ok(eh)
-}
-
-
-///
+/// Public equivalent of commit_private_file()
 #[hdk_extern]
 pub fn publish_file_manifest(input: WriteManifestInput) -> ExternResult<(EntryHash, ParcelDescription)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let description = ParcelDescription {
         name: input.filename,
         size: input.orig_filesize,
-        zome_origin: "file_share_integrity".into(),
+        zome_origin: FILE_SHARE_ZOME_NAME.into(),
         visibility: EntryVisibility::Public,
         kind_info: ParcelKind::Manifest(format!("{}::{}", FILE_TYPE_NAME, input.filetype)),
     };

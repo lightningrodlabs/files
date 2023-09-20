@@ -10,6 +10,11 @@ use hdi::prelude::*;
 
 pub const FILE_TYPE_NAME: &str = "split_file";
 
+pub const FILE_SHARE_ZOME_NAME: &str = "file_share_integrity";
+
+/// Integrity zome is not really necessary but it is defined because the holochain ecosystem
+/// does not support well a zome that does not have one.
+
 #[hdk_entry_defs]
 #[unit_enum(SecretEntryTypes)]
 pub enum FileShareEntry {
