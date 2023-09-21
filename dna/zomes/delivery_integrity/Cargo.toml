@@ -9,4 +9,4 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 hdk.workspace = true
-zome_delivery_integrity = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_integrity", branch = "hdk-2.1" }
+zome_delivery_integrity = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-2.2" }
