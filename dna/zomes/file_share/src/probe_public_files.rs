@@ -8,7 +8,7 @@ use crate::utils::ensure_parcel_is_file;
 
 /// Wrapper for pull_public_parcels()
 #[hdk_extern]
-pub fn probe_files(_:()) -> ExternResult<Vec<ParcelReference>> {
+pub fn probe_public_files(_:()) -> ExternResult<Vec<ParcelReference>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let response = call_delivery_zome("pull_public_parcels", ())?;
     let prs: Vec<ParcelReference> = decode_response(response)?;

@@ -14,7 +14,7 @@ export const fileShareFunctionNames: FunctionName[] = [
 	"get_local_public_files",
 	"get_private_files_from",
 	"get_unreplied_notices",
-	"probe_files",
+	"probe_public_files",
 	"process_inbox",
 	"publish_file_manifest",
 	"refuse_file_share",

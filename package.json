@@ -55,7 +55,7 @@
    "serve:save"         :  "echo SIGNAL_PORT=$SIGNAL_PORT && echo $SIGNAL_PORT > .hc_signalenv && echo $BOOT_PORT > .hc_bootenv && echo BOOT_PORT=$BOOT_PORT",
    "serve"              :  "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) npm run serve:run",
    "network:local2"     :  "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:local\" \"sleep 1 && cross-env INDEX=1 npm run start:local\"",
-   "network:local3"     :  "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:local\" \"cross-env INDEX=1 cross-env INDEX=1 npm run start:local\" \"cross-env INDEX=2 npm run start:local\"",
+   "network:local3"     :  "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:local\" \"sleep 1 && cross-env INDEX=1 npm run start:local\" \"sleep 2 && cross-env INDEX=2 npm run start:local\"",
    "network:we"         :  "npm run clean:hc & npm run network:local2 -w we-applet",
 
    "happ:local"         :  "echo INDEX: $INDEX & echo PORTS: $BOOT_PORT $SIGNAL_PORT $HC_APP_PORT $HC_ADMIN_PORT & RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT run $INDEX",

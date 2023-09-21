@@ -14,6 +14,6 @@ mod send_file;
 mod get_unreplied_notices;
 mod publish_file_manifest;
 mod utils;
-mod probe_files;
+mod probe_public_files;
 mod write_file_chunk;
 mod respond_to_file_share_notice;
