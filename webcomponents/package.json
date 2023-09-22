@@ -20,7 +20,7 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
-    "@lightningrodlabs/we-applet": "0.6.1",
+    "@lightningrodlabs/we-applet": "0.8.0",
     "js-base64": "^3.7.3",
     "@msgpack/msgpack": "^2.7.2",
     "@shoelace-style/shoelace": "^2.4.0",
