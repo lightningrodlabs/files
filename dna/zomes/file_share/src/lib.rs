@@ -17,3 +17,4 @@ mod utils;
 mod probe_public_files;
 mod write_file_chunk;
 mod respond_to_file_share_notice;
+mod get_file_info;

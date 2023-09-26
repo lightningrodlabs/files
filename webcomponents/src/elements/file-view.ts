@@ -41,8 +41,8 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
 
     /** -- Properties -- */
 
-    /** Hash of Thread to display */
-    @property() hash: ActionHashB64 = ''
+    /** Hash of ParcelManifest to display */
+    @property() hash: EntryHashB64 = ''
 
     /** Enable action bar */
     @property() showActionBar: boolean = false
@@ -53,7 +53,8 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
 
     /** -- State variables -- */
 
-    @state() private _loading = false;
+    @state() private _loading = true;
+    @state() private _manifest?;
 
 
     /** -- Methods -- */
@@ -93,7 +94,7 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
         console.log("<file-view>.loadMessages()", changedProperties, !!this._dvm, this.hash);
         if (changedProperties.has("hash") && this._dvm) {
             console.log("<file-view>.willUpdate()", this.hash);
-            this._dvm.fileShareZvm.probeAll();
+            this._manifest = await this._dvm.fileShareZvm.zomeProxy.getFileInfo(decodeHashFromBase64(this.hash));
         }
     }
 
@@ -104,16 +105,16 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
             return html`
                 <div style="color:#c10a0a">No file selected</div>`;
         }
-        const manifest = this.fileSharePerspective.privateFiles[this.hash];
-        if (!manifest) {
-            return html`<div style="color:#c10a0a">File not found</div>`;
+        if (!this._manifest) {
+            return html`
+                <div style="color:#c10a0a">File not found</div>`;
         }
 
         /** render all */
         return html`
-            <h4 style="margin-left: 5px;">${manifest.description.name}</h4>
-            <div>Size: ${manifest.description.size} bytes</div>
-            <div>type: ${(manifest.description.kind_info as ParcelKindVariantManifest).Manifest}</div>
+            <h4 style="margin-left: 5px;">${this._manifest.description.name}</h4>
+            <div>Size: ${this._manifest.description.size} bytes</div>
+            <div>type: ${(this._manifest.description.kind_info as ParcelKindVariantManifest).Manifest}</div>
             ${this.showActionBar
                     ? html`<input type="button" value="Download">`
                     : html``

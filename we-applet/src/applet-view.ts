@@ -110,11 +110,11 @@ export async function appletViews(
               console.log("(applet-view) cellProxy", cellProxy);
               const proxy: FileShareProxy = new FileShareProxy(cellProxy);
               console.log("(applet-view) getFile()", encodeHashToBase64(hrl[1]), proxy);
-              const pair = await proxy.getFile(hrl[1]);
-              console.log("(applet-view) file", pair);
+              const manifest = await proxy.getFileInfo(hrl[1]);
+              console.log("(applet-view) file", manifest.description);
               return {
                 icon_src: "",
-                name: pair[0].name,
+                name: manifest.description.name,
               };
             },
 

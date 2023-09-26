@@ -10,6 +10,7 @@ export const fileShareFunctionNames: FunctionName[] = [
 	"get_dna_info",
 
 	"commit_private_file",
+	"get_file_info",
 	"get_private_files",
 	"get_local_public_files",
 	"get_private_files_from",

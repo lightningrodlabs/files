@@ -150,6 +150,10 @@ export class FileShareProxy extends ZomeProxy {
     return this.call('commit_private_file', input);
   }
 
+  async getFileInfo(eh: EntryHash): Promise<ParcelManifest> {
+    return this.call('get_file_info', eh);
+  }
+
   async getPrivateFiles(): Promise<[EntryHash, ParcelManifest][]> {
     return this.call('get_private_files', null);
   }
