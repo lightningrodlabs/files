@@ -21,7 +21,7 @@ export function prettyFileSize(size: number): string {
 
 
 /** */
-export async function emptyAppletId(): Promise<EntryHash> {
+export async function emptyAppletHash(): Promise<EntryHash> {
     const zeroBytes = new Uint8Array(36).fill(0);
     return new Uint8Array([0x84, 0x21, 0x24, ...zeroBytes]);
 }

@@ -32,10 +32,21 @@ export interface FileShareDvmPerspective {
 }
 
 
+/** */
+interface UploadState {
+    isPrivate: boolean,
+    file: File,
+    splitObj: SplitObject,
+    chunks: EntryHash[],
+}
+
+
 /**
  *
  */
 export class FileShareDvm extends DnaViewModel {
+
+    private _uploadState?: UploadState;
 
     /** -- DnaViewModel Interface -- */
 
@@ -101,28 +112,18 @@ export class FileShareDvm extends DnaViewModel {
             const manifestPair = this.deliveryZvm.perspective.localManifestByData[chunk.data_hash];
             if (!manifestPair) {
                 /** We are the original creator of this file */
-                this._curChunks.push(deliverySignal.NewChunk[0]);
-                const index = this._curChunks.length;
+                this._uploadState.chunks.push(deliverySignal.NewChunk[0]);
+                const index = this._uploadState.chunks.length;
                 /** Commit manifest if it was the last chunk */
-                if (this._curChunks.length == this._curSplitObj.numChunks) {
-                    if (this._curIsPrivate) {
-                        this.fileShareZvm.commitPrivateManifest(this._curFile, this._curSplitObj.dataHash, this._curChunks).then((_eh) => {
-                            this._curChunks = [];
-                            this._curSplitObj = undefined;
-                            this._curFile = undefined;
-                            this._curIsPrivate = undefined;
-                        });
+                if (this._uploadState.chunks.length == this._uploadState.splitObj.numChunks) {
+                    if (this._uploadState.isPrivate) {
+                        this.fileShareZvm.commitPrivateManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks).then((_eh) => this._uploadState = undefined);
                     } else {
-                        this.fileShareZvm.publishFileManifest(this._curFile, this._curSplitObj.dataHash, this._curChunks).then((_eh) => {
-                            this._curChunks = [];
-                            this._curSplitObj = undefined;
-                            this._curFile = undefined;
-                            this._curIsPrivate = undefined;
-                        });
+                        this.fileShareZvm.publishFileManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks).then((_eh) => this._uploadState = undefined);
                     }
                 } else {
                     /** Otherwise commit next one */
-                    this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: this._curSplitObj.dataHash, data: this._curSplitObj.chunks[index]});
+                    this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: this._uploadState.splitObj.dataHash, data: this._uploadState.splitObj.chunks[index]});
                 }
             }
         }
@@ -157,17 +158,10 @@ export class FileShareDvm extends DnaViewModel {
         return publicFiles;
     }
 
-
-    private _curIsPrivate?: boolean;
-    private _curFile?: File;
-    private _curSplitObj?: SplitObject;
-    private _curChunks: EntryHash[] = [];
-
-
     /** */
     async startCommitPrivateFile(file: File): Promise<SplitObject> {
         console.log('dvm.commitPrivateFile: ', file);
-        if (this._curSplitObj) {
+        if (this._uploadState) {
             return Promise.reject("File commit already in progress");
         }
         const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
@@ -177,10 +171,12 @@ export class FileShareDvm extends DnaViewModel {
             //return this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
             return;
         }
-        this._curSplitObj = splitObj;
-        this._curChunks = [];
-        this._curFile = file;
-        this._curIsPrivate = true;
+        this._uploadState = {
+            splitObj,
+            file,
+            isPrivate: true,
+            chunks: [],
+        };
         //this.deliveryZvm.perspective.chunkCounts[splitObj.dataHash] = 0;
         /** Initial write chunk loop */
         this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
@@ -193,7 +189,7 @@ export class FileShareDvm extends DnaViewModel {
     /** */
     async startPublishFile(file: File): Promise<SplitObject> {
         console.log('dvm.commitPublicFile: ', file);
-        if (this._curSplitObj) {
+        if (this._uploadState) {
             return Promise.reject("File commit already in progress");
         }
         const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
@@ -202,10 +198,12 @@ export class FileShareDvm extends DnaViewModel {
             console.warn("File already stored locally");
             return;
         }
-        this._curSplitObj = splitObj;
-        this._curChunks = [];
-        this._curFile = file;
-        this._curIsPrivate = false;
+        this._uploadState = {
+            splitObj,
+            file,
+            isPrivate: false,
+            chunks: [],
+        };
         //this.deliveryZvm.perspective.chunkCounts[splitObj.dataHash] = 0;
         /** Initial write chunk loop */
         this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});

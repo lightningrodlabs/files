@@ -127,7 +127,7 @@ export async function appletViews(
 
               /** TODO: Figure out why cell-context doesn't propagate normally via FileShareApp and has to be inserted again within the slot */
               const template = html`
-                  <cell-context .cell=${happElem.fileShare.cell}>
+                  <cell-context .cell=${happElem.fileShareDvm.cell}>
                       <file-view .hash=${encodeHashToBase64(hrl[1])}></file-view>
                   </cell-context>
               `;

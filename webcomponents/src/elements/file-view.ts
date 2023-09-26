@@ -20,7 +20,7 @@ import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {emptyAppletId, getInitials} from "../utils";
+import {emptyAppletHash, getInitials} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 

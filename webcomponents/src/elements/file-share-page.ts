@@ -20,7 +20,7 @@ import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {base64ToArrayBuffer, emptyAppletId, getInitials, prettyFileSize, SplitObject} from "../utils";
+import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, SplitObject} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {DeliveryPerspective, DeliveryStateType} from "@ddd-qc/delivery";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
@@ -31,22 +31,17 @@ import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery
 @customElement("file-share-page")
 export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
-    constructor() {
-        super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
-        /** Create a fake appletId for testing without We */
-        //fakeEntryHash().then((eh) => this.appletId = encodeHashToBase64(eh));
-
-        this.addEventListener('beforeunload', (e) => {
-            console.log("<file-share-page> beforeunload", e);
-            // await this._dvm.threadsZvm.commitSearchLogs();
-        });
-
-    }
+    // constructor() {
+    //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
+    //       this.addEventListener('beforeunload', (e) => {
+    //         console.log("<file-share-page> beforeunload", e);
+    //     });
+    // }
 
     /** -- Fields -- */
     @state() private _initialized = false;
-    @state() private _uploading?: SplitObject; // data_hash
-    @property() appletId: EntryHashB64;
+    @state() private _uploading?: SplitObject;
+    @property() appletHash: EntryHashB64;
 
 
     /** Observed perspective from zvm */
@@ -90,24 +85,15 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     /** After first render only */
     async firstUpdated() {
         // this._initialized = true;
-        console.log("<file-share-page> firstUpdated()", this.appletId);
+        console.log("<file-share-page> firstUpdated()", this.appletHash);
 
         /** Generate test data */
-        if (!this.appletId) {
-            this.appletId = encodeHashToBase64(await emptyAppletId());
-            console.warn("no appletId provided. A fake one has been generated", this.appletId);
+        if (!this.appletHash) {
+            this.appletHash = encodeHashToBase64(await emptyAppletHash());
+            console.warn("no appletHash provided. A fake one has been generated", this.appletHash);
         }
-        //await this._dvm.threadsZvm.generateTestData(this.appletId);
 
-
-        // await delay(50)
-        // await this._dvm.postProcess();
-
-        /** */
-        //const leftSide = this.shadowRoot.getElementById("leftSide");
-        //leftSide.style.background = "#B9CCE7";
-
-        this.requestUpdate();
+        //this.requestUpdate();
     }
 
 
@@ -134,18 +120,9 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         return splitObj;
     }
 
-    /** */
-    async onPublishPrivateFile(e: any) {
-        //     const localFileInput = this.shadowRoot!.getElementById("publishFileSelector") as HTMLSelectElement;
-        //     console.log("onPublishLocalFile():", localFileInput.value);
-        //     let distribAh = await this._dvm.publishPrivateFile(localFileInput.value);
-        //     console.log("onPublishLocalFile() distribAh:", distribAh);
-        //     localFileInput.value = "";
-    }
-
 
     /** */
-    async onSendFile(e: any) {
+    async onSendFile(_e: any): Promise<void> {
         const localFileInput = this.shadowRoot!.getElementById("localFileSelector") as HTMLSelectElement;
         const agentSelect = this.shadowRoot!.getElementById("recipientSelector") as HTMLSelectElement;
         console.log("onSendFile():", localFileInput.value, agentSelect.value);
@@ -411,13 +388,6 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         }}>
             </div>`
         };  
-        <!--<div>
-          <label>Publish local file:</label>
-          <select id="publishFileSelector">
-            ${fileOptions}
-          </select>
-          <input type="button" value="publish" @click=${this.onPublishPrivateFile}>
-        </div>-->
 
         <div style="margin-top:20px;">
           <label>Send File:</label>

@@ -28,9 +28,9 @@ Enable sharing of files between agents by using the [Delivery zome module](https
 
 ##### Activity timeline
 - General Activity timeline
-- See "activity" history with a recipient
-- See "activity" history for a File
-- See "activity" history for a distribution
+- See "activity" history with another agent.
+- See "activity" history for a File.
+- See "activity" history for a distribution.
 
 ##### Notifications
 

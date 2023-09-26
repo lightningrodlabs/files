@@ -41,7 +41,7 @@
 
    "start:mem"          :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
    "start:local"        :  "echo START:LOCAL $INDEX & cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run _save-ports\" \"npm run dev:components\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
-   "start:public"       :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run new-sandbox:public\" \"sleep 7 && npm run start:ui -w webapp\"",
+   "start:public"       :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:public\" \"sleep 7 && npm run start:ui -w webapp\"",
    "new-sandbox:mem"    :  "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ -a FileShareDev --run=$HC_APP_PORT network mem",
    "new-sandbox:public" :  "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ --run=$HC_APP_PORT -a FileShareDev network --bootstrap https://bootstrap.holo.host/ webrtc wss://signal.holo.host",
    "new-sandbox:local"  :  "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ --run=$HC_APP_PORT -a FileShareDev network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
@@ -91,8 +91,9 @@
     "@ddd-qc/lit-happ": "=0.19.11",
     "@ddd-qc/path-explorer": "=0.2.0",
     "@lightningrodlabs/we-applet": "0.8.0",
-    "@holochain/client": "=0.16.1",
+    "@holochain/client": "=0.16.2",
     "@holochain-open-dev/core-types": "0.6.3",
+    "@shoelace-style/shoelace": "2.4.0",
     "@lit-labs/context": "^0.2.0",
     "lit": "2.6.0"
   },

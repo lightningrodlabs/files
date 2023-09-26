@@ -29,9 +29,17 @@ import {
 import {HC_ADMIN_PORT, HC_APP_PORT, OVERRIDE_HVM_DEF} from "./globals";
 import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
+import {SlAlert, SlCard, SlTooltip, SlBadge, SlButton, SlInput, SlDetails, SlSkeleton} from "@shoelace-style/shoelace";
 
-//import WebWorker from './myworker.js';
-
+import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import "@shoelace-style/shoelace/dist/components/details/details.js";
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@shoelace-style/shoelace/dist/components/input/input.js";
+import "@shoelace-style/shoelace/dist/components/badge/badge.js";
 
 
 /**
@@ -96,7 +104,7 @@ export class FileShareApp extends HappElement {
   /** Create a Profiles DVM out of a different happ */
   async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
                           profilesCloneId: CloneId | undefined,
-                          profilesZomeName: ZomeName): Promise<void> {
+                          _profilesZomeName: ZomeName): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
@@ -105,11 +113,11 @@ export class FileShareApp extends HappElement {
         //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("createProfilesDvm() dvm", dvm);
-    this.setupProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    await this.setupProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
   }
 
   /** */
-  async setupProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64) {
+  async setupProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
     this._profilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
     const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(agent);
@@ -127,7 +135,7 @@ export class FileShareApp extends HappElement {
 
 
   /** QoL */
-  get fileShare(): FileShareDvm { return this.hvm.getDvm(FileShareDvm.DEFAULT_BASE_ROLE_NAME)! as FileShareDvm }
+  get fileShareDvm(): FileShareDvm { return this.hvm.getDvm(FileShareDvm.DEFAULT_BASE_ROLE_NAME)! as FileShareDvm }
 
   /** -- Fields -- */
 
@@ -161,10 +169,9 @@ export class FileShareApp extends HappElement {
       }
     }
     /** Probe */
-    this._cell = this.fileShare.cell; // ???
-    this._allAppEntryTypes = await this.fileShare.fetchAllEntryDefs();
+    this._cell = this.fileShareDvm.cell; // ???
+    this._allAppEntryTypes = await this.fileShareDvm.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
-    // TODO: Fix issue: zTasker entry_defs() not found. Maybe confusion with integrity zome name?
 
     if (OVERRIDE_HVM_DEF) {
       await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this._cell.agentPubKey);
