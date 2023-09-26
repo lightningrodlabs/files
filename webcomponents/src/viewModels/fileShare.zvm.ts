@@ -1,16 +1,14 @@
 import {
-    ActionHash, ActionHashB64,
-    AgentPubKey, AgentPubKeyB64,
-    AnyDhtHash, AppSignalCb,
+    ActionHashB64,
+    AgentPubKeyB64,
     decodeHashFromBase64,
     encodeHashToBase64,
     EntryHash, EntryHashB64
 } from '@holochain/client';
-import {AppSignal} from "@holochain/client/lib/api/app/types";
 import {delay, ZomeViewModel} from "@ddd-qc/lit-happ";
-import {arrayBufferToBase64, splitData, SplitObject} from "../utils";
+import {SplitObject} from "../utils";
 import {FileShareProxy} from "../bindings/file_share.proxy";
-import {FILE_TYPE_NAME, SendFileInput} from "../bindings/file_share.types";
+import {SendFileInput} from "../bindings/file_share.types";
 import {ParcelManifest} from "@ddd-qc/delivery";
 
 //import WebWorker from 'web-worker:./commitPrivateFile.ts';

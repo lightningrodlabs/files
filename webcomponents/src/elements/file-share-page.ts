@@ -44,6 +44,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     @property() appletHash: EntryHashB64;
 
 
+    private _notifCount = 0;
+
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     fileSharePerspective!: FileSharePerspective;
@@ -211,6 +213,18 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
 
+
+        /** -- Notifications -- */
+        const newNotifDiff = this._dvm.perspective.notificationLogs.length - this._notifCount;
+        if (newNotifDiff > 0) {
+            console.log("New notifications diff:", newNotifDiff);
+            for(let i = this._notifCount; i < this._dvm.perspective.notificationLogs.length; i++) {
+                console.log("New notifications:", this._dvm.perspective.notificationLogs[i]);
+            }
+            this._notifCount = this._dvm.perspective.notificationLogs.length;
+        }
+
+        /** -- -- */
 
         if (this._uploading) {
             const maybeManifest = this._dvm.deliveryZvm.perspective.localManifestByData[this._uploading.dataHash];

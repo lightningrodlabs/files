@@ -4,7 +4,7 @@ import {
     AgentPubKey, AgentPubKeyB64, AppSignal,
     decodeHashFromBase64,
     encodeHashToBase64,
-    EntryHash
+    EntryHash, HoloHashB64
 } from "@holochain/client";
 
 
@@ -62,9 +62,10 @@ export function base64ToArrayBuffer(base64: string): ArrayBufferLike {
     return bytes.buffer;
 }
 
+export type FileHash = string;
 
 /** */
-async function sha256(message: string) {
+async function sha256(message: string): Promise<FileHash> {
     const utf8 = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -88,7 +89,7 @@ function chunkSubstr(str: string, size: number): Array<string> {
 
 /** */
 export interface SplitObject {
-    dataHash: string,
+    dataHash: FileHash,
     numChunks: number,
     chunks: string[],
 }

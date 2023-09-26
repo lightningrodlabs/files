@@ -1,35 +1,35 @@
 import { DnaViewModel, ZvmDef } from "@ddd-qc/lit-happ";
 import {
     DeliveryProperties,
-    DeliveryState,
-    DeliveryStateType,
-    DeliveryZvm,
-    DistributionStateType, ParcelDescription, ParcelManifest,
+    DeliveryZvm, ParcelDescription,
+    ParcelManifest,
     SignalProtocol,
     SignalProtocolType
 } from "@ddd-qc/delivery";
 import {
+    ActionHashB64,
     AgentPubKeyB64,
     AppSignalCb,
-    decodeHashFromBase64,
-    encodeHashToBase64,
+    decodeHashFromBase64, encodeHashToBase64,
     EntryHash,
-    EntryHashB64,
-    Timestamp
+    EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
-import {FileSharePerspective, FileShareZvm} from "./fileShare.zvm";
-import {arrayBufferToBase64, splitData, splitFile, SplitObject} from "../utils";
+import {FileShareZvm} from "./fileShare.zvm";
+import {splitFile, SplitObject} from "../utils";
 import { decode } from "@msgpack/msgpack";
 import {Dictionary} from "@ddd-qc/cell-proxy";
-
-
-/** */
-export interface FileShareDvmPerspective {
-    /* DataHash -> pp_eh */
-    publicFiles: Record<string, EntryHashB64>,
-}
+import {
+    FileShareDvmPerspective,
+    FileShareNotificationType,
+    FileShareNotificationVariantDistributionToRecipientComplete,
+    FileShareNotificationVariantNewNoticeReceived,
+    //FileShareNotificationVariantNewPublicFile,
+    FileShareNotificationVariantPrivateCommitComplete,
+    FileShareNotificationVariantPublicSharingComplete,
+    FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
+} from "./fileShare.perspective";
 
 
 /** */
@@ -66,7 +66,7 @@ export class FileShareDvm extends DnaViewModel {
 
     /** -- ViewModel Interface -- */
 
-    private _perspective: FileShareDvmPerspective = {publicFiles: {}};
+    private _perspective: FileShareDvmPerspective = {publicFiles: {}, notificationLogs: []};
 
 
     /** */
@@ -100,14 +100,17 @@ export class FileShareDvm extends DnaViewModel {
         return properties;
     }
 
+
     /** -- Methods -- */
 
     /** */
     mySignalHandler(signal: AppSignal): void {
-        console.log("FileShareDvm received signal", signal);
+        const now = Date.now();
+        console.log("FileShareDvm received signal", now, signal);
         const deliverySignal = signal.payload as SignalProtocol;
         if (SignalProtocolType.NewChunk in deliverySignal) {
             console.log("signal NewChunk", deliverySignal.NewChunk);
+            //this._perspective.notificationLogs.push([now, SignalProtocolType.NewChunk, deliverySignal]);
             const chunk = deliverySignal.NewChunk[1];
             const manifestPair = this.deliveryZvm.perspective.localManifestByData[chunk.data_hash];
             if (!manifestPair) {
@@ -117,9 +120,25 @@ export class FileShareDvm extends DnaViewModel {
                 /** Commit manifest if it was the last chunk */
                 if (this._uploadState.chunks.length == this._uploadState.splitObj.numChunks) {
                     if (this._uploadState.isPrivate) {
-                        this.fileShareZvm.commitPrivateManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks).then((_eh) => this._uploadState = undefined);
+                        this.fileShareZvm.commitPrivateManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks).then((eh) => {
+                            /** Into Notification */
+                            const notif = {
+                                manifestEh: eh,
+                            } as FileShareNotificationVariantPrivateCommitComplete;
+                            this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, notif]);
+                            this.notifySubscribers();
+                            this._uploadState = undefined;
+                        });
                     } else {
-                        this.fileShareZvm.publishFileManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks).then((_eh) => this._uploadState = undefined);
+                        this.fileShareZvm.publishFileManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks).then((eh) => {
+                            /** Into Notification */
+                            const notif = {
+                                manifestEh: eh,
+                            } as FileShareNotificationVariantPublicSharingComplete;
+                            this._perspective.notificationLogs.push([now, FileShareNotificationType.PublicSharingComplete, notif]);
+                            this.notifySubscribers();
+                            this._uploadState = undefined;
+                        });
                     }
                 } else {
                     /** Otherwise commit next one */
@@ -129,16 +148,65 @@ export class FileShareDvm extends DnaViewModel {
         }
         if (SignalProtocolType.NewReceptionProof in deliverySignal) {
             console.log("signal NewReceptionProof", deliverySignal.NewReceptionProof);
-            this.fileShareZvm.getPrivateFiles();
+            this.fileShareZvm.getPrivateFiles().then(() => {
+                /** Into Notification */
+                const notif = {
+                    noticeEh: encodeHashToBase64(deliverySignal.NewReceptionProof[1].notice_eh),
+                    manifestEh: encodeHashToBase64(deliverySignal.NewReceptionProof[1].parcel_eh),
+                } as FileShareNotificationVariantReceptionComplete;
+                this._perspective.notificationLogs.push([now, FileShareNotificationType.ReceptionComplete, notif]);
+                this.notifySubscribers();
+            })
         }
-        // if (SignalProtocolType.NewPublicParcel in deliverySignal) {
-        //     console.log("signal NewPublicParcel", deliverySignal.NewPublicParcel);
-        //     const ppEh = encodeHashToBase64(deliverySignal.NewPublicParcel.eh);
-        //     this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh)).then((manifest: ParcelManifest) => {
-        //         this._perspective.publicFiles[manifest.data_hash] = ppEh;
-        //         this.notifySubscribers();
-        //     })
-        // }
+        if (SignalProtocolType.NewPublicParcel in deliverySignal) {
+            console.log("signal NewPublicParcel", deliverySignal.NewPublicParcel);
+            /** Into Notification */
+            // const notif = {
+            //     manifestEh: encodeHashToBase64(deliverySignal.NewPublicParcel.eh),
+            //     description: deliverySignal.NewPublicParcel.description,
+            // } as FileShareNotificationVariantNewPublicFile;
+            // this._perspective.notificationLogs.push([now, FileShareNotificationType.NewPublicFile, notif]);
+
+            // const ppEh = encodeHashToBase64(deliverySignal.NewPublicParcel.eh);
+            // this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh)).then((manifest: ParcelManifest) => {
+            //     this._perspective.publicFiles[manifest.data_hash] = ppEh;
+            //     this.notifySubscribers();
+            // })
+            this.notifySubscribers();
+        }
+        if (SignalProtocolType.NewReplyAck in deliverySignal) {
+            console.log("signal NewReplyAck", deliverySignal.NewReplyAck);
+            /** Into Notification */
+            const notif = {
+                distribAh: encodeHashToBase64(deliverySignal.NewReplyAck[1].distribution_ah),
+                recipient: encodeHashToBase64(deliverySignal.NewReplyAck[1].recipient),
+                hasAccepted: deliverySignal.NewReplyAck[1].has_accepted,
+            } as FileShareNotificationVariantReplyReceived;
+            this._perspective.notificationLogs.push([now, FileShareNotificationType.ReplyReceived, notif]);
+            this.notifySubscribers();
+        }
+        if (SignalProtocolType.NewNotice in deliverySignal) {
+            console.log("signal NewNotice", deliverySignal.NewNotice);
+            /** Into Notification */
+            const notif = {
+                noticeEh: encodeHashToBase64(deliverySignal.NewNotice[0]),
+                manifestEh: encodeHashToBase64(deliverySignal.NewNotice[1].summary.parcel_reference.eh),
+                description: deliverySignal.NewNotice[1].summary.parcel_reference.description,
+                sender: encodeHashToBase64(deliverySignal.NewNotice[1].sender),
+            } as FileShareNotificationVariantNewNoticeReceived;
+            this._perspective.notificationLogs.push([now, FileShareNotificationType.NewNoticeReceived, notif]);
+            this.notifySubscribers();
+        }
+        if (SignalProtocolType.NewReceptionAck in deliverySignal) {
+            console.log("signal NewReceptionAck", deliverySignal.NewReceptionAck);
+            /** Into Notification */
+            const notif = {
+                distribAh: encodeHashToBase64(deliverySignal.NewReceptionAck[1].distribution_ah),
+                recipient: encodeHashToBase64(deliverySignal.NewReceptionAck[1].recipient),
+            } as FileShareNotificationVariantDistributionToRecipientComplete;
+            this._perspective.notificationLogs.push([now, FileShareNotificationType.DistributionToRecipientComplete, notif]);
+            this.notifySubscribers();
+        }
     }
 
 
@@ -211,6 +279,7 @@ export class FileShareDvm extends DnaViewModel {
         //return ehb64;
         return splitObj;
     }
+
 
     // /** */
     // async publishFile(file: File): Promise<EntryHashB64> {
