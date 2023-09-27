@@ -170,7 +170,7 @@ export class FileShareProxy extends ZomeProxy {
     return this.call('get_unreplied_notices', null);
   }
 
-  async probePublicFiles(): Promise<ParcelReference[]> {
+  async probePublicFiles(): Promise<[ParcelReference, Timestamp, AgentPubKey][]> {
     return this.call('probe_public_files', null);
   }
 

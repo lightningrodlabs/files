@@ -151,8 +151,8 @@ export class FileShareDvm extends DnaViewModel {
             this.fileShareZvm.getPrivateFiles().then(() => {
                 /** Into Notification */
                 const notif = {
-                    noticeEh: encodeHashToBase64(deliverySignal.NewReceptionProof[1].notice_eh),
-                    manifestEh: encodeHashToBase64(deliverySignal.NewReceptionProof[1].parcel_eh),
+                    noticeEh: encodeHashToBase64(deliverySignal.NewReceptionProof[2].notice_eh),
+                    manifestEh: encodeHashToBase64(deliverySignal.NewReceptionProof[2].parcel_eh),
                 } as FileShareNotificationVariantReceptionComplete;
                 this._perspective.notificationLogs.push([now, FileShareNotificationType.ReceptionComplete, notif]);
                 this.notifySubscribers();
@@ -178,9 +178,9 @@ export class FileShareDvm extends DnaViewModel {
             console.log("signal NewReplyAck", deliverySignal.NewReplyAck);
             /** Into Notification */
             const notif = {
-                distribAh: encodeHashToBase64(deliverySignal.NewReplyAck[1].distribution_ah),
-                recipient: encodeHashToBase64(deliverySignal.NewReplyAck[1].recipient),
-                hasAccepted: deliverySignal.NewReplyAck[1].has_accepted,
+                distribAh: encodeHashToBase64(deliverySignal.NewReplyAck[2].distribution_ah),
+                recipient: encodeHashToBase64(deliverySignal.NewReplyAck[2].recipient),
+                hasAccepted: deliverySignal.NewReplyAck[2].has_accepted,
             } as FileShareNotificationVariantReplyReceived;
             this._perspective.notificationLogs.push([now, FileShareNotificationType.ReplyReceived, notif]);
             this.notifySubscribers();
@@ -190,9 +190,9 @@ export class FileShareDvm extends DnaViewModel {
             /** Into Notification */
             const notif = {
                 noticeEh: encodeHashToBase64(deliverySignal.NewNotice[0]),
-                manifestEh: encodeHashToBase64(deliverySignal.NewNotice[1].summary.parcel_reference.eh),
-                description: deliverySignal.NewNotice[1].summary.parcel_reference.description,
-                sender: encodeHashToBase64(deliverySignal.NewNotice[1].sender),
+                manifestEh: encodeHashToBase64(deliverySignal.NewNotice[2].summary.parcel_reference.eh),
+                description: deliverySignal.NewNotice[2].summary.parcel_reference.description,
+                sender: encodeHashToBase64(deliverySignal.NewNotice[2].sender),
             } as FileShareNotificationVariantNewNoticeReceived;
             this._perspective.notificationLogs.push([now, FileShareNotificationType.NewNoticeReceived, notif]);
             this.notifySubscribers();
@@ -201,8 +201,8 @@ export class FileShareDvm extends DnaViewModel {
             console.log("signal NewReceptionAck", deliverySignal.NewReceptionAck);
             /** Into Notification */
             const notif = {
-                distribAh: encodeHashToBase64(deliverySignal.NewReceptionAck[1].distribution_ah),
-                recipient: encodeHashToBase64(deliverySignal.NewReceptionAck[1].recipient),
+                distribAh: encodeHashToBase64(deliverySignal.NewReceptionAck[2].distribution_ah),
+                recipient: encodeHashToBase64(deliverySignal.NewReceptionAck[2].recipient),
             } as FileShareNotificationVariantDistributionToRecipientComplete;
             this._perspective.notificationLogs.push([now, FileShareNotificationType.DistributionToRecipientComplete, notif]);
             this.notifySubscribers();
@@ -215,7 +215,7 @@ export class FileShareDvm extends DnaViewModel {
         let publicFiles: Dictionary<string> = {};
         const pds = Object.entries(this.deliveryZvm.perspective.publicParcels);
         console.log("probePublicFiles() PublicParcels count", Object.entries(pds).length);
-        for (const [ppEh, pd] of pds) {
+        for (const [ppEh, [pd, _ts, _author]] of pds) {
             if (pd.zome_origin == "file_share_integrity") {
                 const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh));
                 publicFiles[manifest.data_hash] = ppEh;

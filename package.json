@@ -46,7 +46,7 @@
    "new-sandbox:public" :  "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ --run=$HC_APP_PORT -a FileShareDev network --bootstrap https://bootstrap.holo.host/ webrtc wss://signal.holo.host",
    "new-sandbox:local"  :  "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ --run=$HC_APP_PORT -a FileShareDev network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
 
-   "serve:run"          :  "hc run-local-services --bootstrap-port $BOOT_PORT --signal-port $SIGNAL_PORT",
+   "serve:run"          :  "$npm_package_config_bin/hc run-local-services --bootstrap-port $BOOT_PORT --signal-port $SIGNAL_PORT",
    "serve:save"         :  "echo SIGNAL_PORT=$SIGNAL_PORT && echo $SIGNAL_PORT > .hc_signalenv && echo $BOOT_PORT > .hc_bootenv && echo BOOT_PORT=$BOOT_PORT",
    "serve"              :  "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) npm run serve:run",
    "network2"           :  "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:local\" \"sleep 1 && cross-env INDEX=1 npm run start:local\"",

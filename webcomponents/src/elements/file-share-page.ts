@@ -125,15 +125,15 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** */
     updated() {
-        console.log("UPDATED START");
+        //console.log("UPDATED START");
         /** Add behavior to buttons in reply notification */
         const acceptButton = document.getElementById("accept-notice-btn") as HTMLInputElement;
         const declineButton = document.getElementById("decline-notice-btn") as HTMLInputElement;
         if (acceptButton) {
-            console.log("UPDATED button found!", acceptButton);
+            //console.log("UPDATED button found!", acceptButton);
             const acceptEh = acceptButton.getAttribute("eh");
             const alert = document.getElementById("new-notice-" + acceptEh) as SlAlert;
-            console.log("UPDATED alert", alert);
+            //console.log("UPDATED alert", alert);
             //const declineEh = declineButton.getAttribute("eh");
             //const notice = this._dvm.deliveryZvm.perspective.notices[acceptEh];
             acceptButton.removeEventListener("click", () => {this._dvm.deliveryZvm.acceptDelivery(acceptEh); alert.hide();});
@@ -317,7 +317,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     /** */
     render() {
         console.log("<file-share-page>.render()", this._initialized, this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
-        this.printNoticeReceived();
+        //this.printNoticeReceived();
 
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
@@ -387,7 +387,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         /** Public files list */
         let publicFileList = Object.entries(this._dvm.perspective.publicFiles).map(
             ([_dataHash, ppEh]) => {
-                const description = this._dvm.deliveryZvm.perspective.publicParcels[ppEh];
+                const [description, _ts, _author] = this._dvm.deliveryZvm.perspective.publicParcels[ppEh];
                 console.log("description", description);
                 // FIXME check if we also have file locally (with data_hash)
                 if (!description) {
@@ -516,7 +516,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         return html`
         <div><abbr title="${this.cell.agentPubKey}">${this._myProfile.nickname}</abbr></div>
         <h1>
-          FileShare Central 
+          Whatever
           <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
           <button type="button" @click=${() => {this.refresh();}}>refresh</button>               
         </h1>
