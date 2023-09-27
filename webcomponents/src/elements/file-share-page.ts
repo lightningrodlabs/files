@@ -33,7 +33,9 @@ import {
     FileShareNotificationVariantPublicSharingComplete,
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
 } from "../viewModels/fileShare.perspective";
-import {createAlert} from "../toast"
+import {createAlert} from "../toast";
+
+import "./activity-timeline";
 
 
 import {SlAlert, SlCard, SlTooltip, SlBadge, SlButton, SlInput, SlDetails, SlSkeleton} from "@shoelace-style/shoelace";
@@ -582,6 +584,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         <ul>
           ${outboundList}
         </ul>
+        <activity-timeline></activity-timeline>
     `;
     }
 
