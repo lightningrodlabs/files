@@ -33,6 +33,7 @@ export default {
         { src: "../webapp/icon.png", dest: DIST_FOLDER },
         { src: "../webapp/logo.svg", dest: DIST_FOLDER },
         { src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css", dest: DIST_FOLDER, rename: "styles.css" },
+        //{ src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: DIST_FOLDER }
       ],
     }),
     /** Resolve bare module imports */

@@ -24,6 +24,16 @@ import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, Split
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {DeliveryPerspective, DeliveryStateType, SignalProtocolType} from "@ddd-qc/delivery";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
+import {
+    FileShareNotification,
+    FileShareNotificationType,
+    FileShareNotificationVariantDistributionToRecipientComplete,
+    FileShareNotificationVariantNewNoticeReceived,
+    FileShareNotificationVariantPrivateCommitComplete,
+    FileShareNotificationVariantPublicSharingComplete,
+    FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
+} from "../viewModels/fileShare.perspective";
+import {createAlert} from "../toast"
 
 
 import {SlAlert, SlCard, SlTooltip, SlBadge, SlButton, SlInput, SlDetails, SlSkeleton} from "@shoelace-style/shoelace";
@@ -39,16 +49,6 @@ import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
-import {
-    FileShareNotification,
-    FileShareNotificationType,
-    FileShareNotificationVariantDistributionToRecipientComplete,
-    FileShareNotificationVariantNewNoticeReceived,
-    FileShareNotificationVariantPrivateCommitComplete,
-    FileShareNotificationVariantPublicSharingComplete,
-    FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
-} from "../viewModels/fileShare.perspective";
-import {createAlert} from "../toast"
 
 
 /**

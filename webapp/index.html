@@ -14,6 +14,9 @@
       //console.log("   HC_PORT:", process.env.HC_PORT);
       //console.log("ADMIN_PORT:", process.env.ADMIN_PORT);
       import { FileShareApp } from "./";
+      import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+      setBasePath('../node_modules/@shoelace-style/shoelace/dist');
+      console.log("shoelace basePath", getBasePath());
     </script>
   </body>
 </html>

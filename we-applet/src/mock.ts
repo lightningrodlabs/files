@@ -40,7 +40,7 @@ async function generateFakeProfilesAppInfo(myKey: AgentPubKey): Promise<AppInfo>
       cell_id: [await fakeDnaHash(), myKey],
       dna_modifiers: {
         network_seed: "profiles-mock-ns",
-        properties: {},
+        properties: new Uint8Array(),
         origin_time: 42,// FIXME
         quantum_time: {secs: 1, nanos: 0},
       }

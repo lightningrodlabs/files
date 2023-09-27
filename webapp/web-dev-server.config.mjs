@@ -3,12 +3,21 @@ import rollupReplace from '@rollup/plugin-replace';
 import rollupCommonjs from '@rollup/plugin-commonjs';
 import { fromRollup } from '@web/dev-server-rollup';
 import rollupBuiltins from 'rollup-plugin-node-builtins';
-import rollupWorkerLoader from "rollup-plugin-web-worker-loader";
+import rollupCopy from "rollup-plugin-copy";
+//import rollupWorkerLoader from "rollup-plugin-web-worker-loader";
 
 const replace = fromRollup(rollupReplace);
 const commonjs = fromRollup(rollupCommonjs);
 const builtins = fromRollup(rollupBuiltins);
-const workerLoader = fromRollup(rollupWorkerLoader);
+const copy = fromRollup(rollupCopy);
+
+//const workerLoader = fromRollup(rollupWorkerLoader);
+
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// console.log("web-dev-server __dirname =", __dirname);
 
 const BUILD_MODE = process.env.BUILD_MODE? JSON.stringify(process.env.BUILD_MODE) : 'prod';
 console.log("web-dev-server BUILD_MODE =", BUILD_MODE);
@@ -49,7 +58,18 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
     }),
     builtins(),
     commonjs({}),
-    workerLoader(),
+    // copy({
+    //   copyOnce: true,
+    //   targets: [
+    //     {
+    //       src: '../node_modules/@shoelace-style/shoelace/dist/assets',
+    //       dest: 'dist/shoelace/assets',
+    //       //src: path.resolve(__dirname, '../node_modules/@shoelace-style/shoelace/dist/assets'),
+    //       //dest: path.resolve(__dirname, 'shoelace/assets'),
+    //     },
+    //   ],
+    // }),
+    //workerLoader(),
     /** Use Hot Module Replacement by uncommenting. Requires @open-wc/dev-server-hmr plugin */
     // hmr && hmrPlugin({ exclude: ['**/*/node_modules/**/*'], presets: [presets.litElement] }),
   ],
