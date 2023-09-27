@@ -122,4 +122,3 @@ export async function splitData(full_data_string: string, chunkMaxSize: number):
         chunks: chunks,
     };
 }
-

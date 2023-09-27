@@ -7,7 +7,7 @@ import {
     decodeHashFromBase64,
     DnaHashB64,
     encodeHashToBase64,
-    EntryHashB64,
+    EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
     AppletInfo,
@@ -22,8 +22,34 @@ import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, SplitObject} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
-import {DeliveryPerspective, DeliveryStateType} from "@ddd-qc/delivery";
+import {DeliveryPerspective, DeliveryStateType, SignalProtocolType} from "@ddd-qc/delivery";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
+
+
+import {SlAlert, SlCard, SlTooltip, SlBadge, SlButton, SlInput, SlDetails, SlSkeleton} from "@shoelace-style/shoelace";
+
+import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/badge/badge.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/details/details.js";
+import "@shoelace-style/shoelace/dist/components/icon/icon.js";
+import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
+import "@shoelace-style/shoelace/dist/components/input/input.js";
+import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import {
+    FileShareNotification,
+    FileShareNotificationType,
+    FileShareNotificationVariantDistributionToRecipientComplete,
+    FileShareNotificationVariantNewNoticeReceived,
+    FileShareNotificationVariantPrivateCommitComplete,
+    FileShareNotificationVariantPublicSharingComplete,
+    FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
+} from "../viewModels/fileShare.perspective";
+import {createAlert} from "../toast"
+
 
 /**
  * @element
@@ -94,8 +120,27 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
             this.appletHash = encodeHashToBase64(await emptyAppletHash());
             console.warn("no appletHash provided. A fake one has been generated", this.appletHash);
         }
+    }
 
-        //this.requestUpdate();
+
+    /** */
+    updated() {
+        console.log("UPDATED START");
+        /** Add behavior to buttons in reply notification */
+        const acceptButton = document.getElementById("accept-notice-btn") as HTMLInputElement;
+        const declineButton = document.getElementById("decline-notice-btn") as HTMLInputElement;
+        if (acceptButton) {
+            console.log("UPDATED button found!", acceptButton);
+            const acceptEh = acceptButton.getAttribute("eh");
+            const alert = document.getElementById("new-notice-" + acceptEh) as SlAlert;
+            console.log("UPDATED alert", alert);
+            //const declineEh = declineButton.getAttribute("eh");
+            //const notice = this._dvm.deliveryZvm.perspective.notices[acceptEh];
+            acceptButton.removeEventListener("click", () => {this._dvm.deliveryZvm.acceptDelivery(acceptEh); alert.hide();});
+            acceptButton.addEventListener("click", () => {this._dvm.deliveryZvm.acceptDelivery(acceptEh); alert.hide();});
+            declineButton.removeEventListener("click", () => {this._dvm.deliveryZvm.declineDelivery(acceptEh); alert.hide();});
+            declineButton.addEventListener("click", () => {this._dvm.deliveryZvm.declineDelivery(acceptEh); alert.hide();});
+        }
     }
 
 
@@ -181,6 +226,94 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     }
 
 
+
+    /** */
+    toastNotif(notifLog: [Timestamp, FileShareNotificationType, FileShareNotification]): void {
+        const type = notifLog[1];
+
+        let msg = "";
+        let title = "";
+        let variant = "primary";
+        let duration = 5000;
+        let icon = "info-circle";
+        let extraHtml;
+        let id;
+
+        if (FileShareNotificationType.ReceptionComplete == type) {
+            const manifestEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).manifestEh;
+            //const noticeEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).noticeEh;
+            const privateManifest = this.fileSharePerspective.privateFiles[manifestEh];
+            variant = 'success';
+            icon = "check2-circle";
+            title = "File succesfully received";
+            msg = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
+        }
+        if (FileShareNotificationType.DistributionToRecipientComplete == type) {
+            const distribAh = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).distribAh;
+            const recipient = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).recipient;
+            const manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[distribAh][0].delivery_summary.parcel_reference.eh);
+            const privateManifest = this.fileSharePerspective.privateFiles[manifestEh];
+            const recipientName = this._profilesZvm.getProfile(recipient).nickname;
+            variant = 'success';
+            icon = "check2-circle";
+            title = "File successfully shared";
+            msg = `"${privateManifest.description.name}" to ${recipientName}`;
+        }
+        if (FileShareNotificationType.PublicSharingComplete == type) {
+            const manifestEh = (notifLog[2] as FileShareNotificationVariantPublicSharingComplete).manifestEh;
+            const publicManifest = this.fileSharePerspective.localPublicFiles[manifestEh];
+            variant = 'success';
+            icon = "check2-circle";
+            title = "File successfully published";
+            msg = `"${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)})`;
+        }
+        if (FileShareNotificationType.PrivateCommitComplete == type) {
+            const manifestEh = (notifLog[2] as FileShareNotificationVariantPrivateCommitComplete).manifestEh;
+            const privateManifest = this.fileSharePerspective.privateFiles[manifestEh];
+            variant = 'success';
+            icon = "check2-circle";
+            title = "File succesfully added";
+            msg = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
+        }
+        if (FileShareNotificationType.NewNoticeReceived == type) {
+            const noticeEh = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).noticeEh;
+            const description = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).description;
+            const recipientName = this._profilesZvm.getProfile((notifLog[2] as FileShareNotificationVariantNewNoticeReceived).sender).nickname;
+            title = "Incoming file request";
+            msg = `"${description.name}" (${prettyFileSize(description.size)}) from: ${recipientName}`;
+            id = "new-notice-" + noticeEh
+            duration = Infinity;
+            extraHtml = `
+                <div>
+                    <sl-button id="accept-notice-btn" variant="default" size="small" eh="${noticeEh}">
+                      <sl-icon slot="prefix" name="check"></sl-icon>
+                      Accept
+                    </sl-button>
+                    <sl-button id="decline-notice-btn" variant="default" size="small" eh="${noticeEh}">
+                      <sl-icon slot="prefix" name="x"></sl-icon>
+                      Decline
+                    </sl-button>                    
+                </div>
+            `;
+        }
+        if (FileShareNotificationType.ReplyReceived == type) {
+            const notif = notifLog[2] as FileShareNotificationVariantReplyReceived;
+            const distrib = this._dvm.deliveryZvm.perspective.distributions[notif.distribAh][0];
+            const description = distrib.delivery_summary.parcel_reference.description;
+            const recipientName = this._profilesZvm.getProfile(notif.recipient).nickname;
+            if (notif.hasAccepted) {
+                title = "File accepted";
+            } else {
+                title = "File declined";
+                variant = 'danger';
+                icon = "x-octagon";
+            }
+            msg = `For "${description.name}" from ${recipientName}`;
+        }
+        createAlert(title, msg, variant, icon, duration, extraHtml, id);
+    }
+
+
     /** */
     render() {
         console.log("<file-share-page>.render()", this._initialized, this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
@@ -219,7 +352,9 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         if (newNotifDiff > 0) {
             console.log("New notifications diff:", newNotifDiff);
             for(let i = this._notifCount; i < this._dvm.perspective.notificationLogs.length; i++) {
-                console.log("New notifications:", this._dvm.perspective.notificationLogs[i]);
+                const notifLog = this._dvm.perspective.notificationLogs[i];
+                console.log("New notifications:", notifLog);
+                this.toastNotif(notifLog);
             }
             this._notifCount = this._dvm.perspective.notificationLogs.length;
         }
@@ -314,16 +449,11 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                     return html`
                         <li id="inbound_${noticeEh}">
                             "${notice.summary.parcel_reference.description.name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_reference.description.size)}
-                            <button type="button" @click=${async () => {
-                                console.log("Accepting", noticeEh);
-                        await this._dvm.deliveryZvm.acceptDelivery(noticeEh);
-                        //await this.refresh();
-                    }}>accept
+                            <button type="button" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
+                                accept
                             </button>
-                            <button type="button" @click=${async () => {
-                        await this._dvm.deliveryZvm.declineDelivery(noticeEh);
-                        //await this.refresh();
-                    }}>decline
+                            <button type="button" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
+                                decline
                             </button>
                         </li>`
                 } else {
@@ -451,7 +581,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         <h2>Outbound files:</h2>
         <ul>
           ${outboundList}
-        </ul>          
+        </ul>
     `;
     }
 

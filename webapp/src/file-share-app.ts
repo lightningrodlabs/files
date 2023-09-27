@@ -29,18 +29,6 @@ import {
 import {HC_ADMIN_PORT, HC_APP_PORT, OVERRIDE_HVM_DEF} from "./globals";
 import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
-import {SlAlert, SlCard, SlTooltip, SlBadge, SlButton, SlInput, SlDetails, SlSkeleton} from "@shoelace-style/shoelace";
-
-import "@shoelace-style/shoelace/dist/components/alert/alert.js";
-import "@shoelace-style/shoelace/dist/components/button/button.js";
-import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
-import "@shoelace-style/shoelace/dist/components/details/details.js";
-import "@shoelace-style/shoelace/dist/components/card/card.js";
-import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
-import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
-import "@shoelace-style/shoelace/dist/components/input/input.js";
-import "@shoelace-style/shoelace/dist/components/badge/badge.js";
-
 
 /**
  *

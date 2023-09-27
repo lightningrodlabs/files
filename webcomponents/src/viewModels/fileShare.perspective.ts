@@ -24,7 +24,7 @@ export enum FileShareNotificationType {
 
 //export type FileShareNotificationVariantNewPublicFile = { manifestEh: EntryHashB64, description: ParcelDescription }
 export type FileShareNotificationVariantReceptionComplete = {noticeEh: EntryHashB64, manifestEh: EntryHashB64 }
-export type FileShareNotificationVariantDistributionToRecipientComplete = {distribAh: ActionHashB64, manifestEh: EntryHashB64, recipient: AgentPubKeyB64 }
+export type FileShareNotificationVariantDistributionToRecipientComplete = {distribAh: ActionHashB64, recipient: AgentPubKeyB64 }
 export type FileShareNotificationVariantPublicSharingComplete = {manifestEh: EntryHashB64 }
 export type FileShareNotificationVariantPrivateCommitComplete = {manifestEh: EntryHashB64 }
 export type FileShareNotificationVariantNewNoticeReceived = {noticeEh: EntryHashB64, manifestEh: EntryHashB64, description: ParcelDescription, sender: AgentPubKeyB64 }
