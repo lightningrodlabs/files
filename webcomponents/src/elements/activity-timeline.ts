@@ -1,4 +1,4 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {consume} from "@lit-labs/context";
@@ -15,7 +15,8 @@ import {
     ReceptionProof
 } from "@ddd-qc/delivery";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {AgentPubKeyB64, EntryHashB64, Timestamp} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
+import {getInitials} from "../utils";
 
 
 /**
@@ -52,7 +53,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
 
     /** */
-    determineHistory() {
+    determineHistory(): [Timestamp, EntryHashB64 | ActionHashB64, DeliveryEntryType][] {
         // const sortedReceptions: [Timestamp, EntryHashB64, ReceptionProof][] = Object.entries(this.deliveryPerspective.receptions)
         //     .sort(([_eh1, [_rp1, ts1]], [_eh2, [_rp2, ts2]]) => ts2 - ts1)
         //     .map(([eh, [rp, ts]]) => [ts, eh, rp])
@@ -73,15 +74,21 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         //     .map(([eh, [rp, ts, auth]]) => [ts, eh, rp, auth])
         // console.log("sortedPublicParcels", sortedPublicParcels);
 
+        /** Remove Received files from private files */
+        const receivedManifestEhs: EntryHashB64[] = Object.values(this.deliveryPerspective.receptions)
+            .map(([rp,_ts]) => encodeHashToBase64(this.deliveryPerspective.notices[encodeHashToBase64(rp.notice_eh)][0].summary.parcel_reference.eh));
+
+
         const sortedReceptions: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.receptions)
             .map(([eh, [rp, ts]]) => [ts, eh, DeliveryEntryType.ReceptionProof])
         console.log("sortedReceptions", sortedReceptions);
 
-        const sortedReceptionAcks: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.receptionAcks)
-            .map(([eh, [rp, ts]]) => [ts, eh, DeliveryEntryType.ReceptionAck])
+        const sortedReceptionAcks: [Timestamp, ActionHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.receptionAcks)
+            .map(([ah, [rp, ts]]) => [ts, ah, DeliveryEntryType.ReceptionAck])
         console.log("sortedReceptionAcks", sortedReceptionAcks);
 
         const sortedPrivateParcels: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.privateManifests)
+            .filter(([eh, [rp, ts]]) => !receivedManifestEhs.includes(eh))
             .map(([eh, [rp, ts]]) => [ts, eh, DeliveryEntryType.ParcelManifest])
         console.log("sortedPrivateParcels", sortedPrivateParcels);
 
@@ -89,25 +96,167 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
             .map(([eh, [rp, ts, auth]]) => [ts, eh, DeliveryEntryType.PublicParcel])
         console.log("sortedPublicParcels", sortedPublicParcels);
 
-        const all = sortedReceptions.concat(sortedReceptions, sortedReceptionAcks, sortedPrivateParcels, sortedPublicParcels)
+        /** Concat all */
+        const all = sortedReceptions.concat(sortedReceptionAcks, sortedPrivateParcels, sortedPublicParcels)
             .sort(([ts1, _eh1, _t1], [ts2, _eh2, _t2]) => ts2 - ts1);
         console.table(all);
 
-
+        return all;
     }
+
+
+
+    /**
+     received file from
+     sent file to
+     Bob published file
+     Added file
+     */
+    activityLog2Html([ts, hash, type]: [Timestamp, EntryHashB64 | ActionHashB64, DeliveryEntryType]): TemplateResult<1> {
+
+        /** Format date */
+        const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+        const date_str = date.toLocaleString('en-US', {hour12: false});
+
+        /** Determine File */
+        let fileDescription: ParcelDescription;
+        if (type == DeliveryEntryType.ParcelManifest) {
+            const manifest = this.fileSharePerspective.privateFiles[hash];
+            fileDescription = manifest.description;
+        }
+        if (type == DeliveryEntryType.ReceptionAck) {
+            const distrib = this.deliveryPerspective.distributions[hash][0];
+            fileDescription = distrib.delivery_summary.parcel_reference.description;
+
+        }
+        if (type == DeliveryEntryType.ReceptionProof) {
+            const notice = this.deliveryPerspective.notices[hash][0];
+            fileDescription = notice.summary.parcel_reference.description;
+        }
+        if (type == DeliveryEntryType.PublicParcel) {
+            fileDescription = this.deliveryPerspective.publicParcels[hash][0];
+        }
+
+
+        /** Determine author */
+        let author: AgentPubKeyB64;
+        if (type == DeliveryEntryType.ParcelManifest) {
+            author = this.cell.agentPubKey;
+        }
+        if (type == DeliveryEntryType.ReceptionAck) {
+            const ack = this.deliveryPerspective.receptionAcks[hash][0];
+            author = encodeHashToBase64(ack.recipient);
+        }
+        if (type == DeliveryEntryType.ReceptionProof) {
+            const notice = this.deliveryPerspective.notices[hash][0];
+            author = encodeHashToBase64(notice.sender);
+        }
+        if (type == DeliveryEntryType.PublicParcel) {
+            author = this.deliveryPerspective.publicParcels[hash][2];
+        }
+
+        let agent = {nickname: "unknown", fields: {}} as FileShareProfile;
+        const maybeAgent = this._profilesZvm.perspective.profiles[author];
+        if (maybeAgent) {
+            agent = maybeAgent;
+        } else {
+            console.log("Profile not found for agent", author, this._profilesZvm.perspective.profiles)
+            //this._profilesZvm.probeProfile(texto.author)
+            //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
+        }
+
+        const initials = getInitials(agent.nickname);
+        const avatarUrl = agent.fields['avatar'];
+
+        const id = "activity-item__" + hash;
+
+        /** Format phrase */
+        let message: string;
+        if (type == DeliveryEntryType.ParcelManifest) {
+            message = `added a file`;
+        }
+        if (type == DeliveryEntryType.ReceptionAck) {
+            message = `received your file`;
+        }
+        if (type == DeliveryEntryType.ReceptionProof) {
+            message = `sent you a file`;
+        }
+        if (type == DeliveryEntryType.PublicParcel) {
+            message = `published a file`;
+        }
+
+        /** render */
+        return html`
+        <div id=${id} class="activityItem">
+            ${avatarUrl? html`
+                      <sl-avatar class="activityAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
+                          <img src=${avatarUrl}>
+                      </sl-avatar>                   
+                          ` : html`
+                        <sl-avatar class="activityAvatar" shape="circle" initials=${initials} color-scheme="Accent2"></sl-avatar>
+                  `}
+            <div style="display: flex; flex-direction: column">
+                <div class="activityMsg">
+                    ${author == this.cell.agentPubKey? html`You` : html`<abbr title=${author}><span><b>${agent.nickname}</b></span></abbr>`}
+                    ${message}
+                </div>
+                <div class="activityDate"> ${date_str}</div>
+                <sl-button pill>${fileDescription.name}</sl-button>
+            </div>
+        </div>
+    `;
+    }
+
 
     /** */
     render() {
         console.log("<activity-timeline>.render()", this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
-        this.determineHistory();
-        /** Render all */
-        return html``;
-    }
-}
+        const history = this.determineHistory();
 
-/*
-received file from
-sent file to
-Bob published file
-Added file
-*/
+
+        const items = history.map(
+            (activityLog) => {
+                console.log("activityLog", activityLog);
+                return this.activityLog2Html(activityLog);
+            }
+        )
+        if (items.length == 0) {
+            items.push(html`None`);
+        }
+
+
+        /** Render all */
+        return html`
+        <div>
+            <h3>Today</h3>
+            ${items}
+        </div>`;
+    }
+
+
+    /** */
+    static get styles() {
+        return [
+            css`
+        .activityItem {
+          display: flex; 
+          flex-direction: row;
+          min-height: 55px;
+          margin: 5px 5px 35px 5px;
+        }
+        .activityAvatar {
+          margin-right: 5px;
+          min-width: 48px;
+        }
+        .activityDate {
+          margin: 0px 0px 0px 5px;
+          font-size: smaller;
+          color: gray;
+        }
+        .activityMsg {
+          margin: 5px 5px 5px 5px;
+        }        
+      `,];
+    }
+
+}

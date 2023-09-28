@@ -1,7 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {Dictionary} from "@ddd-qc/cell-proxy";
 import {
     ActionHashB64,
     decodeHashFromBase64,
@@ -9,20 +8,19 @@ import {
     encodeHashToBase64,
     EntryHashB64,
 } from "@holochain/client";
+import {consume} from "@lit-labs/context";
 import {
     AppletInfo,
     Hrl,
     WeServices, weServicesContext,
 } from "@lightningrodlabs/we-applet";
-import {consume} from "@lit-labs/context";
-
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {emptyAppletHash, getInitials} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
-import {ParcelKindVariantManifest} from "@ddd-qc/delivery/dist/bindings/delivery.types";
+import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
 
 
 /**

@@ -1,25 +1,25 @@
-import {DEFAULT_FILESHARE_DEF} from "@file-share/elements/dist/viewModels/happDef";
+//import {DEFAULT_FILESHARE_DEF} from "@file-share/elements/dist/viewModels/happDef";
 
 
 /** -- BUILD_MODE & IS_ELECTRON -- */
 
-// export let BUILD_MODE: string;
+export let BUILD_MODE: string;
 // export const MY_ELECTRON_API = 'electronBridge' in window? window.electronBridge as any : undefined;
 // export const IS_ELECTRON = typeof MY_ELECTRON_API !== 'undefined'
 // if (MY_ELECTRON_API) {
 //   BUILD_MODE = MY_ELECTRON_API.BUILD_MODE;
 // } else {
-//   try {
-//     BUILD_MODE = process.env.BUILD_MODE;
-//   } catch (e) {
-//     console.log("BUILD_MODE not set. Defaulting to prod.")
-//     BUILD_MODE = 'prod';
-//   }
+   try {
+     BUILD_MODE = process.env.BUILD_MODE;
+   } catch (e) {
+     console.log("BUILD_MODE not set. Defaulting to prod.")
+     BUILD_MODE = 'prod';
+   }
 // }
 //
-// export const IS_DEV = BUILD_MODE === 'dev';
-//
-// console.log("BUILD_MODE =", BUILD_MODE);
+export const IS_DEV = BUILD_MODE === 'dev';
+console.log("BUILD_MODE =", BUILD_MODE);
+console.log("IS_DEV =", IS_DEV);
 // console.log("IS_ELECTRON =", IS_ELECTRON);
 
 
@@ -34,18 +34,15 @@ try {
   console.log("HC_APP_PORT not defined")
 }
 
-export let OVERRIDE_HVM_DEF = false;
+export let CAN_ADD_PROFILES = false;
 try {
-  OVERRIDE_HVM_DEF = Boolean(process.env.ADD_PROFILES);
+  CAN_ADD_PROFILES = Boolean(process.env.ADD_PROFILES);
 } catch (e) {
   console.log("ADD_PROFILES not defined")
 }
-console.log("OVERRIDE_HVM_DEF =", OVERRIDE_HVM_DEF)
+console.log("CAN_ADD_PROFILES =", CAN_ADD_PROFILES)
 
-
-
-
-console.log("HAPP_ID =", DEFAULT_FILESHARE_DEF.id)
+//console.log("HAPP_ID =", DEFAULT_FILESHARE_DEF.id)
 console.log("HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);
 

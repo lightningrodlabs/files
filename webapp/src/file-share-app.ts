@@ -26,7 +26,7 @@ import {
   globalProfilesContext,
   ProfilesDvm
 } from "@file-share/elements";
-import {HC_ADMIN_PORT, HC_APP_PORT, OVERRIDE_HVM_DEF} from "./globals";
+import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES, IS_DEV} from "./globals";
 import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
 
@@ -40,7 +40,7 @@ export class FileShareApp extends HappElement {
   @state() private _offlinePerspectiveloaded = false;
 
   /** HvmDef */
-  static readonly HVM_DEF: HvmDef = OVERRIDE_HVM_DEF? DEFAULT_FILESHAREDEV_DEF : DEFAULT_FILESHARE_DEF;
+  static readonly HVM_DEF: HvmDef = CAN_ADD_PROFILES? DEFAULT_FILESHAREDEV_DEF : DEFAULT_FILESHARE_DEF;
 
 
   /** All arguments should be provided when constructed explicity */
@@ -161,7 +161,7 @@ export class FileShareApp extends HappElement {
     this._allAppEntryTypes = await this.fileShareDvm.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
 
-    if (OVERRIDE_HVM_DEF) {
+    if (CAN_ADD_PROFILES) {
       await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this._cell.agentPubKey);
     }
 
@@ -210,8 +210,8 @@ export class FileShareApp extends HappElement {
     /* render all */
     return html`
       <cell-context .cell="${this._cell}">
-        <view-cell-context></view-cell-context>
-        <file-share-page style="flex: 1;"></file-share-page>
+        <!-- <view-cell-context></view-cell-context> -->
+        <file-share-page style="flex: 1;" devmode=${IS_DEV}></file-share-page>
       </cell-context>        
     `
   }

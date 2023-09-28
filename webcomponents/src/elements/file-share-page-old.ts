@@ -22,7 +22,7 @@ import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, SplitObject} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
-import {DeliveryPerspective, DeliveryStateType, SignalProtocolType, ParcelKindVariantManifest} from "@ddd-qc/delivery";
+import {DeliveryPerspective, DeliveryStateType, SignalProtocolType,ParcelKindVariantManifest} from "@ddd-qc/delivery";
 import {
     FileShareNotification,
     FileShareNotificationType,
@@ -34,27 +34,12 @@ import {
 } from "../viewModels/fileShare.perspective";
 import {createAlert} from "../toast";
 
-import "./activity-timeline";
+import {SlAlert, SlCard, SlTooltip, SlBadge, SlButton, SlInput, SlDetails, SlSkeleton} from "@shoelace-style/shoelace";
 
-
-import {
-    SlAlert,
-    SlCard,
-    SlTooltip,
-    SlBadge,
-    SlButton,
-    SlInput,
-    SlDetails,
-    SlSkeleton,
-    SlDrawer
-} from "@shoelace-style/shoelace";
-
-import "@shoelace-style/shoelace/dist/components/avatar/avatar.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/badge/badge.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
-import "@shoelace-style/shoelace/dist/components/drawer/drawer.js";
 import "@shoelace-style/shoelace/dist/components/details/details.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
@@ -64,12 +49,11 @@ import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 
 
-
 /**
  * @element
  */
-@customElement("file-share-page")
-export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
+@customElement("file-share-page-dev")
+export class FileSharePageDev extends DnaElement<unknown, FileShareDvm> {
 
     // constructor() {
     //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
@@ -83,7 +67,6 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     @state() private _uploading?: SplitObject;
     @property() appletHash: EntryHashB64;
 
-    @property() devmode: boolean = false;
 
     private _notifCount = 0;
 
@@ -105,11 +88,6 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
     /** AppletId -> AppletInfo */
     @state() private _appletInfos: Dictionary<AppletInfo> = {}
-
-
-    get drawerElem() : SlDrawer {
-        return this.shadowRoot.getElementById("activityDrawer") as SlDrawer;
-    }
 
 
     /**
@@ -537,11 +515,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         <div><abbr title="${this.cell.agentPubKey}">${this._myProfile.nickname}</abbr></div>
         <h1>
           Whatever
-          ${this.devmode? html`
           <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
-          <button type="button" @click=${() => {this.refresh();}}>refresh</button>
-          `: html``
-          }               
+          <button type="button" @click=${() => {this.refresh();}}>refresh</button>               
         </h1>
          ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
             <div>
@@ -605,13 +580,6 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         <ul>
           ${outboundList}
         </ul>
-
-        <sl-button @click=${() => this.drawerElem.show()}>Open Activity feed</sl-button>
-        
-        <sl-drawer id="activityDrawer" label="Activity">
-            <activity-timeline></activity-timeline>
-            <sl-button slot="footer" variant="primary" @click=${() => this.drawerElem.hide()}>Close</sl-button>
-        </sl-drawer>
     `;
     }
 
