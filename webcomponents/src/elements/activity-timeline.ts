@@ -17,6 +17,8 @@ import {
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
 import {getInitials} from "../utils";
+import {SlDialog, SlDrawer} from "@shoelace-style/shoelace";
+import {FileView} from "./file-view";
 
 
 /**
@@ -34,6 +36,16 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
+
+
+    get dialogElem() : SlDialog {
+        return this.shadowRoot.getElementById("file-dialog") as SlDialog;
+    }
+
+    get fileViewElem() : FileView {
+        return this.shadowRoot.getElementById("file-view") as FileView;
+    }
+
 
     /**
      * In dvmUpdated() this._dvm is not already set!
@@ -81,20 +93,20 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
         const sortedReceptions: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.receptions)
             .map(([eh, [rp, ts]]) => [ts, eh, DeliveryEntryType.ReceptionProof])
-        console.log("sortedReceptions", sortedReceptions);
+        //console.log("sortedReceptions", sortedReceptions);
 
         const sortedReceptionAcks: [Timestamp, ActionHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.receptionAcks)
             .map(([ah, [rp, ts]]) => [ts, ah, DeliveryEntryType.ReceptionAck])
-        console.log("sortedReceptionAcks", sortedReceptionAcks);
+        //console.log("sortedReceptionAcks", sortedReceptionAcks);
 
         const sortedPrivateParcels: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.privateManifests)
             .filter(([eh, [rp, ts]]) => !receivedManifestEhs.includes(eh))
             .map(([eh, [rp, ts]]) => [ts, eh, DeliveryEntryType.ParcelManifest])
-        console.log("sortedPrivateParcels", sortedPrivateParcels);
+        //console.log("sortedPrivateParcels", sortedPrivateParcels);
 
         const sortedPublicParcels: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.publicParcels)
             .map(([eh, [rp, ts, auth]]) => [ts, eh, DeliveryEntryType.PublicParcel])
-        console.log("sortedPublicParcels", sortedPublicParcels);
+        //console.log("sortedPublicParcels", sortedPublicParcels);
 
         /** Concat all */
         const all = sortedReceptions.concat(sortedReceptionAcks, sortedPrivateParcels, sortedPublicParcels)
@@ -120,21 +132,25 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
         /** Determine File */
         let fileDescription: ParcelDescription;
+        let manifestEh: EntryHashB64;
         if (type == DeliveryEntryType.ParcelManifest) {
             const manifest = this.fileSharePerspective.privateFiles[hash];
             fileDescription = manifest.description;
+            manifestEh = hash;
         }
         if (type == DeliveryEntryType.ReceptionAck) {
             const distrib = this.deliveryPerspective.distributions[hash][0];
             fileDescription = distrib.delivery_summary.parcel_reference.description;
-
+            manifestEh = encodeHashToBase64(distrib.delivery_summary.parcel_reference.eh);
         }
         if (type == DeliveryEntryType.ReceptionProof) {
             const notice = this.deliveryPerspective.notices[hash][0];
             fileDescription = notice.summary.parcel_reference.description;
+            manifestEh = encodeHashToBase64(notice.summary.parcel_reference.eh);
         }
         if (type == DeliveryEntryType.PublicParcel) {
             fileDescription = this.deliveryPerspective.publicParcels[hash][0];
+            manifestEh = hash;
         }
 
 
@@ -201,7 +217,10 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
                     ${message}
                 </div>
                 <div class="activityDate"> ${date_str}</div>
-                <sl-button pill>${fileDescription.name}</sl-button>
+                <sl-button pill 
+                           @click=${() => {this.fileViewElem.hash = manifestEh; this.dialogElem.show();}}>
+                    ${fileDescription.name}
+                </sl-button>
             </div>
         </div>
     `;
@@ -230,6 +249,10 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         <div>
             <h3>Today</h3>
             ${items}
+            <sl-dialog id="file-dialog" label="Details">
+                <file-view id="file-view"></file-view>
+                <sl-button slot="footer" variant="primary">Close</sl-button>
+            </sl-dialog>
         </div>`;
     }
 

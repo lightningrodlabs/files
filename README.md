@@ -10,10 +10,10 @@ Enable sharing of files between agents by using the [Delivery zome module](https
 ### Features
 
 - Store a file privately on source-chain
-- Send a file privately to another agent
-- Share a file publicly (ON DHT).
-- Accept or decline a file sent from another agent (and store it on source-chain)
+- Share a file publicly (On DHT).
 - Download a file shared publicly
+- Send a file privately to another agent
+- Accept or decline a file sent from another agent (and store it on source-chain)
 
 #### Affordances
 

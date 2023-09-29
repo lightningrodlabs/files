@@ -6,6 +6,8 @@ import {
     encodeHashToBase64,
     EntryHash, HoloHashB64
 } from "@holochain/client";
+import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
+import {ParcelKind} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 
 
 /** */
@@ -121,4 +123,17 @@ export async function splitData(full_data_string: string, chunkMaxSize: number):
         numChunks: chunks.length,
         chunks: chunks,
     };
+}
+
+
+/** */
+export function prettyFiletype(kindInfo: ParcelKind): string {
+    let filetype = (kindInfo as ParcelKindVariantManifest).Manifest;
+    console.log("prettyFiletype()", filetype);
+    const fields = filetype.split('::');
+    if (fields.length > 1) {
+        filetype = fields[1];
+    }
+    console.log("prettyFiletype() res ", filetype);
+    return filetype;
 }

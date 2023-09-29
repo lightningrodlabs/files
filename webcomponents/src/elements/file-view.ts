@@ -29,10 +29,9 @@ import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
 @customElement("file-view")
 export class FileView extends DnaElement<unknown, FileShareDvm> {
 
-    constructor() {
-        super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
-        console.log("<comment-thread-view>.ctor()", this.hash)
-    }
+    // constructor() {
+    //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
+    // }
 
     @consume({context: globalProfilesContext, subscribe: true})
     _profilesZvm!: ProfilesZvm;

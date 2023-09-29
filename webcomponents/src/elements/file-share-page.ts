@@ -20,7 +20,7 @@ import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, SplitObject} from "../utils";
+import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, prettyFiletype, SplitObject} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {DeliveryPerspective, DeliveryStateType, SignalProtocolType, ParcelKindVariantManifest} from "@ddd-qc/delivery";
 import {
@@ -35,7 +35,8 @@ import {
 import {createAlert} from "../toast";
 
 import "./activity-timeline";
-
+import "./file-table";
+import "./file-view";
 
 import {
     SlAlert,
@@ -54,6 +55,7 @@ import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/badge/badge.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/drawer/drawer.js";
 import "@shoelace-style/shoelace/dist/components/details/details.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
@@ -63,6 +65,12 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 
+import {Upload, UploadBeforeEvent, UploadFileRejectEvent} from "@vaadin/upload";
+// import {UploadFile} from "@vaadin/upload/src/vaadin-upload";
+
+import '@vaadin/grid/theme/lumo/vaadin-grid.js';
+import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
+import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 
 
 /**
@@ -335,6 +343,16 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
     /** */
+    private onUpload(e: UploadBeforeEvent) {
+        console.log('upload-before event: ', e);
+        const file = e.detail.file;
+        //const xhr = event.detail.xhr;
+        console.log("onUpload", file);
+
+        e.preventDefault(); // Prevent the upload request
+    }
+
+    /** */
     render() {
         console.log("<file-share-page>.render()", this._initialized, this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
         //this.printNoticeReceived();
@@ -439,21 +457,6 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
             localPublicFileList[0] = html`No files found`;
         }
 
-        /** Local files list */
-        let privateFileList = Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(
-            ([eh, manifest]) => {
-                //console.log("" + index + ". " + agentIdB64)
-                return html `
-                    <li value="${eh}">
-                        ${manifest.description.name} | ${prettyFileSize(manifest.description.size)}
-                        <button type="button" @click=${() => {this.downloadFile(eh);}}>download</button>
-                    </li>`
-            }
-        )
-        if (privateFileList.length == 0) {
-            privateFileList[0] = html`No files found`;
-        }
-
 
         /** Unreplied inbounds */
         let inboundList = Object.entries(this._dvm.deliveryZvm.inbounds()).map(
@@ -544,6 +547,20 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
           }               
         </h1>
          ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+             <vaadin-upload id="myUpload" nodrop
+                            style="width:280px; margin-top:0;"
+                            max-file-size="8000000"
+                            max-files="10"
+                            @file-reject="${(e:UploadFileRejectEvent) => {window.alert(e.detail.file.name + ' error: ' + e.detail.error);}}"
+                            @upload-before="${(e:UploadBeforeEvent) => this.onUpload(e)}"
+             >
+                 <span slot="drop-label">Maximum file size: 8 MB</span>
+             </vaadin-upload>
+             <div style="margin-bottom: 20px;">
+                <sl-button variant="primary">Publish</sl-button>
+                <sl-button variant="primary">Send</sl-button>
+                <sl-button variant="primary">Add</sl-button>
+            </div>
             <div>
                 <label for="publishFile">Publish new file:</label>
                 <input type="file" id="publishFile" name="publishFile" />
@@ -554,7 +571,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                     }
         }}>
             </div>`
-        };  
+        } 
 
         <div style="margin-top:20px;">
           <label>Send File:</label>
@@ -579,9 +596,11 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         </ul>
         
         <h2>Private files</h2>
-        <ul>
-            ${privateFileList}
-        </ul>
+        <file-table .items=${Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(([eh, pm]) => {return {eh, description: pm.description}})}
+                    @download=${(e) => this.downloadFile(e.detail)}
+        ></file-table>
+        
+        
         ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
         <label for="addLocalFile">Add private file to source-chain:</label>
         <input type="file" id="addLocalFile" name="addLocalFile" />
