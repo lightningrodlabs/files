@@ -246,14 +246,13 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
         /** Render all */
         return html`
-        <div>
             <h3>Today</h3>
             ${items}
             <sl-dialog id="file-dialog" label="Details">
                 <file-view id="file-view"></file-view>
                 <sl-button slot="footer" variant="primary">Close</sl-button>
             </sl-dialog>
-        </div>`;
+        `;
     }
 
 

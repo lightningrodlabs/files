@@ -1,29 +1,12 @@
-import {css, html, LitElement, PropertyValues} from "lit";
+import {css, html, LitElement} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
 import {
-    ActionHashB64,
-    decodeHashFromBase64,
-    DnaHashB64,
-    encodeHashToBase64,
     EntryHashB64,
 } from "@holochain/client";
-import {consume} from "@lit-labs/context";
-import {
-    AppletInfo,
-    Hrl,
-    WeServices, weServicesContext,
-} from "@lightningrodlabs/we-applet";
-import {FileShareDvm} from "../viewModels/fileShare.dvm";
-import {FileShareProfile} from "../viewModels/profiles.proxy";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
-import {globalProfilesContext} from "../viewModels/happDef";
-import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, prettyFiletype} from "../utils";
-import {FileSharePerspective} from "../viewModels/fileShare.zvm";
-import {ParcelDescription, ParcelKindVariantManifest, ParcelReference} from "@ddd-qc/delivery";
-import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
-import {columnBodyRenderer, columnFooterRenderer, GridColumnBodyLitRenderer} from "@vaadin/grid/lit";
-import {GridItemModel} from "@vaadin/grid/src/vaadin-grid";
+import {prettyFileSize, prettyFiletype} from "../utils";
+import {ParcelReference} from "@ddd-qc/delivery";
+import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
+
 
 /**
  * @element

@@ -37,6 +37,7 @@ import {createAlert} from "../toast";
 import "./activity-timeline";
 import "./file-table";
 import "./file-view";
+import "./fs-menu";
 
 import {
     SlAlert,
@@ -56,11 +57,14 @@ import "@shoelace-style/shoelace/dist/components/badge/badge.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 import "@shoelace-style/shoelace/dist/components/drawer/drawer.js";
 import "@shoelace-style/shoelace/dist/components/details/details.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
+import "@shoelace-style/shoelace/dist/components/menu/menu.js";
+import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
@@ -71,6 +75,7 @@ import {Upload, UploadBeforeEvent, UploadFileRejectEvent} from "@vaadin/upload";
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
+import {SelectedType} from "./fs-menu";
 
 
 /**
@@ -114,6 +119,8 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     /** AppletId -> AppletInfo */
     @state() private _appletInfos: Dictionary<AppletInfo> = {}
 
+    @state() private _selected: string = SelectedType.Home.toString();
+
 
     get drawerElem() : SlDrawer {
         return this.shadowRoot.getElementById("activityDrawer") as SlDrawer;
@@ -134,13 +141,12 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         newDvm.fileShareZvm.subscribe(this, 'fileSharePerspective');
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
         console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name)
-        //newDvm.fileShareZvm.probeAll();
+        //await newDvm.fileShareZvm.probeAll();
     }
 
 
     /** After first render only */
     async firstUpdated() {
-        // this._initialized = true;
         console.log("<file-share-page> firstUpdated()", this.appletHash);
 
         /** Generate test data */
@@ -352,9 +358,10 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         e.preventDefault(); // Prevent the upload request
     }
 
+
     /** */
     render() {
-        console.log("<file-share-page>.render()", this._initialized, this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
+        console.log("<file-share-page>.render()", this._initialized, this._selected, this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
         //this.printNoticeReceived();
 
         if (!this._profilesZvm) {
@@ -535,18 +542,21 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
             outboundList[0] = html`No files outbound`;
         }
 
-        /** Render all */
-        return html`
-        <div><abbr title="${this.cell.agentPubKey}">${this._myProfile.nickname}</abbr></div>
-        <h1>
-          Whatever
-          ${this.devmode? html`
-          <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
-          <button type="button" @click=${() => {this.refresh();}}>refresh</button>
-          `: html``
-          }               
-        </h1>
-         ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+
+        /** Choose what to display */
+        let mainArea = html``;
+        if (this._selected == SelectedType.Home) {
+            mainArea = html`
+                <div style="margin-top:20px;">
+                    <label>Send File:</label>
+                    <select id="localFileSelector">
+                        ${fileOptions}
+                    </select>
+                    to: <select id="recipientSelector">${AgentOptions}</select>
+                    <input type="button" value="send" @click=${this.onSendFile}>
+                </div>
+
+                ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
              <vaadin-upload id="myUpload" nodrop
                             style="width:280px; margin-top:0;"
                             max-file-size="8000000"
@@ -556,11 +566,6 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
              >
                  <span slot="drop-label">Maximum file size: 8 MB</span>
              </vaadin-upload>
-             <div style="margin-bottom: 20px;">
-                <sl-button variant="primary">Publish</sl-button>
-                <sl-button variant="primary">Send</sl-button>
-                <sl-button variant="primary">Add</sl-button>
-            </div>
             <div>
                 <label for="publishFile">Publish new file:</label>
                 <input type="file" id="publishFile" name="publishFile" />
@@ -569,69 +574,113 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                     if (maybeSplitObj) {
                         this._uploading = maybeSplitObj;
                     }
-        }}>
+                }}>
             </div>`
-        } 
-
-        <div style="margin-top:20px;">
-          <label>Send File:</label>
-          <select id="localFileSelector">
-            ${fileOptions}
-          </select>
-            to: <select id="recipientSelector">
-              ${AgentOptions}
-          </select>
-          <input type="button" value="send" @click=${this.onSendFile}>
-        </div>
-
-        <hr/>
-        <h2>Public files</h2>
-        <ul>
-            ${publicFileList}
-        </ul>
-        
-        <h2>My public files</h2>
-        <ul>
-            ${localPublicFileList}
-        </ul>
-        
-        <h2>Private files</h2>
-        <file-table .items=${Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(([eh, pm]) => {return {eh, description: pm.description}})}
-                    @download=${(e) => this.downloadFile(e.detail)}
-        ></file-table>
-        
-        
-        ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
-        <label for="addLocalFile">Add private file to source-chain:</label>
-        <input type="file" id="addLocalFile" name="addLocalFile" />
-        <input type="button" value="Add" @click=${async() => {
-            const maybeSplitObj = await this.onAddFile();
-            if (maybeSplitObj) {
-                this._uploading = maybeSplitObj;
-            }
-            //this._uploading = false;
+                }
+                ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+            <label for="addLocalFile">Add private file to source-chain:</label>
+            <input type="file" id="addLocalFile" name="addLocalFile" />
+            <input type="button" value="Add" @click=${async() => {
+                    const maybeSplitObj = await this.onAddFile();
+                    if (maybeSplitObj) {
+                        this._uploading = maybeSplitObj;
+                    }
+                    //this._uploading = false;
+                }
+                }
+            >`
+                }                
+                <h2>Recent Activity</h2>
+                <activity-timeline></activity-timeline>`;
         }
-        }>`}   
-          
-        <hr/>
-        <h2>Inbound files:</h2>
-        <ul>
-          ${inboundList}
-        </ul>
-          
-        <hr/>
-        <h2>Outbound files:</h2>
-        <ul>
-          ${outboundList}
-        </ul>
+        if (this._selected == SelectedType.AllFiles) {
+            mainArea = html``;
+        }
+        console.log("mainArea?", SelectedType.PrivateFiles, this._selected);
+        if (this._selected == SelectedType.PrivateFiles) {
+            console.log("mainArea = PRIVATE FILES");
+            mainArea = html`
+                <h2>Private files</h2>
+                <file-table .items=${Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(([eh, pm]) => {return {eh, description: pm.description}})}
+                    @download=${(e) => this.downloadFile(e.detail)}
+                ></file-table>
 
-        <sl-button @click=${() => this.drawerElem.show()}>Open Activity feed</sl-button>
-        
-        <sl-drawer id="activityDrawer" label="Activity">
-            <activity-timeline></activity-timeline>
-            <sl-button slot="footer" variant="primary" @click=${() => this.drawerElem.hide()}>Close</sl-button>
-        </sl-drawer>
-    `;
+                <h2>My public files</h2>
+                <ul>
+                    ${localPublicFileList}
+                </ul>
+            `;
+        }
+        if (this._selected == SelectedType.PublicFiles) {
+            mainArea = html`        
+                <h2>Public files</h2>
+            <ul>
+                ${publicFileList}
+            </ul>`;
+        }
+
+        if (this._selected == SelectedType.Inbox) {
+            mainArea = html`
+                <h2>Inbound files:</h2>
+                <ul>
+                    ${inboundList}
+                </ul>`;
+        }
+        if (this._selected == SelectedType.Sent) {
+            mainArea = html``;
+        }
+        if (this._selected == SelectedType.InProgress) {
+            mainArea = html`
+                <hr/>
+                <h2>Outbound files:</h2>
+                <ul>
+                    ${outboundList}
+                </ul>`;
+        }
+
+
+        /** Render all */
+        return html`
+        <file-share-menu @selected=${(e) => this._selected = e.detail}></file-share-menu>
+        <div id="rhs">
+            <div id="topBar" style="display: flex;flex-direction: row-reverse">
+                <sl-avatar label=${this._myProfile.nickname} image=${avatarUrl}></sl-avatar>
+                <sl-button variant="default" size="medium">
+                    <sl-icon name="bug" label="Report bug"></sl-icon>
+                </sl-button>
+                ${this.devmode? html`
+                    <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
+                    <button type="button" @click=${() => {this.refresh();}}>refresh</button>
+                `: html``
+                }
+                <sl-input placeholder="Search" size="large" clearable
+                    style="flex-grow: 2">
+                    <sl-icon name="search" slot="prefix"></sl-icon>
+                </sl-input>            
+            </div>
+            ${mainArea}
+        </div>
+        `;
     }
 
+
+    /** */
+    static get styles() {
+        return [
+            css`
+              :host {
+                background: #F7FBFE;
+                height: inherit;
+                display: flex;
+                flex-direction: row;
+              }
+              file-share-menu {
+                width: 300px;
+              }
+              #rhs {
+                width: 100%;
+                margin: 5px;
+              }
+            `,];
+    }
 }

@@ -5,9 +5,9 @@
   "module": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && cp ../assets/favicon.ico dist",
     "build:watch": "tsc -w --incremental --preserveWatchOutput",
-    "dist": "rm -rf dist && tsc && rollup -c rollup.config.js",
+    "dist": "npm run build && rollup -c rollup.config.js",
     "start:ui": "concurrently --names tsc,dev-server \"npm run build:watch\" \"web-dev-server --config ./web-dev-server.config.mjs\"",
     "start:ui-only": "web-dev-server --config ./web-dev-server.config.mjs",
     "localize:extract": "lit-localize extract",
