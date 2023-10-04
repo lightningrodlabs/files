@@ -1,6 +1,6 @@
 import {
     ActionHashB64,
-    AgentPubKeyB64,
+    AgentPubKeyB64, AppSignalCb,
     decodeHashFromBase64,
     encodeHashToBase64,
     EntryHash, EntryHashB64
@@ -10,6 +10,7 @@ import {SplitObject} from "../utils";
 import {FileShareProxy} from "../bindings/file_share.proxy";
 import {SendFileInput} from "../bindings/file_share.types";
 import {ParcelManifest} from "@ddd-qc/delivery";
+import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 //import WebWorker from 'web-worker:./commitPrivateFile.ts';
 
@@ -104,35 +105,17 @@ export class FileShareZvm extends ZomeViewModel {
     }
 
 
-
+    // /** -- Signals -- */
+    //
+    // signalHandler?: AppSignalCb = this.mySignalHandler;
+    //
     // /** */
-    // async writeChunk(chunk: string): Promise<EntryHash> {
-    //     return this.zomeProxy.writeChunk(chunk);
-    // }
-
-    // /** */
-    // async writeChunk(dataHash: string, chunkIndex: number, chunk: string): Promise<EntryHash> {
-    //     const params = {
-    //         data_hash: dataHash,
-    //         chunk_index: chunkIndex,
-    //         chunk
-    //     }
-    //     return this.zomeProxy.writeChunk(params);
+    // mySignalHandler(signal: AppSignal): void {
+    //
     // }
 
 
-    // /** */
-    // commitPrivateFile(file: File, splitObj: SplitObject): void {
-    //     console.log('zvm.commitPrivateFile: ', splitObj);
-    //     this._worker.postMessage({file, splitObj, zomeProxy: this.zomeProxy});
-    // }
-
-
-    /** */
-    // async commitPrivateChunk(dataHash: string, data: string): Promise<EntryHashB64> {
-    //     const eh = await this.zomeProxy.writeFileChunk({data_hash: dataHash, data});
-    //     return encodeHashToBase64(eh);
-    // }
+    /** -- Methods -- */
 
 
     /** */

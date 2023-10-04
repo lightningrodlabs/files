@@ -22,7 +22,13 @@ import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, prettyFiletype, SplitObject} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
-import {DeliveryPerspective, DeliveryStateType, SignalProtocolType, ParcelKindVariantManifest} from "@ddd-qc/delivery";
+import {
+    DeliveryPerspective,
+    DeliveryStateType,
+    SignalProtocolType,
+    ParcelKindVariantManifest,
+    ParcelReference
+} from "@ddd-qc/delivery";
 import {
     FileShareDvmPerspective,
     FileShareNotification,
@@ -290,7 +296,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             const recipient = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).recipient;
             const manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[distribAh][0].delivery_summary.parcel_reference.eh);
             const privateManifest = this.fileSharePerspective.privateFiles[manifestEh];
-            const recipientName = this._profilesZvm.getProfile(recipient).nickname;
+            const maybeProfile = this._profilesZvm.getProfile(recipient);
+            const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             variant = 'success';
             icon = "check2-circle";
             title = "File successfully shared";
@@ -303,6 +310,12 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             icon = "check2-circle";
             title = "File successfully published";
             msg = `"${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)})`;
+            /** Notify peers that we published something */
+            const pr = {description: publicManifest.description, eh: decodeHashFromBase64(manifestEh)} as ParcelReference;
+            const timestamp = notifLog[0];
+            const peers = this._profilesZvm.getAgents().map((peer) => decodeHashFromBase64(peer));
+            console.log("PublicSharingComplete. notifying...", peers);
+            this._dvm.deliveryZvm.zomeProxy.notifyNewPublicParcel({peers, timestamp, pr});
         }
         if (FileShareNotificationType.PrivateCommitComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantPrivateCommitComplete).manifestEh;
@@ -315,7 +328,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         if (FileShareNotificationType.NewNoticeReceived == type) {
             const noticeEh = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).noticeEh;
             const description = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).description;
-            const recipientName = this._profilesZvm.getProfile((notifLog[2] as FileShareNotificationVariantNewNoticeReceived).sender).nickname;
+            const recipient = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).sender;
+            const maybeProfile = this._profilesZvm.getProfile(recipient);
+            const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             title = "Incoming file request";
             msg = `"${description.name}" (${prettyFileSize(description.size)}) from: ${recipientName}`;
             id = "new-notice-" + noticeEh
@@ -337,7 +352,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             const notif = notifLog[2] as FileShareNotificationVariantReplyReceived;
             const distrib = this.deliveryPerspective.distributions[notif.distribAh][0];
             const description = distrib.delivery_summary.parcel_reference.description;
-            const recipientName = this._profilesZvm.getProfile(notif.recipient).nickname;
+            const maybeProfile = this._profilesZvm.getProfile(notif.recipient);
+            const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             if (notif.hasAccepted) {
                 title = "File accepted";
             } else {
@@ -714,6 +730,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 height: inherit;
                 display: flex;
                 flex-direction: row;
+                padding: 15px 10px 10px 15px;
               }
               file-share-menu {
                 width: 300px;
@@ -721,6 +738,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
               #rhs {
                 width: 100%;
                 margin: 5px;
+                margin-left: 30px;
               }
               #topBar {
                 display: flex;

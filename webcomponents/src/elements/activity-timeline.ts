@@ -16,7 +16,7 @@ import {
 } from "@ddd-qc/delivery";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
-import {getInitials} from "../utils";
+import {getInitials, mime2icon, prettyFiletype} from "../utils";
 import {SlDialog, SlDrawer} from "@shoelace-style/shoelace";
 import {FileView} from "./file-view";
 import {sharedStyles} from "../sharedStyles";
@@ -119,12 +119,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
 
 
-    /**
-     received file from
-     sent file to
-     Bob published file
-     Added file
-     */
+    /** */
     activityLog2Html([ts, hash, type]: [Timestamp, EntryHashB64 | ActionHashB64, DeliveryEntryType]): TemplateResult<1> {
 
         /** Format date */
@@ -136,6 +131,9 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         let manifestEh: EntryHashB64;
         if (type == DeliveryEntryType.ParcelManifest) {
             const manifest = this.fileSharePerspective.privateFiles[hash];
+            if (!manifest) {
+                return html`<sl-skeleton effect="sheen"></sl-skeleton>`
+            }
             fileDescription = manifest.description;
             manifestEh = hash;
         }
@@ -190,38 +188,46 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         /** Format phrase */
         let message: string;
         if (type == DeliveryEntryType.ParcelManifest) {
-            message = `added a file`;
+            message = `was added privately by`;
         }
         if (type == DeliveryEntryType.ReceptionAck) {
-            message = `received your file`;
+            message = `was received by`;
         }
         if (type == DeliveryEntryType.ReceptionProof) {
-            message = `sent you a file`;
+            message = `was sent to you by`;
         }
         if (type == DeliveryEntryType.PublicParcel) {
-            message = `published a file`;
+            message = `was published by`;
         }
+
+        const authorSpan = author == this.cell.agentPubKey
+            ? html`<span style="font-weight: bold;">yourself</span>`
+            : html`<span class="nickname">${agent.nickname}</span>`;
+
+        const avatar =
+        avatarUrl? html`
+          <sl-avatar class="activityAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
+              <img src=${avatarUrl}>
+        </sl-avatar>                   
+            ` : html`
+        <sl-avatar class="activityAvatar" shape="circle" initials=${initials} color-scheme="Accent2"></sl-avatar>
+                `;
+
 
         /** render */
         return html`
-        <div id=${id} class="activityItem">
-            ${avatarUrl? html`
-                      <sl-avatar class="activityAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-                          <img src=${avatarUrl}>
-                      </sl-avatar>                   
-                          ` : html`
-                        <sl-avatar class="activityAvatar" shape="circle" initials=${initials} color-scheme="Accent2"></sl-avatar>
-                  `}
-            <div style="display: flex; flex-direction: column">
-                <div class="activityMsg">
-                    ${author == this.cell.agentPubKey? html`You` : html`<abbr title=${author}><span><b>${agent.nickname}</b></span></abbr>`}
-                    ${message}
-                </div>
-                <div class="activityDate"> ${date_str}</div>
-                <sl-button pill 
+        <div class="activityItem">
+            <div class="activityDate"> ${date_str}</div>            
+            <div id=${id} class="activityLine">
+                <sl-button class="file"
                            @click=${() => {this.fileViewElem.hash = manifestEh; this.dialogElem.show();}}>
+                    <sl-icon slot="prefix" name=${mime2icon(prettyFiletype(fileDescription.kind_info))}></sl-icon>
                     ${fileDescription.name}
                 </sl-button>
+                <div class="activityMsg">
+                    ${message}
+                    ${authorSpan}
+                </div>
             </div>
         </div>
     `;
@@ -247,7 +253,6 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
         /** Render all */
         return html`
-            <h3>Today</h3>
             ${items}
             <sl-dialog id="file-dialog" label="Details">
                 <file-view id="file-view"></file-view>
@@ -262,25 +267,37 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         return [
             sharedStyles,
             css`
-                .activityItem {
-                  display: flex; 
-                  flex-direction: row;
-                  min-height: 55px;
-                  margin: 5px 5px 35px 5px;
-                }
-                .activityAvatar {
-                  margin-right: 5px;
-                  min-width: 48px;
-                }
-                .activityDate {
-                  margin: 0px 0px 0px 5px;
-                  font-size: smaller;
-                  color: gray;
-                }
-                .activityMsg {
-                  margin: 5px 5px 5px 5px;
-                }        
-          `,];
+              .activityItem {
+                display: flex;
+                flex-direction: row-reverse;
+                align-content: center;
+                align-items: center;
+                margin-bottom: 10px;
+              }
+
+              .activityLine {
+                display: flex;
+                flex-direction: row;
+                min-height: 45px;
+                align-content: center;
+                align-items: center;
+                flex-grow: 2;
+              }
+
+              .activityAvatar {
+                margin-right: 5px;
+                min-width: 48px;
+              }
+
+              .activityDate {
+                margin: 0px 0px 0px 5px;
+                font-size: small;
+                color: gray;
+              }
+              .activityMsg {
+                margin: 5px 5px 5px 5px;
+              }
+            `,];
     }
 
 }

@@ -2,7 +2,7 @@ import { DnaViewModel, ZvmDef } from "@ddd-qc/lit-happ";
 import {
     DeliveryProperties,
     DeliveryZvm, ParcelDescription,
-    ParcelManifest,
+    ParcelManifest, ParcelReference,
     SignalProtocol,
     SignalProtocolType
 } from "@ddd-qc/delivery";
@@ -159,19 +159,20 @@ export class FileShareDvm extends DnaViewModel {
             })
         }
         if (SignalProtocolType.NewPublicParcel in deliverySignal) {
-            console.log("signal NewPublicParcel", deliverySignal.NewPublicParcel);
-            /** Into Notification */
-            // const notif = {
-            //     manifestEh: encodeHashToBase64(deliverySignal.NewPublicParcel.eh),
-            //     description: deliverySignal.NewPublicParcel.description,
-            // } as FileShareNotificationVariantNewPublicFile;
-            // this._perspective.notificationLogs.push([now, FileShareNotificationType.NewPublicFile, notif]);
-
-            // const ppEh = encodeHashToBase64(deliverySignal.NewPublicParcel.eh);
-            // this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh)).then((manifest: ParcelManifest) => {
-            //     this._perspective.publicFiles[manifest.data_hash] = ppEh;
-            //     this.notifySubscribers();
-            // })
+            console.log("signal NewPublicParcel dvm", deliverySignal.NewPublicParcel);
+            const author = encodeHashToBase64(deliverySignal.NewPublicParcel[2]);
+            const pr = deliverySignal.NewPublicParcel[1];
+            //const timestamp = deliverySignal.NewPublicParcel[0];
+            const ppEh = encodeHashToBase64(pr.eh);
+            if (author != this.cell.agentPubKey) {
+                // FIXME: getManifest() fails because it gets received via gossip. Might be best to requestManifest instead?
+                //this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh)).then((manifest) => this._perspective.publicFiles[manifest.data_hash] = ppEh);
+                this.probePublicFiles();
+            } else {
+                /** Notify peers that we published something */
+                //const peers = this._profilesZvm.getAgents().map((peer) => decodeHashFromBase64(peer));
+                //this._dvm.deliveryZvm.zomeProxy.notifyNewPublicParcel({peers, timestamp, pr});
+            }
             this.notifySubscribers();
         }
         if (SignalProtocolType.NewReplyAck in deliverySignal) {
