@@ -137,3 +137,11 @@ export function prettyFiletype(kindInfo: ParcelKind): string {
     console.log("prettyFiletype() res ", filetype);
     return filetype;
 }
+
+
+/** Make a pretty data string from a holochain timestamp */
+export function prettyTimestamp(ts: number): string {
+    const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+    const date_str = date.toLocaleString('en-US', {hour12: false});
+    return date_str;
+}

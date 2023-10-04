@@ -21,6 +21,7 @@ import {globalProfilesContext} from "../viewModels/happDef";
 import {emptyAppletHash, getInitials} from "../utils";
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
+import {sharedStyles} from "../sharedStyles";
 
 
 /**
@@ -119,4 +120,10 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
         `;
     }
 
+    /** */
+    static get styles() {
+        return [
+            sharedStyles,
+        ];
+    }
 }

@@ -19,6 +19,7 @@ import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timesta
 import {getInitials} from "../utils";
 import {SlDialog, SlDrawer} from "@shoelace-style/shoelace";
 import {FileView} from "./file-view";
+import {sharedStyles} from "../sharedStyles";
 
 
 /**
@@ -259,26 +260,27 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
     /** */
     static get styles() {
         return [
+            sharedStyles,
             css`
-        .activityItem {
-          display: flex; 
-          flex-direction: row;
-          min-height: 55px;
-          margin: 5px 5px 35px 5px;
-        }
-        .activityAvatar {
-          margin-right: 5px;
-          min-width: 48px;
-        }
-        .activityDate {
-          margin: 0px 0px 0px 5px;
-          font-size: smaller;
-          color: gray;
-        }
-        .activityMsg {
-          margin: 5px 5px 5px 5px;
-        }        
-      `,];
+                .activityItem {
+                  display: flex; 
+                  flex-direction: row;
+                  min-height: 55px;
+                  margin: 5px 5px 35px 5px;
+                }
+                .activityAvatar {
+                  margin-right: 5px;
+                  min-width: 48px;
+                }
+                .activityDate {
+                  margin: 0px 0px 0px 5px;
+                  font-size: smaller;
+                  color: gray;
+                }
+                .activityMsg {
+                  margin: 5px 5px 5px 5px;
+                }        
+          `,];
     }
 
 }

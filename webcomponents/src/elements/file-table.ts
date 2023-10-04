@@ -1,11 +1,29 @@
 import {css, html, LitElement} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {
+    AgentPubKeyB64,
+    EntryHash,
     EntryHashB64,
 } from "@holochain/client";
-import {prettyFileSize, prettyFiletype} from "../utils";
+import {prettyFileSize, prettyFiletype, prettyTimestamp} from "../utils";
 import {ParcelReference} from "@ddd-qc/delivery";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
+import {ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
+import {consume} from "@lit-labs/context";
+import {globalProfilesContext} from "../viewModels/happDef";
+import {ProfilesZvm} from "../viewModels/profiles.zvm";
+import {prettyDate} from "@ddd-qc/cell-proxy";
+import {sharedStyles} from "../sharedStyles";
+
+
+export interface FileTableItem {
+    pp_eh: EntryHash,
+    description: ParcelDescription,
+    timestamp: number,
+    author: AgentPubKeyB64,
+    isPrivate: boolean,
+    isLocal: boolean,
+}
 
 
 /**
@@ -16,10 +34,10 @@ export class FileTable extends LitElement {
 
     /** -- State variables -- */
 
-    @state() private _loading = true;
+    @property() items: FileTableItem[] = [];
 
-    @property() items: ParcelReference[] = [];
-
+    @consume({ context: globalProfilesContext, subscribe: true })
+    _profilesZvm!: ProfilesZvm;
 
     /** */
     onDownload(manifestEh: EntryHashB64): void {
@@ -29,8 +47,14 @@ export class FileTable extends LitElement {
     /** */
     render() {
         console.log("<file-table>.render()", this.items);
+        if (!this._profilesZvm) {
+            return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
+        }
+        if (!this.items.length) {
+            return html`No items found`;
+        }
 
-        const totalSize = this.items.reduce((accumulator, pr) => accumulator + pr.description.size, 0);
+        const totalSize = this.items.reduce((accumulator, item) => accumulator + item.description.size, 0);
 
         /** render all */
         return html`
@@ -55,15 +79,52 @@ export class FileTable extends LitElement {
                                             [],
                                     )}
                 ></vaadin-grid-column>
+                <vaadin-grid-column path="author" header="Author" .hidden="${!this.items[0].author}"
+                                    ${columnBodyRenderer(
+                                            ({ author }) => {
+                                                const maybeProfile = this._profilesZvm.perspective.profiles[author];
+                                                return maybeProfile
+                                                        ? html`<span>${maybeProfile.nickname}</span>`
+                                                        : html`<sl-skeleton effect="sheen"></sl-skeleton>`
+                                            },
+                                    [],
+                                    )}
+                ></vaadin-grid-column>
+                <vaadin-grid-column path="timestamp" header="Date"
+                                    ${columnBodyRenderer(
+                                            ({ timestamp }) => html`<span>${prettyTimestamp(timestamp)}</span>`,
+                                            [],
+                                    )}
+                ></vaadin-grid-column>
+                <vaadin-grid-column path="isLocal" header="Local" .hidden="${!("isLocal" in this.items[0])}"
+                                    ${columnBodyRenderer(
+                                            ({ isLocal }) => html`<span>${isLocal? "Yes" : "No"}</span>`,
+                                            [],
+                                    )}
+                ></vaadin-grid-column>
+                <vaadin-grid-column path="isPrivate" header="Private" .hidden="${!("isPrivate" in this.items[0])}"
+                                    ${columnBodyRenderer(
+                                            ({ isPrivate }) => html`<span>${isPrivate? "Yes" : "No"}</span>`,
+                                            [],
+                                    )}
+                ></vaadin-grid-column>
                 <vaadin-grid-column
-                        path="eh" header=""
+                        path="pp_eh" header=""
                         ${columnBodyRenderer(
-                                ({eh}) => html`<vaadin-button theme="tertiary-inline" style="cursor: pointer;" @click=${(e) => {this.onDownload(eh)}}>Download</vaadin-button>`,
+                                ({pp_eh}) => html`<vaadin-button theme="tertiary-inline" style="cursor: pointer;" @click=${(e) => {this.onDownload(pp_eh)}}>Download</vaadin-button>`,
                                 []
                         )}
                         ${columnFooterRenderer(() => html`<span>${this.items.length} files</span>`, [this.items])}
                 ></vaadin-grid-column>                
             </vaadin-grid>            
         `;
+    }
+
+
+    /** */
+    static get styles() {
+        return [
+            sharedStyles,
+        ];
     }
 }

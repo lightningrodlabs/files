@@ -8,6 +8,7 @@ import {DeliveryPerspective} from "@ddd-qc/delivery";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
+import {sharedStyles} from "../sharedStyles";
 
 
 /** */
@@ -87,48 +88,48 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         /** render all */
         return html`
             <div>
-                <img src="favicon.ico" width="32" height="32" alt="favicon" style="padding-left: 5px;padding-top: 5px;"/>
+                <img src="assets/icon.png" width="32" height="32" alt="favicon" style="padding-left: 5px;padding-top: 5px;"/>
                 <span id="title"">Whatever</span>
             </div>
             <sl-menu @sl-select=${this.onSelected}>
-                <sl-menu-item>
+                <sl-menu-item class="selectedItem">
                     <sl-icon slot="prefix" name="house"></sl-icon>
                     ${SelectedType.Home}
                 </sl-menu-item>
                 <sl-menu-item>                    
                     <sl-icon slot="prefix" name="files"></sl-icon>
                     ${SelectedType.AllFiles}
-                    ${this._initialized? html`<sl-badge slot="suffix" pill>${publicCount + privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${publicCount + privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
                     ${SelectedType.PrivateFiles}
-                    ${this._initialized? html`<sl-badge slot="suffix" pill>${privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="people"></sl-icon>
                     ${SelectedType.PublicFiles}
-                    ${this._initialized? html`<sl-badge slot="suffix" pill>${publicCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${publicCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="download"></sl-icon>
                     ${SelectedType.Inbox}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant="primary" pill>${unrepliedCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant=${unrepliedCount > 0? "primary" : "neutral"} pill>${unrepliedCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="send"></sl-icon>
                     ${SelectedType.Sent}
-                    ${this._initialized? html`<sl-badge slot="suffix" pill>${distribCount - outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${distribCount - outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="arrow-left-right"></sl-icon>
                     ${SelectedType.InProgress}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant="primary" pill>${outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-divider></sl-divider>
+                <!-- <sl-skeleton effect="sheen"></sl-skeleton>
                 <sl-skeleton effect="sheen"></sl-skeleton>
-                <sl-skeleton effect="sheen"></sl-skeleton>
-                <sl-skeleton effect="sheen"></sl-skeleton>
+                <sl-skeleton effect="sheen"></sl-skeleton> -->
             </sl-menu>
         `;
     }
@@ -136,6 +137,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** */
     static get styles() {
         return [
+            sharedStyles,
             css`
               :host {
                 background: #E8F0F3;
@@ -153,6 +155,16 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 margin: 5px;
                 font-size: large;
                 font-weight: bold;
+              }
+              sl-menu-item {
+                margin-bottom: 7px;
+              }
+              .selectedItem {
+                background: #FFFFFF;
+                box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+                margin-left: 5px;
+                margin-right: 5px;
+                border-radius: 5px;
               }
             `,];
     }

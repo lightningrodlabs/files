@@ -24,6 +24,7 @@ import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, prett
 import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {DeliveryPerspective, DeliveryStateType, SignalProtocolType, ParcelKindVariantManifest} from "@ddd-qc/delivery";
 import {
+    FileShareDvmPerspective,
     FileShareNotification,
     FileShareNotificationType,
     FileShareNotificationVariantDistributionToRecipientComplete,
@@ -33,11 +34,12 @@ import {
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
 } from "../viewModels/fileShare.perspective";
 import {createAlert} from "../toast";
+import {SelectedType} from "./file-share-menu";
 
 import "./activity-timeline";
 import "./file-table";
 import "./file-view";
-import "./fs-menu";
+import "./file-share-menu";
 
 import {
     SlAlert,
@@ -75,14 +77,15 @@ import {Upload, UploadBeforeEvent, UploadFileRejectEvent} from "@vaadin/upload";
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
-import {SelectedType} from "./fs-menu";
+import {FileTableItem} from "./file-table";
+import {sharedStyles} from "../sharedStyles";
 
 
 /**
  * @element
  */
 @customElement("file-share-page")
-export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
+export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
     // constructor() {
     //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
@@ -360,6 +363,57 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
 
 
     /** */
+    renderHome(fileOptions, agentOptions) {
+        return html`
+                <div style="margin-top:20px;">
+                    <label>Send File:</label>
+                    <select id="localFileSelector">
+                        ${fileOptions}
+                    </select>
+                    to: <select id="recipientSelector">${agentOptions}</select>
+                    <input type="button" value="send" @click=${this.onSendFile}>
+                </div>
+
+                ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+             <vaadin-upload id="myUpload" nodrop
+                            style="width:280px; margin-top:0;"
+                            max-file-size="8000000"
+                            max-files="10"
+                            @file-reject="${(e:UploadFileRejectEvent) => {window.alert(e.detail.file.name + ' error: ' + e.detail.error);}}"
+                            @upload-before="${(e:UploadBeforeEvent) => this.onUpload(e)}"
+             >
+                 <span slot="drop-label">Maximum file size: 8 MB</span>
+             </vaadin-upload>
+            <div>
+                <label for="publishFile">Publish new file:</label>
+                <input type="file" id="publishFile" name="publishFile" />
+                <input type="button" value="Publish" @click=${async () => {
+            const maybeSplitObj = await this.onPublishFile();
+            if (maybeSplitObj) {
+                this._uploading = maybeSplitObj;
+            }
+        }}>
+            </div>`
+        }
+                ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+            <label for="addLocalFile">Add private file to source-chain:</label>
+            <input type="file" id="addLocalFile" name="addLocalFile" />
+            <input type="button" value="Add" @click=${async() => {
+            const maybeSplitObj = await this.onAddFile();
+            if (maybeSplitObj) {
+                this._uploading = maybeSplitObj;
+            }
+            //this._uploading = false;
+        }
+        }
+            >`
+        }                
+        <h2>Recent Activity</h2>
+        <activity-timeline></activity-timeline>`;
+    }
+
+
+    /** */
     render() {
         console.log("<file-share-page>.render()", this._initialized, this._selected, this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
         //this.printNoticeReceived();
@@ -413,7 +467,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
             }
         }
 
-        const AgentOptions = Object.entries(this._profilesZvm.perspective.profiles).map(
+        const agentOptions = Object.entries(this._profilesZvm.perspective.profiles).map(
             ([agentIdB64, profile]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 return html `<option value="${agentIdB64}">${profile.nickname}</option>`
@@ -546,77 +600,49 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         /** Choose what to display */
         let mainArea = html``;
         if (this._selected == SelectedType.Home) {
-            mainArea = html`
-                <div style="margin-top:20px;">
-                    <label>Send File:</label>
-                    <select id="localFileSelector">
-                        ${fileOptions}
-                    </select>
-                    to: <select id="recipientSelector">${AgentOptions}</select>
-                    <input type="button" value="send" @click=${this.onSendFile}>
-                </div>
-
-                ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
-             <vaadin-upload id="myUpload" nodrop
-                            style="width:280px; margin-top:0;"
-                            max-file-size="8000000"
-                            max-files="10"
-                            @file-reject="${(e:UploadFileRejectEvent) => {window.alert(e.detail.file.name + ' error: ' + e.detail.error);}}"
-                            @upload-before="${(e:UploadBeforeEvent) => this.onUpload(e)}"
-             >
-                 <span slot="drop-label">Maximum file size: 8 MB</span>
-             </vaadin-upload>
-            <div>
-                <label for="publishFile">Publish new file:</label>
-                <input type="file" id="publishFile" name="publishFile" />
-                <input type="button" value="Publish" @click=${async () => {
-                    const maybeSplitObj = await this.onPublishFile();
-                    if (maybeSplitObj) {
-                        this._uploading = maybeSplitObj;
-                    }
-                }}>
-            </div>`
-                }
-                ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
-            <label for="addLocalFile">Add private file to source-chain:</label>
-            <input type="file" id="addLocalFile" name="addLocalFile" />
-            <input type="button" value="Add" @click=${async() => {
-                    const maybeSplitObj = await this.onAddFile();
-                    if (maybeSplitObj) {
-                        this._uploading = maybeSplitObj;
-                    }
-                    //this._uploading = false;
-                }
-                }
-            >`
-                }                
-                <h2>Recent Activity</h2>
-                <activity-timeline></activity-timeline>`;
+            mainArea = this.renderHome(fileOptions, agentOptions);
         }
         if (this._selected == SelectedType.AllFiles) {
-            mainArea = html``;
+            const privateItems = Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(([ppEh, pm]) => {
+                const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
+                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: true} as FileTableItem;
+            });
+            const publicItems = Object.entries(this.perspective.publicFiles).map(([dataHash, ppEh]) => {
+                const [description, timestamp, author] = this._dvm.deliveryZvm.perspective.publicParcels[ppEh];
+                const isLocal = !!this.deliveryPerspective.localManifestByData[dataHash];
+                return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
+            });
+            const allItems = privateItems.concat(publicItems);
+            mainArea = html`
+                <h2>All Files</h2>
+                <file-table .items=${allItems}
+                            @download=${(e) => this.downloadFile(e.detail)}
+                ></file-table>
+            `;
         }
         console.log("mainArea?", SelectedType.PrivateFiles, this._selected);
         if (this._selected == SelectedType.PrivateFiles) {
-            console.log("mainArea = PRIVATE FILES");
             mainArea = html`
-                <h2>Private files</h2>
-                <file-table .items=${Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(([eh, pm]) => {return {eh, description: pm.description}})}
-                    @download=${(e) => this.downloadFile(e.detail)}
+                <h2>Private Files</h2>
+                <file-table .items=${Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(([ppEh, pm]) => {
+                                const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
+                                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp/*, author: this.cell.agentPubKey, isLocal: true, isPrivate: true*/} as FileTableItem;
+                            })}
+                            @download=${(e) => this.downloadFile(e.detail)}
                 ></file-table>
-
-                <h2>My public files</h2>
-                <ul>
-                    ${localPublicFileList}
-                </ul>
             `;
         }
         if (this._selected == SelectedType.PublicFiles) {
             mainArea = html`        
-                <h2>Public files</h2>
-            <ul>
-                ${publicFileList}
-            </ul>`;
+                <h2>Public Files</h2>
+                <file-table .items=${Object.entries(this.perspective.publicFiles).map(([dataHash, ppEh]) => {
+                                const [description, timestamp, author] = this._dvm.deliveryZvm.perspective.publicParcels[ppEh];
+                                const isLocal = !!this.deliveryPerspective.localManifestByData[dataHash];
+                                return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal} as FileTableItem;
+                            })} 
+                            @download=${(e) => this.downloadFile(e.detail)}
+                ></file-table>              
+            `;
         }
 
         if (this._selected == SelectedType.Inbox) {
@@ -643,8 +669,10 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
         return html`
         <file-share-menu @selected=${(e) => this._selected = e.detail}></file-share-menu>
         <div id="rhs">
-            <div id="topBar" style="display: flex;flex-direction: row-reverse">
-                <sl-avatar label=${this._myProfile.nickname} image=${avatarUrl}></sl-avatar>
+            <div id="topBar">
+                <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
+                    <sl-avatar label=${this._myProfile.nickname} image=${avatarUrl}></sl-avatar>
+                </sl-tooltip>
                 <sl-button variant="default" size="medium">
                     <sl-icon name="bug" label="Report bug"></sl-icon>
                 </sl-button>
@@ -658,7 +686,9 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
                     <sl-icon name="search" slot="prefix"></sl-icon>
                 </sl-input>            
             </div>
-            ${mainArea}
+            <div id="mainArea">
+                ${mainArea}
+            </div>
         </div>
         `;
     }
@@ -667,6 +697,7 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
     /** */
     static get styles() {
         return [
+            sharedStyles,
             css`
               :host {
                 background: #F7FBFE;
@@ -680,6 +711,11 @@ export class FileSharePage extends DnaElement<unknown, FileShareDvm> {
               #rhs {
                 width: 100%;
                 margin: 5px;
+              }
+              #topBar {
+                display: flex;
+                flex-direction: row-reverse; 
+                gap: 5px;
               }
             `,];
     }

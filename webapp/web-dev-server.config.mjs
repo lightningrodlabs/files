@@ -58,17 +58,21 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
     }),
     builtins(),
     commonjs({}),
-    // copy({
-    //   copyOnce: true,
-    //   targets: [
-    //     {
-    //       src: '../node_modules/@shoelace-style/shoelace/dist/assets',
-    //       dest: 'dist/shoelace/assets',
-    //       //src: path.resolve(__dirname, '../node_modules/@shoelace-style/shoelace/dist/assets'),
-    //       //dest: path.resolve(__dirname, 'shoelace/assets'),
-    //     },
-    //   ],
-    // }),
+    copy({
+      copyOnce: true,
+      targets: [
+        {
+          src: '../assets',
+          dest: 'dist',
+        },
+        // {
+        //   src: '../node_modules/@shoelace-style/shoelace/dist/assets',
+        //   dest: 'dist/shoelace/assets',
+        //   //src: path.resolve(__dirname, '../node_modules/@shoelace-style/shoelace/dist/assets'),
+        //   //dest: path.resolve(__dirname, 'shoelace/assets'),
+        // },
+      ],
+    }),
     //workerLoader(),
     /** Use Hot Module Replacement by uncommenting. Requires @open-wc/dev-server-hmr plugin */
     // hmr && hmrPlugin({ exclude: ['**/*/node_modules/**/*'], presets: [presets.litElement] }),
