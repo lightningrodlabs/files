@@ -218,7 +218,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     async refresh() {
-        await this._dvm.probeAll();
+        this._dvm.probeAll();
         await this._dvm.probePublicFiles();
         await this._dvm.fileShareZvm.getPrivateFiles();
         await this._dvm.deliveryZvm.queryAll();
@@ -257,7 +257,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     printNoticeReceived() {
-        for (const [distribAh, noticeAck] of Object.entries(this._dvm.deliveryZvm.perspective.noticeAcks)) {
+        for (const [distribAh, noticeAck] of Object.entries(this.deliveryPerspective.noticeAcks)) {
             console.log(` - "${distribAh}": distrib = "${encodeHashToBase64(noticeAck.distribution_ah)}"; recipient = "${encodeHashToBase64(noticeAck.recipient)}"`)
         }
     }
@@ -335,7 +335,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         }
         if (FileShareNotificationType.ReplyReceived == type) {
             const notif = notifLog[2] as FileShareNotificationVariantReplyReceived;
-            const distrib = this._dvm.deliveryZvm.perspective.distributions[notif.distribAh][0];
+            const distrib = this.deliveryPerspective.distributions[notif.distribAh][0];
             const description = distrib.delivery_summary.parcel_reference.description;
             const recipientName = this._profilesZvm.getProfile(notif.recipient).nickname;
             if (notif.hasAccepted) {
@@ -374,7 +374,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <input type="button" value="send" @click=${this.onSendFile}>
                 </div>
 
-                ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+                ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
              <vaadin-upload id="myUpload" nodrop
                             style="width:280px; margin-top:0;"
                             max-file-size="8000000"
@@ -395,7 +395,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         }}>
             </div>`
         }
-                ${this._uploading? html`Uploading... ${Math.ceil(this._dvm.deliveryZvm.perspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+                ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
             <label for="addLocalFile">Add private file to source-chain:</label>
             <input type="file" id="addLocalFile" name="addLocalFile" />
             <input type="button" value="Add" @click=${async() => {
@@ -415,53 +415,52 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     render() {
-        console.log("<file-share-page>.render()", this._initialized, this._selected, this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
+        console.log("<file-share-page>.render()", this._initialized, this._selected, this.deliveryPerspective, this._profilesZvm.perspective);
         //this.printNoticeReceived();
 
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
-            //this._myProfile = { nickname: "dummy" + Math.floor(Math.random() * 100), fields: {}};
-        } else {
-            this._myProfile = this._profilesZvm.getMyProfile();
-            if (!this._myProfile) {
-                this._myProfile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
-                this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
-            }
+            return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
         }
+
+        this._myProfile = this._profilesZvm.getMyProfile();
+        if (!this._myProfile) {
+            this._myProfile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
+            this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
+        }
+
 
         /** This agent's profile info */
         let agent = {nickname: "unknown", fields: {}} as FileShareProfile;
-        let maybeAgent = undefined;
-        if (this._profilesZvm) {
-            maybeAgent = this._myProfile;
-            if (maybeAgent) {
-                agent = maybeAgent;
-            } else {
-                //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
-                this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey);
-                //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-            }
+        let maybeAgent = this._myProfile;
+        if (maybeAgent) {
+            agent = maybeAgent;
+        } else {
+            //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
+            this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey);
+            //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
         }
-        const initials = getInitials(agent.nickname);
+
+        //const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
 
 
         /** -- Notifications -- */
-        const newNotifDiff = this._dvm.perspective.notificationLogs.length - this._notifCount;
+        const newNotifDiff = this.perspective.notificationLogs.length - this._notifCount;
         if (newNotifDiff > 0) {
             console.log("New notifications diff:", newNotifDiff);
-            for(let i = this._notifCount; i < this._dvm.perspective.notificationLogs.length; i++) {
-                const notifLog = this._dvm.perspective.notificationLogs[i];
+            for(let i = this._notifCount; i < this.perspective.notificationLogs.length; i++) {
+                const notifLog = this.perspective.notificationLogs[i];
                 console.log("New notifications:", notifLog);
                 this.toastNotif(notifLog);
             }
-            this._notifCount = this._dvm.perspective.notificationLogs.length;
+            this._notifCount = this.perspective.notificationLogs.length;
         }
 
         /** -- -- */
 
         if (this._uploading) {
-            const maybeManifest = this._dvm.deliveryZvm.perspective.localManifestByData[this._uploading.dataHash];
+            const maybeManifest = this.deliveryPerspective.localManifestByData[this._uploading.dataHash];
             if (maybeManifest) {
                 this._uploading = undefined;
             }
@@ -474,9 +473,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             }
         )
 
-        console.log("localFiles found:", Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).length);
+        console.log("localFiles found:", Object.entries(this.fileSharePerspective.privateFiles).length);
 
-        const fileOptions = Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(
+        const fileOptions = Object.entries(this.fileSharePerspective.privateFiles).map(
             ([eh, manifest]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 return html `<option value="${eh}">${manifest.description.name}</option>`
@@ -484,9 +483,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         )
 
         /** Public files list */
-        let publicFileList = Object.entries(this._dvm.perspective.publicFiles).map(
+        let publicFileList = Object.entries(this.perspective.publicFiles).map(
             ([_dataHash, ppEh]) => {
-                const [description, _ts, _author] = this._dvm.deliveryZvm.perspective.publicParcels[ppEh];
+                const [description, _ts, _author] = this.deliveryPerspective.publicParcels[ppEh];
                 console.log("description", description);
                 // FIXME check if we also have file locally (with data_hash)
                 if (!description) {
@@ -504,7 +503,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         }
 
         /** Local public files list */
-        let localPublicFileList = Object.entries(this._dvm.fileShareZvm.perspective.localPublicFiles).map(
+        let localPublicFileList = Object.entries(this.fileSharePerspective.localPublicFiles).map(
             ([eh, manifest]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 return html `
@@ -557,7 +556,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             ([distribEh, [distrib, ts, deliveryStates]]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 const manifestEh = encodeHashToBase64(distrib.delivery_summary.parcel_reference.eh);
-                const manifest = this._dvm.fileShareZvm.perspective.privateFiles[manifestEh];
+                const manifest = this.fileSharePerspective.privateFiles[manifestEh];
                 const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
                 const date_str = date.toLocaleString('en-US', {hour12: false});
 
@@ -603,16 +602,20 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             mainArea = this.renderHome(fileOptions, agentOptions);
         }
         if (this._selected == SelectedType.AllFiles) {
-            const privateItems = Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(([ppEh, pm]) => {
+            const privateItems = Object.entries(this.fileSharePerspective.privateFiles).map(([ppEh, pm]) => {
                 const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
                 return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: true} as FileTableItem;
             });
+            const myPublicItems = Object.entries(this.fileSharePerspective.localPublicFiles).map(([ppEh, pm]) => {
+                const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
+                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: false} as FileTableItem;
+            });
             const publicItems = Object.entries(this.perspective.publicFiles).map(([dataHash, ppEh]) => {
-                const [description, timestamp, author] = this._dvm.deliveryZvm.perspective.publicParcels[ppEh];
+                const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
                 const isLocal = !!this.deliveryPerspective.localManifestByData[dataHash];
                 return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
             });
-            const allItems = privateItems.concat(publicItems);
+            const allItems = privateItems.concat(publicItems, myPublicItems);
             mainArea = html`
                 <h2>All Files</h2>
                 <file-table .items=${allItems}
@@ -624,22 +627,29 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         if (this._selected == SelectedType.PrivateFiles) {
             mainArea = html`
                 <h2>Private Files</h2>
-                <file-table .items=${Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).map(([ppEh, pm]) => {
+                <file-table .items=${Object.entries(this.fileSharePerspective.privateFiles).map(([ppEh, pm]) => {
                                 const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
-                                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp/*, author: this.cell.agentPubKey, isLocal: true, isPrivate: true*/} as FileTableItem;
+                                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp} as FileTableItem;
                             })}
                             @download=${(e) => this.downloadFile(e.detail)}
                 ></file-table>
             `;
         }
         if (this._selected == SelectedType.PublicFiles) {
+            const myPublicItems = Object.entries(this.fileSharePerspective.localPublicFiles).map(([ppEh, pm]) => {
+                const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
+                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true} as FileTableItem;
+            });
+            const dhtPublicItems = Object.entries(this.perspective.publicFiles).map(([dataHash, ppEh]) => {
+                const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
+                const isLocal = !!this.deliveryPerspective.localManifestByData[dataHash];
+                return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal} as FileTableItem;
+            });
+            const publicItems = dhtPublicItems.concat(myPublicItems);
+
             mainArea = html`        
                 <h2>Public Files</h2>
-                <file-table .items=${Object.entries(this.perspective.publicFiles).map(([dataHash, ppEh]) => {
-                                const [description, timestamp, author] = this._dvm.deliveryZvm.perspective.publicParcels[ppEh];
-                                const isLocal = !!this.deliveryPerspective.localManifestByData[dataHash];
-                                return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal} as FileTableItem;
-                            })} 
+                <file-table .items=${publicItems} 
                             @download=${(e) => this.downloadFile(e.detail)}
                 ></file-table>              
             `;

@@ -211,6 +211,13 @@ export class FileShareDvm extends DnaViewModel {
 
 
     /** */
+    async initializePerspectiveOnline(): Promise<void>  {
+        console.log("initializePerspectiveOnline() probePublicFiles")
+        await super.initializePerspectiveOnline();
+        await this.probePublicFiles();
+    }
+
+    /** */
     async probePublicFiles(): Promise<Dictionary<string>> {
         let publicFiles: Dictionary<string> = {};
         const pds = Object.entries(this.deliveryZvm.perspective.publicParcels);

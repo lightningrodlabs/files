@@ -72,14 +72,16 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     render() {
         console.log("<file-share-menu>.render()", this._initialized);
 
-        let publicCount = 0;
+        let localPublicCount = 0;
+        let dhtPublicCount = 0;
         let privateCount = 0;
         let unrepliedCount = 0;
         let distribCount = 0;
         let outboundCount = 0;
         if (this._initialized) {
-            publicCount = Object.entries(this.perspective.publicFiles).length;
-            privateCount = Object.entries(this._dvm.fileShareZvm.perspective.privateFiles).length;
+            dhtPublicCount = Object.entries(this.perspective.publicFiles).length;
+            localPublicCount = Object.entries(this.deliveryPerspective.localPublicManifests).length;
+            privateCount = Object.entries(this.fileSharePerspective.privateFiles).length;
             unrepliedCount = Object.entries(this._dvm.deliveryZvm.inbounds()).length;
             distribCount = Object.entries(this._dvm.deliveryZvm.perspective.distributions).length;
             outboundCount = Object.entries(this._dvm.deliveryZvm.outbounds()).length;
@@ -99,7 +101,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <sl-menu-item>                    
                     <sl-icon slot="prefix" name="files"></sl-icon>
                     ${SelectedType.AllFiles}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${publicCount + privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${localPublicCount + dhtPublicCount + privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
@@ -109,7 +111,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="people"></sl-icon>
                     ${SelectedType.PublicFiles}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${publicCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${localPublicCount + dhtPublicCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="download"></sl-icon>
@@ -153,7 +155,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
               }
               #title {
                 margin: 5px;
-                font-size: large;
+                font-size: 32px;
                 font-weight: bold;
               }
               sl-menu-item {
