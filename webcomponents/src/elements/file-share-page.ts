@@ -44,6 +44,7 @@ import {SelectedType} from "./file-share-menu";
 import "./activity-timeline";
 import "./file-table";
 import "./file-view";
+import "./file-button";
 import "./file-share-menu";
 
 import {

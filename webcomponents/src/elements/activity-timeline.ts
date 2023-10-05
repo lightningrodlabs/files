@@ -209,16 +209,18 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
                 `;
 
 
+//         <sl-button class="file"
+//     @click=${() => {this.fileViewElem.hash = manifestEh; this.dialogElem.show();}}>
+// <sl-icon slot="prefix" name=${mime2icon(prettyFiletype(fileDescription.kind_info))}></sl-icon>
+//     ${fileDescription.name}
+// </sl-button>
+
         /** render */
         return html`
         <div class="activityItem">
             <div class="activityDate"> ${date_str}</div>            
             <div id=${id} class="activityLine">
-                <sl-button class="file"
-                           @click=${() => {this.fileViewElem.hash = manifestEh; this.dialogElem.show();}}>
-                    <sl-icon slot="prefix" name=${mime2icon(prettyFiletype(fileDescription.kind_info))}></sl-icon>
-                    ${fileDescription.name}
-                </sl-button>
+                <file-button .hash="${manifestEh}"></file-button>
                 <div class="activityMsg">
                     ${message}
                     ${authorSpan}
