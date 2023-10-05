@@ -1,4 +1,4 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
@@ -26,7 +26,7 @@ import {
     DeliveryStateType,
     SignalProtocolType,
     ParcelKindVariantManifest,
-    ParcelReference
+    ParcelReference, DeliveryNotice
 } from "@ddd-qc/delivery";
 import {
     FileShareDvmPerspective,
@@ -373,7 +373,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     /** */
-    renderHome(fileOptions, agentOptions) {
+    renderHome(fileOptions, agentOptions, unrepliedInbounds) {
         return html`
                 <div style="margin-top:20px;">
                     <label>Send File:</label>
@@ -417,7 +417,11 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         }
         }
             >`
-        }                
+        }
+        ${unrepliedInbounds.length? html`
+            <h2>Incoming file requests</h2>
+            <ul>${unrepliedInbounds}</ul>
+        ` : html``}
         <h2>Recent Activity</h2>
         <activity-timeline></activity-timeline>`;
     }
@@ -494,6 +498,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
         /** Unreplied inbounds */
+        let unrepliedInbounds: TemplateResult<1>[] = [];
         let inboundList = Object.entries(this._dvm.deliveryZvm.inbounds()).map(
             ([noticeEh, [notice, ts, pct]]) => {
                 console.log("" + noticeEh, this.deliveryPerspective.notices[noticeEh]);
@@ -504,7 +509,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     sender = senderProfile.nickname
                 }
                 if (pct == -1) {
-                    return html`
+                    const unrepliedLi = html`
                         <li id="inbound_${noticeEh}">
                             "${notice.summary.parcel_reference.description.name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_reference.description.size)}
                             <button type="button" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
@@ -514,6 +519,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                                 decline
                             </button>
                         </li>`
+                    unrepliedInbounds.push(unrepliedLi);
+                    return unrepliedLi;
                 } else {
                     return html`<li id="inbound_${noticeEh}">
                             "${notice.summary.parcel_reference.description.name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_reference.description.size)} | RETRIEVING ${pct}%
@@ -574,7 +581,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         /** Choose what to display */
         let mainArea = html``;
         if (this._selected == SelectedType.Home) {
-            mainArea = this.renderHome(fileOptions, agentOptions);
+            mainArea = this.renderHome(fileOptions, agentOptions, unrepliedInbounds);
         }
         if (this._selected == SelectedType.AllFiles) {
             const privateItems = Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
