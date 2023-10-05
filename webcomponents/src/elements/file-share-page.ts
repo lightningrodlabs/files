@@ -21,7 +21,6 @@ import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, prettyFiletype, SplitObject} from "../utils";
-import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {
     DeliveryPerspective,
     DeliveryStateType,
@@ -85,6 +84,7 @@ import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 import {FileTableItem} from "./file-table";
 import {sharedStyles} from "../sharedStyles";
+import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 
 
 /**
@@ -111,9 +111,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-    fileSharePerspective!: FileSharePerspective;
-
-    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     deliveryPerspective!: DeliveryPerspective;
 
     @consume({ context: globalProfilesContext, subscribe: true })
@@ -131,9 +128,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     @state() private _selected: string = SelectedType.Home.toString();
 
 
-    get drawerElem() : SlDrawer {
-        return this.shadowRoot.getElementById("activityDrawer") as SlDrawer;
-    }
+    // get drawerElem() : SlDrawer {
+    //     return this.shadowRoot.getElementById("activityDrawer") as SlDrawer;
+    // }
 
 
     /**
@@ -147,10 +144,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             oldDvm.fileShareZvm.unsubscribe(this);
             oldDvm.deliveryZvm.unsubscribe(this);
         }
-        newDvm.fileShareZvm.subscribe(this, 'fileSharePerspective');
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
         console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name)
-        //await newDvm.fileShareZvm.probeAll();
     }
 
 
@@ -225,8 +220,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** */
     async refresh() {
         this._dvm.probeAll();
-        await this._dvm.probePublicFiles();
-        await this._dvm.fileShareZvm.getPrivateFiles();
+        await this._dvm.fileShareZvm.zomeProxy.getPrivateFiles();
         await this._dvm.deliveryZvm.queryAll();
         this.requestUpdate();
     }
@@ -285,7 +279,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         if (FileShareNotificationType.ReceptionComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).manifestEh;
             //const noticeEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).noticeEh;
-            const privateManifest = this.fileSharePerspective.privateFiles[manifestEh];
+            const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             variant = 'success';
             icon = "check2-circle";
             title = "File succesfully received";
@@ -295,7 +289,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             const distribAh = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).distribAh;
             const recipient = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).recipient;
             const manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[distribAh][0].delivery_summary.parcel_reference.eh);
-            const privateManifest = this.fileSharePerspective.privateFiles[manifestEh];
+            const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             const maybeProfile = this._profilesZvm.getProfile(recipient);
             const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             variant = 'success';
@@ -305,7 +299,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         }
         if (FileShareNotificationType.PublicSharingComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantPublicSharingComplete).manifestEh;
-            const publicManifest = this.fileSharePerspective.localPublicFiles[manifestEh];
+            const publicManifest = this.deliveryPerspective.localPublicManifests[manifestEh][0];
             variant = 'success';
             icon = "check2-circle";
             title = "File successfully published";
@@ -319,7 +313,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         }
         if (FileShareNotificationType.PrivateCommitComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantPrivateCommitComplete).manifestEh;
-            const privateManifest = this.fileSharePerspective.privateFiles[manifestEh];
+            const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             variant = 'success';
             icon = "check2-circle";
             title = "File succesfully added";
@@ -489,49 +483,14 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             }
         )
 
-        console.log("localFiles found:", Object.entries(this.fileSharePerspective.privateFiles).length);
+        console.log("localFiles found:", Object.entries(this.deliveryPerspective.privateManifests).length);
 
-        const fileOptions = Object.entries(this.fileSharePerspective.privateFiles).map(
-            ([eh, manifest]) => {
+        const fileOptions = Object.entries(this.deliveryPerspective.privateManifests).map(
+            ([eh, [manifest, _ts]]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 return html `<option value="${eh}">${manifest.description.name}</option>`
             }
         )
-
-        /** Public files list */
-        let publicFileList = Object.entries(this.perspective.publicFiles).map(
-            ([_dataHash, ppEh]) => {
-                const [description, _ts, _author] = this.deliveryPerspective.publicParcels[ppEh];
-                console.log("description", description);
-                // FIXME check if we also have file locally (with data_hash)
-                if (!description) {
-                    return html``;
-                }
-                return html `
-                    <li>
-                        ${description.name} | ${prettyFileSize(description.size)}
-                        <button type="button" @click=${() => {this.downloadFile(ppEh);}}>download</button>
-                    </li>`
-            }
-        )
-        if (publicFileList.length == 0) {
-            publicFileList[0] = html`No files found`;
-        }
-
-        /** Local public files list */
-        let localPublicFileList = Object.entries(this.fileSharePerspective.localPublicFiles).map(
-            ([eh, manifest]) => {
-                //console.log("" + index + ". " + agentIdB64)
-                return html `
-                    <li value="${eh}">
-                        ${manifest.description.name} | ${prettyFileSize(manifest.description.size)}
-                        <button type="button" @click=${() => {this.downloadFile(eh);}}>download</button>
-                    </li>`
-            }
-        )
-        if (localPublicFileList.length == 0) {
-            localPublicFileList[0] = html`No files found`;
-        }
 
 
         /** Unreplied inbounds */
@@ -572,7 +531,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             ([distribEh, [distrib, ts, deliveryStates]]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 const manifestEh = encodeHashToBase64(distrib.delivery_summary.parcel_reference.eh);
-                const manifest = this.fileSharePerspective.privateFiles[manifestEh];
+                const manifest = this.deliveryPerspective.privateManifests[manifestEh][0];
                 const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
                 const date_str = date.toLocaleString('en-US', {hour12: false});
 
@@ -618,20 +577,20 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             mainArea = this.renderHome(fileOptions, agentOptions);
         }
         if (this._selected == SelectedType.AllFiles) {
-            const privateItems = Object.entries(this.fileSharePerspective.privateFiles).map(([ppEh, pm]) => {
-                const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
+            const privateItems = Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
+                //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
                 return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: true} as FileTableItem;
             });
-            const myPublicItems = Object.entries(this.fileSharePerspective.localPublicFiles).map(([ppEh, pm]) => {
-                const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
-                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: false} as FileTableItem;
-            });
-            const publicItems = Object.entries(this.perspective.publicFiles).map(([dataHash, ppEh]) => {
-                const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
-                const isLocal = !!this.deliveryPerspective.localManifestByData[dataHash];
+            // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
+            //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
+            //     return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: false} as FileTableItem;
+            // });
+            const publicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
+                //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
+                const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
                 return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
             });
-            const allItems = privateItems.concat(publicItems, myPublicItems);
+            const allItems = privateItems.concat(publicItems/*, myPublicItems*/);
             mainArea = html`
                 <h2>All Files</h2>
                 <file-table .items=${allItems}
@@ -639,12 +598,11 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 ></file-table>
             `;
         }
-        console.log("mainArea?", SelectedType.PrivateFiles, this._selected);
         if (this._selected == SelectedType.PrivateFiles) {
             mainArea = html`
                 <h2>Private Files</h2>
-                <file-table .items=${Object.entries(this.fileSharePerspective.privateFiles).map(([ppEh, pm]) => {
-                                const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
+                <file-table .items=${Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm,timestamp]]) => {
+                                //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
                                 return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp} as FileTableItem;
                             })}
                             @download=${(e) => this.downloadFile(e.detail)}
@@ -652,20 +610,21 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             `;
         }
         if (this._selected == SelectedType.PublicFiles) {
-            const myPublicItems = Object.entries(this.fileSharePerspective.localPublicFiles).map(([ppEh, pm]) => {
-                const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
-                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true} as FileTableItem;
-            });
-            const dhtPublicItems = Object.entries(this.perspective.publicFiles).map(([dataHash, ppEh]) => {
-                const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
-                const isLocal = !!this.deliveryPerspective.localManifestByData[dataHash];
+            // console.log("this.deliveryPerspective.localPublicManifests", this.deliveryPerspective.localPublicManifests)
+            // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
+            //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
+            //     return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true} as FileTableItem;
+            // });
+            const dhtPublicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
+                //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
+                const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
                 return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal} as FileTableItem;
             });
-            const publicItems = dhtPublicItems.concat(myPublicItems);
+            //const publicItems = dhtPublicItems.concat(myPublicItems);
 
             mainArea = html`        
                 <h2>Public Files</h2>
-                <file-table .items=${publicItems} 
+                <file-table .items=${dhtPublicItems} 
                             @download=${(e) => this.downloadFile(e.detail)}
                 ></file-table>              
             `;
@@ -673,18 +632,32 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
         if (this._selected == SelectedType.Inbox) {
             mainArea = html`
-                <h2>Inbound files:</h2>
+                <h2>Inbound files</h2>
                 <ul>
                     ${inboundList}
                 </ul>`;
         }
         if (this._selected == SelectedType.Sent) {
-            mainArea = html``;
+            let distributionList = Object.entries(this.deliveryPerspective.distributions)
+                .filter(([distribAh, tuple]) => DistributionStateType.AllAcceptedParcelsReceived in tuple[2])
+                .map(([distribAh, tuple]) => {
+                    const recipients = tuple[0].recipients.map((agent) => this._profilesZvm.perspective.profiles[encodeHashToBase64(agent)].nickname);
+                    const description = tuple[0].delivery_summary.parcel_reference.description;
+                    return html`<li>${description.name}: ${recipients}</li>`
+                });
+            if (distributionList.length == 0) {
+                distributionList = [html`No items found`];
+            }
+            mainArea = html`
+                <h2>Sent</h2>
+                <ul>
+                    ${distributionList}
+                </ul>                
+            `;
         }
         if (this._selected == SelectedType.InProgress) {
             mainArea = html`
-                <hr/>
-                <h2>Outbound files:</h2>
+                <h2>Outbound files</h2>
                 <ul>
                     ${outboundList}
                 </ul>`;

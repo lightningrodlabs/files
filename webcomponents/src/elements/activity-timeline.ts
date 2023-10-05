@@ -5,7 +5,6 @@ import {consume} from "@lit-labs/context";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
-import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {
     DeliveryEntryType,
     DeliveryPerspective,
@@ -29,9 +28,6 @@ import {sharedStyles} from "../sharedStyles";
 export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
     /** Observed perspective from zvm */
-    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-    fileSharePerspective!: FileSharePerspective;
-
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     deliveryPerspective!: DeliveryPerspective;
 
@@ -59,7 +55,6 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
             oldDvm.fileShareZvm.unsubscribe(this);
             oldDvm.deliveryZvm.unsubscribe(this);
         }
-        newDvm.fileShareZvm.subscribe(this, 'fileSharePerspective');
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
         //console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name)
     }
@@ -130,7 +125,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         let fileDescription: ParcelDescription;
         let manifestEh: EntryHashB64;
         if (type == DeliveryEntryType.ParcelManifest) {
-            const manifest = this.fileSharePerspective.privateFiles[hash];
+            const manifest = this.deliveryPerspective.privateManifests[hash][0];
             if (!manifest) {
                 return html`<sl-skeleton effect="sheen"></sl-skeleton>`
             }

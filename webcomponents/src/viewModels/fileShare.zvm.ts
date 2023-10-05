@@ -10,20 +10,8 @@ import {SplitObject} from "../utils";
 import {FileShareProxy} from "../bindings/file_share.proxy";
 import {SendFileInput} from "../bindings/file_share.types";
 import {ParcelManifest} from "@ddd-qc/delivery";
-import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 //import WebWorker from 'web-worker:./commitPrivateFile.ts';
-
-/** */
-export interface FileSharePerspective {
-    ///** AgentPubKey -> manifest_eh */
-    //privateFilesReceivedByAgent: Record<AgentPubKeyB64, EntryHashB64[]>,
-    /** manifest_eh -> Manifest */
-    privateFiles: Record<EntryHashB64, ParcelManifest>,
-    /** manifest_eh -> Manifest */
-    localPublicFiles: Record<EntryHashB64, ParcelManifest>,
-}
-
 
 
 /** */
@@ -42,12 +30,10 @@ export class FileShareZvm extends ZomeViewModel {
 
     /** -- ViewModel -- */
 
-    private _perspective: FileSharePerspective = {/*privateFilesReceivedByAgent: {},*/ privateFiles: {}, localPublicFiles: {}};
-
 
     /* */
-    get perspective(): FileSharePerspective {
-        return this._perspective;
+    get perspective(): unknown {
+        return {};
     }
 
 
@@ -60,49 +46,16 @@ export class FileShareZvm extends ZomeViewModel {
 
     /** */
     async initializePerspectiveOnline(): Promise<void> {
-        // FIXME
+        // N/A
     }
 
 
     /** */
     async initializePerspectiveOffline(): Promise<void> {
-        await this.getPrivateFiles();
-        await this.getLocalPublicFiles();
-
-        //console.log("Can worker", window.Worker);
-        // this._worker.onmessage = (event) => {
-        //     console.log('Worker said: ' + event.data);
-        //     //this._perspective.privateFiles[event.data.ehb64] = event.data.manifest;
-        //     this.notifySubscribers();
-        // };
-        // console.log("worker", this._worker);
+        // N/A
     }
 
 
-    // async probeAll(): Promise<void> {
-    //     const prs  = await this.zomeProxy.probeFiles();
-    //     console.log("fileShare.zvm.probeAll()", prs);
-    // }
-
-
-    /** */
-    async getPrivateFiles(): Promise<void> {
-        const pairs = await this.zomeProxy.getPrivateFiles();
-        for (const [eh, manifest] of pairs) {
-            this._perspective.privateFiles[encodeHashToBase64(eh)] = manifest;
-        }
-        this.notifySubscribers();
-    }
-
-
-    /** */
-    async getLocalPublicFiles(): Promise<void> {
-        const pairs = await this.zomeProxy.getLocalPublicFiles();
-        for (const [eh, manifest] of pairs) {
-            this._perspective.localPublicFiles[encodeHashToBase64(eh)] = manifest;
-        }
-        this.notifySubscribers();
-    }
 
 
     // /** -- Signals -- */
@@ -127,14 +80,8 @@ export class FileShareZvm extends ZomeViewModel {
             orig_filesize: file.size,
             chunks,
         }
-        const [manifest_eh, description] =  await this.zomeProxy.commitPrivateFile(params);
+        const [manifest_eh, _description] =  await this.zomeProxy.commitPrivateFile(params);
         const ehb64 = encodeHashToBase64(manifest_eh);
-        /** Store new manifest */
-        this._perspective.privateFiles[ehb64] = {
-            data_hash: dataHash,
-            chunks,
-            description,
-        } as ParcelManifest;
         /** Done */
         this.notifySubscribers();
         return ehb64;
@@ -150,14 +97,9 @@ export class FileShareZvm extends ZomeViewModel {
             orig_filesize: file.size,
             chunks,
         }
-        const [manifest_eh, description] =  await this.zomeProxy.publishFileManifest(params);
+        const [manifest_eh, _description] =  await this.zomeProxy.publishFileManifest(params);
         const ehb64 = encodeHashToBase64(manifest_eh);
         /** Store new manifest */
-        this._perspective.localPublicFiles[ehb64] = {
-            data_hash: dataHash,
-            chunks,
-            description,
-        } as ParcelManifest;
         /** Done */
         this.notifySubscribers();
         return ehb64;
@@ -182,14 +124,8 @@ export class FileShareZvm extends ZomeViewModel {
         orig_filesize: file.size,
         chunks: chunksToSend,
       }
-      const [manifest_eh, description] =  await this.zomeProxy.commitPrivateFile(params);
+      const [manifest_eh, _description] =  await this.zomeProxy.commitPrivateFile(params);
       const ehb64 = encodeHashToBase64(manifest_eh);
-      /** Store new manifest */
-      this._perspective.privateFiles[ehb64] = {
-        data_hash: splitObj.dataHash,
-        chunks: chunksToSend,
-        description,
-      } as ParcelManifest;
       /** Done */
       this.notifySubscribers();
       return ehb64;
@@ -212,14 +148,8 @@ export class FileShareZvm extends ZomeViewModel {
             orig_filesize: file.size,
             chunks: chunksToSend,
         }
-        const [manifest_eh, description] = await this.zomeProxy.publishFileManifest(params);
+        const [manifest_eh, _description] = await this.zomeProxy.publishFileManifest(params);
         const ehb64 = encodeHashToBase64(manifest_eh);
-        /** Store new manifest */
-        this._perspective.localPublicFiles[ehb64] = {
-            data_hash: splitObj.dataHash,
-            chunks: chunksToSend,
-            description,
-        } as ParcelManifest;
         /** Done */
         this.notifySubscribers();
         return ehb64;

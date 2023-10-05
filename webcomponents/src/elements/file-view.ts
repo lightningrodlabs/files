@@ -19,16 +19,16 @@ import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {emptyAppletHash, getInitials} from "../utils";
-import {FileSharePerspective} from "../viewModels/fileShare.zvm";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
 import {sharedStyles} from "../sharedStyles";
+import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 
 
 /**
  * @element
  */
 @customElement("file-view")
-export class FileView extends DnaElement<unknown, FileShareDvm> {
+export class FileView extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
     // constructor() {
     //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
@@ -46,8 +46,8 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
     @property() showActionBar: boolean = false
 
     /** Observed perspective from zvm */
-    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-    fileSharePerspective!: FileSharePerspective;
+    // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+    // fileSharePerspective!: FileSharePerspective;
 
     /** -- State variables -- */
 
@@ -67,9 +67,9 @@ export class FileView extends DnaElement<unknown, FileShareDvm> {
             console.log("\t Unsubscribed to fileShareZvm's roleName = ", oldDvm.fileShareZvm.cell.name)
             oldDvm.fileShareZvm.unsubscribe(this);
         }
-        newDvm.fileShareZvm.subscribe(this, 'fileSharePerspective');
+        //newDvm.fileShareZvm.subscribe(this, 'fileSharePerspective');
         console.log("\t Subscribed fileShareZvm's roleName = ", newDvm.fileShareZvm.cell.name)
-        newDvm.fileShareZvm.probeAll();
+        //newDvm.fileShareZvm.probeAll();
     }
 
 

@@ -4,8 +4,6 @@ import {ParcelDescription, SignalProtocol, SignalProtocolType} from "@ddd-qc/del
 
 /** */
 export interface FileShareDvmPerspective {
-    /* DataHash -> pp_eh */
-    publicFiles: Record<string, EntryHashB64>,
     /** Notifications */
     notificationLogs: [Timestamp, FileShareNotificationType, FileShareNotification][];
 }

@@ -1,4 +1,4 @@
-import { DnaViewModel, ZvmDef } from "@ddd-qc/lit-happ";
+import {AppProxy, delay, DnaViewModel, HCL, ZvmDef} from "@ddd-qc/lit-happ";
 import {
     DeliveryProperties,
     DeliveryZvm, ParcelDescription,
@@ -12,7 +12,7 @@ import {
     AppSignalCb,
     decodeHashFromBase64, encodeHashToBase64,
     EntryHash,
-    EntryHashB64, Timestamp,
+    EntryHashB64, InstalledAppId, Timestamp,
 } from "@holochain/client";
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
@@ -30,6 +30,7 @@ import {
     FileShareNotificationVariantPublicSharingComplete,
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
 } from "./fileShare.perspective";
+import {ReactiveElement} from "lit";
 
 
 /** */
@@ -47,6 +48,8 @@ interface UploadState {
 export class FileShareDvm extends DnaViewModel {
 
     private _uploadState?: UploadState;
+
+    //private _latestPublic: EntryHashB64[] = [];
 
     /** -- DnaViewModel Interface -- */
 
@@ -66,7 +69,7 @@ export class FileShareDvm extends DnaViewModel {
 
     /** -- ViewModel Interface -- */
 
-    private _perspective: FileShareDvmPerspective = {publicFiles: {}, notificationLogs: []};
+    private _perspective: FileShareDvmPerspective = {/*publicFiles: {},*/ notificationLogs: []};
 
 
     /** */
@@ -130,15 +133,7 @@ export class FileShareDvm extends DnaViewModel {
                             this._uploadState = undefined;
                         });
                     } else {
-                        this.fileShareZvm.publishFileManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks).then((eh) => {
-                            /** Into Notification */
-                            const notif = {
-                                manifestEh: eh,
-                            } as FileShareNotificationVariantPublicSharingComplete;
-                            this._perspective.notificationLogs.push([now, FileShareNotificationType.PublicSharingComplete, notif]);
-                            this.notifySubscribers();
-                            this._uploadState = undefined;
-                        });
+                        this.fileShareZvm.publishFileManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks);
                     }
                 } else {
                     /** Otherwise commit next one */
@@ -148,7 +143,7 @@ export class FileShareDvm extends DnaViewModel {
         }
         if (SignalProtocolType.NewReceptionProof in deliverySignal) {
             console.log("signal NewReceptionProof", deliverySignal.NewReceptionProof);
-            this.fileShareZvm.getPrivateFiles().then(() => {
+            this.fileShareZvm.zomeProxy.getPrivateFiles().then(() => {
                 /** Into Notification */
                 const notif = {
                     noticeEh: encodeHashToBase64(deliverySignal.NewReceptionProof[2].notice_eh),
@@ -167,8 +162,18 @@ export class FileShareDvm extends DnaViewModel {
             if (author != this.cell.agentPubKey) {
                 // FIXME: getManifest() fails because it gets received via gossip. Might be best to requestManifest instead?
                 //this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh)).then((manifest) => this._perspective.publicFiles[manifest.data_hash] = ppEh);
-                this.probePublicFiles();
+                //this.probePublicFiles();
+                //this._latestPublic.push(ppEh);
+                this.probeAll();
             } else {
+                /** Notify UI that we finished publishing something */
+                const notif = {
+                    manifestEh: ppEh,
+                } as FileShareNotificationVariantPublicSharingComplete;
+                this._perspective.notificationLogs.push([now, FileShareNotificationType.PublicSharingComplete, notif]);
+                this.notifySubscribers();
+                this._uploadState = undefined;
+
                 /** Notify peers that we published something */
                 //const peers = this._profilesZvm.getAgents().map((peer) => decodeHashFromBase64(peer));
                 //this._dvm.deliveryZvm.zomeProxy.notifyNewPublicParcel({peers, timestamp, pr});
@@ -211,28 +216,43 @@ export class FileShareDvm extends DnaViewModel {
     }
 
 
-    /** */
-    async initializePerspectiveOnline(): Promise<void>  {
-        console.log("initializePerspectiveOnline() probePublicFiles")
-        await super.initializePerspectiveOnline();
-        await this.probePublicFiles();
-    }
 
-    /** */
-    async probePublicFiles(): Promise<Dictionary<string>> {
-        let publicFiles: Dictionary<string> = {};
-        const pds = Object.entries(this.deliveryZvm.perspective.publicParcels);
-        console.log("probePublicFiles() PublicParcels count", Object.entries(pds).length);
-        for (const [ppEh, [pd, _ts, _author]] of pds) {
-            if (pd.zome_origin == "file_share_integrity") {
-                const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh));
-                publicFiles[manifest.data_hash] = ppEh;
-            }
-        }
-        this._perspective.publicFiles = publicFiles;
-        this.notifySubscribers();
-        return publicFiles;
-    }
+    // /** */
+    // shouldProbePublic(): boolean {
+    //     return this._latestPublic.length > 0;
+    // };
+
+
+    // /** */
+    // protected postProbeAll(): void {
+    //     console.log("postProbeAll() PublicParcels START");
+    //     this.updatePublicFiles();
+    // }
+
+
+    // /** */
+    // private async updatePublicFiles(): Promise<Dictionary<string>> {
+    //     let publicFiles: Dictionary<string> = {};
+    //     const pds = Object.entries(this.deliveryZvm.perspective.publicParcels);
+    //     console.log("probeAllInner() PublicParcels count", Object.entries(pds).length);
+    //     for (const [ppEh, [pd, _ts, _author]] of pds) {
+    //         if (pd.zome_origin == "file_share_integrity") {
+    //             try {
+    //                 const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh));
+    //                 publicFiles[manifest.data_hash] = ppEh;
+    //                 if (this._latestPublic.includes(ppEh)) {
+    //                     this._latestPublic = this._latestPublic.filter(item => item != ppEh);
+    //                 }
+    //             } catch(e) {
+    //                 console.warn("getManifest() failed. Probably did need to wait for gossip");
+    //             }
+    //         }
+    //     }
+    //     this._perspective.publicFiles = publicFiles;
+    //     this.notifySubscribers();
+    //     return publicFiles;
+    // }
+
 
     /** */
     async startCommitPrivateFile(file: File): Promise<SplitObject> {
