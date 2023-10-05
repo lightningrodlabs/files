@@ -35,9 +35,6 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
     _profilesZvm!: ProfilesZvm;
 
 
-    get dialogElem() : SlDialog {
-        return this.shadowRoot.getElementById("file-dialog") as SlDialog;
-    }
 
     get fileViewElem() : FileView {
         return this.shadowRoot.getElementById("file-view") as FileView;
@@ -122,28 +119,28 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         const date_str = date.toLocaleString('en-US', {hour12: false});
 
         /** Determine File */
-        let fileDescription: ParcelDescription;
+        //let fileDescription: ParcelDescription;
         let manifestEh: EntryHashB64;
         if (type == DeliveryEntryType.ParcelManifest) {
             const manifest = this.deliveryPerspective.privateManifests[hash][0];
             if (!manifest) {
                 return html`<sl-skeleton effect="sheen"></sl-skeleton>`
             }
-            fileDescription = manifest.description;
+            //fileDescription = manifest.description;
             manifestEh = hash;
         }
         if (type == DeliveryEntryType.ReceptionAck) {
             const distrib = this.deliveryPerspective.distributions[hash][0];
-            fileDescription = distrib.delivery_summary.parcel_reference.description;
+            //fileDescription = distrib.delivery_summary.parcel_reference.description;
             manifestEh = encodeHashToBase64(distrib.delivery_summary.parcel_reference.eh);
         }
         if (type == DeliveryEntryType.ReceptionProof) {
             const notice = this.deliveryPerspective.notices[hash][0];
-            fileDescription = notice.summary.parcel_reference.description;
+            //fileDescription = notice.summary.parcel_reference.description;
             manifestEh = encodeHashToBase64(notice.summary.parcel_reference.eh);
         }
         if (type == DeliveryEntryType.PublicParcel) {
-            fileDescription = this.deliveryPerspective.publicParcels[hash][0];
+            //fileDescription = this.deliveryPerspective.publicParcels[hash][0];
             manifestEh = hash;
         }
 
@@ -209,12 +206,6 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
                 `;
 
 
-//         <sl-button class="file"
-//     @click=${() => {this.fileViewElem.hash = manifestEh; this.dialogElem.show();}}>
-// <sl-icon slot="prefix" name=${mime2icon(prettyFiletype(fileDescription.kind_info))}></sl-icon>
-//     ${fileDescription.name}
-// </sl-button>
-
         /** render */
         return html`
         <div class="activityItem">
@@ -249,13 +240,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
 
         /** Render all */
-        return html`
-            ${items}
-            <sl-dialog id="file-dialog" label="Details">
-                <file-view id="file-view"></file-view>
-                <sl-button slot="footer" variant="primary">Close</sl-button>
-            </sl-dialog>
-        `;
+        return html`${items}`;
     }
 
 

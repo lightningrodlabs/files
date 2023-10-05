@@ -211,9 +211,18 @@ export class FileShareApp extends HappElement {
     return html`
       <cell-context .cell="${this._cell}">
         <!-- <view-cell-context></view-cell-context> -->
-        <file-share-page style="flex: 1;height:100vh;" devmode=${IS_DEV}></file-share-page>
+        <file-share-page devmode=${IS_DEV}></file-share-page>
       </cell-context>        
     `
   }
 
+  /** */
+  static get styles() {
+    return [
+      css`
+        :host {
+          display: block;
+          height: inherit;
+        }`]
+  }
 }

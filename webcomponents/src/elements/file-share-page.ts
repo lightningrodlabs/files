@@ -56,7 +56,7 @@ import {
     SlInput,
     SlDetails,
     SlSkeleton,
-    SlDrawer
+    SlDrawer, SlDialog
 } from "@shoelace-style/shoelace";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js";
@@ -386,15 +386,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
 
                 ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
-             <vaadin-upload id="myUpload" nodrop
-                            style="width:280px; margin-top:0;"
-                            max-file-size="8000000"
-                            max-files="10"
-                            @file-reject="${(e:UploadFileRejectEvent) => {window.alert(e.detail.file.name + ' error: ' + e.detail.error);}}"
-                            @upload-before="${(e:UploadBeforeEvent) => this.onUpload(e)}"
-             >
-                 <span slot="drop-label">Maximum file size: 8 MB</span>
-             </vaadin-upload>
             <div>
                 <label for="publishFile">Publish new file:</label>
                 <input type="file" id="publishFile" name="publishFile" />
@@ -674,32 +665,52 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
         /** Render all */
         return html`
-        <file-share-menu @selected=${(e) => this._selected = e.detail}></file-share-menu>
-        <div id="rhs">
-            <div id="topBar">
-                <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
-                    <sl-avatar label=${this._myProfile.nickname} image=${avatarUrl}></sl-avatar>
-                </sl-tooltip>
-                <sl-button variant="default" size="medium">
-                    <sl-icon name="bug" label="Report bug"></sl-icon>
-                </sl-button>
-                ${this.devmode? html`
-                    <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
-                    <button type="button" @click=${() => {this.refresh();}}>refresh</button>
-                `: html``
-                }
-                <sl-input placeholder="Search" size="large" clearable
-                    style="flex-grow: 2">
-                    <sl-icon name="search" slot="prefix"></sl-icon>
-                </sl-input>            
-            </div>
-            <div id="mainArea">
-                ${mainArea}
+        <div id="main">
+            <file-share-menu @selected=${(e) => this._selected = e.detail}></file-share-menu>
+            <div id="rhs">
+                <div id="topBar">
+                    <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
+                        <sl-avatar label=${this._myProfile.nickname} image=${avatarUrl}></sl-avatar>
+                    </sl-tooltip>
+                    <sl-button variant="default" size="medium">
+                        <sl-icon name="bug" label="Report bug"></sl-icon>
+                    </sl-button>
+                    ${this.devmode? html`
+                        <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
+                        <button type="button" @click=${() => {this.refresh();}}>refresh</button>
+                    `: html``
+                    }
+                    <sl-input placeholder="Search" size="large" clearable
+                        style="flex-grow: 2">
+                        <sl-icon name="search" slot="prefix"></sl-icon>
+                    </sl-input>            
+                </div>
+                <div id="mainArea">
+                    ${mainArea}
+                </div>
             </div>
         </div>
+        <sl-button id="fab" size="large" variant="primary"  ?disabled=${this._uploading} circle @click=${(e) => this.dialogElem.open = true}>
+            <sl-icon name="plus-lg" label="Add"></sl-icon>
+        </sl-button>
+        <sl-dialog id="publish-dialog" label="Publish file">
+            <vaadin-upload id="myUpload" nodrop
+                           style="width:280px; margin-top:0;"
+                           max-file-size="200000000"
+                           max-files="1"
+                           @file-reject="${(e:UploadFileRejectEvent) => {window.alert(e.detail.file.name + ' error: ' + e.detail.error);}}"
+                           @upload-before="${(e:UploadBeforeEvent) => this.onUpload(e)}"
+            >
+                <span slot="drop-label">Maximum file size: 20 MB</span>
+            </vaadin-upload>
+            <sl-button slot="footer" variant="primary" @click=${(e) => this.dialogElem.open = false}>Close</sl-button>
+        </sl-dialog>
         `;
     }
 
+    get dialogElem() : SlDialog {
+        return this.shadowRoot.getElementById("publish-dialog") as SlDialog;
+    }
 
     /** */
     static get styles() {
@@ -707,9 +718,13 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             sharedStyles,
             css`
               :host {
+                display: block;
+                height: 100vh;           
+              }
+              #main {
                 background: #F7FBFE;
-                height: inherit;
                 display: flex;
+                height: inherit;
                 flex-direction: row;
                 padding: 15px 10px 10px 15px;
               }
@@ -725,6 +740,12 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 display: flex;
                 flex-direction: row-reverse; 
                 gap: 5px;
+              }
+              #fab {
+                position: absolute;
+                bottom: 30px;
+                right: 30px;
+                /*box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;*/
               }
             `,];
     }
