@@ -3,7 +3,7 @@ import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {
-    ActionHashB64,
+    ActionHashB64, AgentPubKeyB64,
     decodeHashFromBase64,
     DnaHashB64,
     encodeHashToBase64,
@@ -47,15 +47,10 @@ import "./file-view";
 import "./file-button";
 import "./file-share-menu";
 import "./publish-dialog";
+import "./send-dialog";
 
 import {
     SlAlert,
-    SlCard,
-    SlTooltip,
-    SlBadge,
-    SlButton,
-    SlInput,
-    SlDetails,
     SlSkeleton,
     SlDrawer, SlDialog
 } from "@shoelace-style/shoelace";
@@ -78,16 +73,19 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 
-import {Upload, UploadBeforeEvent, UploadFileRejectEvent} from "@vaadin/upload";
+//import {Upload, UploadBeforeEvent, UploadFileRejectEvent} from "@vaadin/upload";
 // import {UploadFile} from "@vaadin/upload/src/vaadin-upload";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
+
+
 import {FileTableItem} from "./file-table";
 import {sharedStyles} from "../sharedStyles";
 import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {PublishDialog} from "./publish-dialog";
+import {SendDialog} from "./send-dialog";
 
 
 /**
@@ -106,6 +104,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** -- Fields -- */
     @state() private _initialized = false;
     @state() private _uploading?: SplitObject;
+    @state() private _mustSendTo?: AgentPubKeyB64;
     @property() appletHash: EntryHashB64;
 
     @property() devmode: boolean = false;
@@ -367,25 +366,15 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** */
     renderHome(fileOptions, agentOptions, unrepliedInbounds) {
         return html`
-                <div style="margin-top:20px;">
-                    <label>Send File:</label>
-                    <select id="localFileSelector">
-                        ${fileOptions}
-                    </select>
-                    to: <select id="recipientSelector">${agentOptions}</select>
-                    <input type="button" value="send" @click=${this.onSendFile}>
-                </div>
-
             ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
             <label for="addLocalFile">Add private file to source-chain:</label>
             <input type="file" id="addLocalFile" name="addLocalFile" />
             <input type="button" value="Add" @click=${async() => {
-            const maybeSplitObj = await this.onAddFile();
-            if (maybeSplitObj) {
-                this._uploading = maybeSplitObj;
+                const maybeSplitObj = await this.onAddFile();
+                if (maybeSplitObj) {
+                    this._uploading = maybeSplitObj;
+                }
             }
-            //this._uploading = false;
-        }
         }
             >`
         }
@@ -447,7 +436,12 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         if (this._uploading) {
             const maybeManifest = this.deliveryPerspective.localManifestByData[this._uploading.dataHash];
             if (maybeManifest) {
+                /** Finished adding to source-chain */
                 this._uploading = undefined;
+                /** Now to send? */
+                if (this._mustSendTo) {
+                    this._dvm.fileShareZvm.sendFile(maybeManifest[0], this._mustSendTo).then((distribAh) => this._mustSendTo = undefined);
+                }
             }
         }
 
@@ -669,15 +663,26 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
             </div>
         </div>
-        <sl-button id="fab" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.dialogElem.open()}>
+        <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.sendDialogElem.open()}>
+            <sl-icon name="send" label="Send"></sl-icon>
+        </sl-button>        
+        <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.publishDialogElem.open()}>
             <sl-icon name="plus-lg" label="Add"></sl-icon>
         </sl-button>
         <publish-dialog id="publish-dialog" @publishStarted=${(e) => this._uploading = e.detail}></publish-dialog>
+        <send-dialog id="send-dialog" @sendStarted=${(e) => {
+            this._uploading = e.detail.splitObj;
+            this._mustSendTo = e.detail.recipient;
+        }}></send-dialog>
+        
         `;
     }
 
-    get dialogElem() : PublishDialog {
+    get publishDialogElem() : PublishDialog {
         return this.shadowRoot.getElementById("publish-dialog") as PublishDialog;
+    }
+    get sendDialogElem() : SendDialog {
+        return this.shadowRoot.getElementById("send-dialog") as SendDialog;
     }
 
     /** */
@@ -709,12 +714,17 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 flex-direction: row-reverse; 
                 gap: 5px;
               }
-              #fab {
+              #fab-publish {
                 position: absolute;
                 bottom: 30px;
                 right: 30px;
                 /*box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;*/
               }
+              #fab-send {
+                position: absolute;
+                bottom: 90px;
+                right: 30px;
+              }              
             `,];
     }
 }
