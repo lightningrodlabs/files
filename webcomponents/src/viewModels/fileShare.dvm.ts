@@ -1,7 +1,7 @@
 import {AppProxy, delay, DnaViewModel, HCL, ZvmDef} from "@ddd-qc/lit-happ";
 import {
     DeliveryProperties,
-    DeliveryZvm, ParcelDescription,
+    DeliveryZvm, ParcelDescription, ParcelKindVariantManifest,
     ParcelManifest, ParcelReference,
     SignalProtocol,
     SignalProtocolType
@@ -17,7 +17,7 @@ import {
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 import {FileShareZvm} from "./fileShare.zvm";
-import {splitFile, SplitObject} from "../utils";
+import {base64ToArrayBuffer, splitFile, SplitObject} from "../utils";
 import { decode } from "@msgpack/msgpack";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {
@@ -332,4 +332,27 @@ export class FileShareDvm extends DnaViewModel {
     }
 
 
+    /** */
+    async localParcel2File(manifestEh: EntryHashB64): Promise<File> {
+        /** Get File on source chain */
+        const [manifest, data] = await this.getLocalFile(manifestEh);
+
+        /** DEBUG - check if content is valid base64 */
+            // if (!base64regex.test(data)) {
+            //   const invalid_hash = sha256(data);
+            //   console.error("File '" + manifest.filename + "' is invalid base64. hash is: " + invalid_hash);
+            // }
+
+        let filetype = (manifest.description.kind_info as ParcelKindVariantManifest).Manifest;
+        console.log("downloadFile()", filetype);
+        const fields = filetype.split(':');
+        if (fields.length > 1) {
+            const types = fields[1].split(';');
+            filetype = types[0];
+        }
+        const byteArray = base64ToArrayBuffer(data)
+        const blob = new Blob([byteArray], { type: filetype});
+        const file = new File([blob], manifest.description.name);
+        return file;
+    }
 }

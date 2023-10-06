@@ -78,8 +78,16 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
             <div class="fileButton">
                 <sl-icon class="prefixIcon" name=${mime2icon(prettyFiletype(fileDescription.kind_info))}></sl-icon>
                 ${fileDescription.name}
-                <sl-button class="hide" size="small" variant="primary" style="margin-left:5px"><sl-icon name="download"></sl-icon></sl-button>
-                <sl-button class="hide" size="small" variant="primary"><sl-icon name="send"></sl-icon></sl-button>
+                <sl-button class="hide" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
+                    this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));
+                }}>
+                    <sl-icon name="download"></sl-icon>
+                </sl-button>
+                <sl-button class="hide" size="small" variant="primary" @click=${async (e) => {
+                        this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
+                    }}>
+                    <sl-icon name="send"></sl-icon>
+                </sl-button>
             </div>
         `;
     }

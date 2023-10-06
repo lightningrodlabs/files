@@ -76,6 +76,7 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 //import {Upload, UploadBeforeEvent, UploadFileRejectEvent} from "@vaadin/upload";
 // import {UploadFile} from "@vaadin/upload/src/vaadin-upload";
 
+import '@vaadin/combo-box/theme/lumo/vaadin-combo-box.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
@@ -230,28 +231,12 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     async downloadFile(manifestEh: EntryHashB64): Promise<void> {
-        /** Get File on source chain */
-        const [manifest, data] = await this._dvm.getLocalFile(manifestEh);
-
-        /** DEBUG - check if content is valid base64 */
-        // if (!base64regex.test(data)) {
-        //   const invalid_hash = sha256(data);
-        //   console.error("File '" + manifest.filename + "' is invalid base64. hash is: " + invalid_hash);
-        // }
-
-        let filetype = (manifest.description.kind_info as ParcelKindVariantManifest).Manifest;
-        console.log("downloadFile()", filetype);
-        const fields = filetype.split(':');
-        if (fields.length > 1) {
-            const types = fields[1].split(';');
-            filetype = types[0];
-        }
-        const byteArray = base64ToArrayBuffer(data)
-        const blob = new Blob([byteArray], { type: filetype});
-        const url = URL.createObjectURL(blob);
+        console.log("downloadFile()", manifestEh);
+        const file = await this._dvm.localParcel2File(manifestEh);
+        const url = URL.createObjectURL(file);
         const a = document.createElement('a');
         a.href = url;
-        a.download = manifest.description.name || 'download';
+        a.download = file.name || 'download';
         a.addEventListener('click', () => {}, false);
         a.click();
     }
@@ -365,25 +350,33 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     renderHome(fileOptions, agentOptions, unrepliedInbounds) {
+//         ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+//         <label for="addLocalFile">Add private file to source-chain:</label>
+//         <input type="file" id="addLocalFile" name="addLocalFile" />
+//         <input type="button" value="Add" @click=${async() => {
+//                 const maybeSplitObj = await this.onAddFile();
+//                 if (maybeSplitObj) {
+//                     this._uploading = maybeSplitObj;
+//                 }
+//     }
+// }
+// >`
+//         }
+
+        const crap = [{name: "toto", id:"1"}, {name: "titi", id:"2"}]
         return html`
-            ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
-            <label for="addLocalFile">Add private file to source-chain:</label>
-            <input type="file" id="addLocalFile" name="addLocalFile" />
-            <input type="button" value="Add" @click=${async() => {
-                const maybeSplitObj = await this.onAddFile();
-                if (maybeSplitObj) {
-                    this._uploading = maybeSplitObj;
-                }
-            }
-        }
-            >`
-        }
         ${unrepliedInbounds.length? html`
             <h2>Incoming file requests</h2>
             <ul>${unrepliedInbounds}</ul>
         ` : html``}
+        <vaadin-combo-box
+                label="test"
+                item-label-path="name"
+                item-value-path="id"
+                .items=${crap}
+        ></vaadin-combo-box>        
         <h2>Recent Activity</h2>
-        <activity-timeline></activity-timeline>`;
+        <activity-timeline @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}></activity-timeline>`;
     }
 
 

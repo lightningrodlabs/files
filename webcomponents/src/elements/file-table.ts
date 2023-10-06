@@ -1,7 +1,7 @@
 import {css, html, LitElement} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {
-    AgentPubKeyB64,
+    AgentPubKeyB64, encodeHashToBase64,
     EntryHash,
     EntryHashB64,
 } from "@holochain/client";
@@ -111,7 +111,7 @@ export class FileTable extends LitElement {
                 <vaadin-grid-column
                         path="pp_eh" header=""
                         ${columnBodyRenderer(
-                                ({pp_eh}) => html`<vaadin-button theme="tertiary-inline" style="cursor: pointer;" @click=${(e) => {this.onDownload(pp_eh)}}>Download</vaadin-button>`,
+                                ({pp_eh}) => html`<vaadin-button theme="tertiary-inline" style="cursor: pointer;" @click=${(e) => {this.onDownload(encodeHashToBase64(pp_eh))}}>Download</vaadin-button>`,
                                 []
                         )}
                         ${columnFooterRenderer(() => html`<span>${this.items.length} files</span>`, [this.items])}
