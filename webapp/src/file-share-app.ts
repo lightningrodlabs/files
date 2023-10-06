@@ -189,7 +189,6 @@ export class FileShareApp extends HappElement {
   }
 
 
-
   /** */
   async refresh(_e?: any) {
     console.log("file-share-app.refresh() called")

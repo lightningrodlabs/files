@@ -44,6 +44,11 @@ Enable sharing of files between agents by using the [Delivery zome module](https
 - New Delivery notice received
 - Reply received
 
+
+## TODO
+
+- Check if file is already published (check dataHash; add it to public parcel linkTag)
+
 ## Dev testing
 
 ### Setup

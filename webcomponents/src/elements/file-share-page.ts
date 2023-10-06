@@ -46,6 +46,7 @@ import "./file-table";
 import "./file-view";
 import "./file-button";
 import "./file-share-menu";
+import "./publish-dialog";
 
 import {
     SlAlert,
@@ -86,6 +87,7 @@ import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 import {FileTableItem} from "./file-table";
 import {sharedStyles} from "../sharedStyles";
 import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
+import {PublishDialog} from "./publish-dialog";
 
 
 /**
@@ -359,17 +361,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             msg = `For "${description.name}" from ${recipientName}`;
         }
         createAlert(title, msg, variant, icon, duration, extraHtml, id);
-    }
-
-
-    /** */
-    private onUpload(e: UploadBeforeEvent) {
-        console.log('upload-before event: ', e);
-        const file = e.detail.file;
-        //const xhr = event.detail.xhr;
-        console.log("onUpload", file);
-
-        e.preventDefault(); // Prevent the upload request
     }
 
 
@@ -690,26 +681,15 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
             </div>
         </div>
-        <sl-button id="fab" size="large" variant="primary"  ?disabled=${this._uploading} circle @click=${(e) => this.dialogElem.open = true}>
+        <sl-button id="fab" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.dialogElem.open()}>
             <sl-icon name="plus-lg" label="Add"></sl-icon>
         </sl-button>
-        <sl-dialog id="publish-dialog" label="Publish file">
-            <vaadin-upload id="myUpload" nodrop
-                           style="width:280px; margin-top:0;"
-                           max-file-size="200000000"
-                           max-files="1"
-                           @file-reject="${(e:UploadFileRejectEvent) => {window.alert(e.detail.file.name + ' error: ' + e.detail.error);}}"
-                           @upload-before="${(e:UploadBeforeEvent) => this.onUpload(e)}"
-            >
-                <span slot="drop-label">Maximum file size: 20 MB</span>
-            </vaadin-upload>
-            <sl-button slot="footer" variant="primary" @click=${(e) => this.dialogElem.open = false}>Close</sl-button>
-        </sl-dialog>
+        <publish-dialog id="publish-dialog"></publish-dialog>
         `;
     }
 
-    get dialogElem() : SlDialog {
-        return this.shadowRoot.getElementById("publish-dialog") as SlDialog;
+    get dialogElem() : PublishDialog {
+        return this.shadowRoot.getElementById("publish-dialog") as PublishDialog;
     }
 
     /** */

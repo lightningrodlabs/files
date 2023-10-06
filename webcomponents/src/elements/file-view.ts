@@ -57,21 +57,6 @@ export class FileView extends DnaElement<FileShareDvmPerspective, FileShareDvm> 
 
     /** -- Methods -- */
 
-    /**
-     * In dvmUpdated() this._dvm is not already set!
-     * Subscribe to fileShareZvm
-     */
-    protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
-        console.log("<file-view>.dvmUpdated()");
-        if (oldDvm) {
-            console.log("\t Unsubscribed to fileShareZvm's roleName = ", oldDvm.fileShareZvm.cell.name)
-            oldDvm.fileShareZvm.unsubscribe(this);
-        }
-        //newDvm.fileShareZvm.subscribe(this, 'fileSharePerspective');
-        console.log("\t Subscribed fileShareZvm's roleName = ", newDvm.fileShareZvm.cell.name)
-        //newDvm.fileShareZvm.probeAll();
-    }
-
 
     /** FOR DEBUGGING */
     shouldUpdate(changedProperties: PropertyValues<this>) {
