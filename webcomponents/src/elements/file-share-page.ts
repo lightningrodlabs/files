@@ -376,19 +376,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <input type="button" value="send" @click=${this.onSendFile}>
                 </div>
 
-                ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
-            <div>
-                <label for="publishFile">Publish new file:</label>
-                <input type="file" id="publishFile" name="publishFile" />
-                <input type="button" value="Publish" @click=${async () => {
-            const maybeSplitObj = await this.onPublishFile();
-            if (maybeSplitObj) {
-                this._uploading = maybeSplitObj;
-            }
-        }}>
-            </div>`
-        }
-                ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
+            ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
             <label for="addLocalFile">Add private file to source-chain:</label>
             <input type="file" id="addLocalFile" name="addLocalFile" />
             <input type="button" value="Add" @click=${async() => {
@@ -684,7 +672,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         <sl-button id="fab" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.dialogElem.open()}>
             <sl-icon name="plus-lg" label="Add"></sl-icon>
         </sl-button>
-        <publish-dialog id="publish-dialog"></publish-dialog>
+        <publish-dialog id="publish-dialog" @publishStarted=${(e) => this._uploading = e.detail}></publish-dialog>
         `;
     }
 

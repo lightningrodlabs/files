@@ -78,13 +78,14 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
                        style="--width: 600px;"
             >
                 <div style="margin-left:10px;">
-                    <div>Size : ${prettyFileSize(this._file? this._file.size : 0)}</div>
+                    <div>Size: ${prettyFileSize(this._file? this._file.size : 0)}</div>                    
+                    <div>Type: ${this._file? this._file.type : ""}</div>
                     <div>Hash: ${!this._file || !this._splitObj? "" : this._splitObj.dataHash}</div>
                 </div>
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file} @click=${async (e) => {
-                        const splitObj = await this._dvm.startPublishFile(this._file);
-                        console.log("onPublishFile() splitObj:", splitObj);
+                        this.dispatchEvent(new CustomEvent('publishStarted', {detail: this._splitObj, bubbles: true, composed: true}));
+                        const _splitObj = await this._dvm.startPublishFile(this._file);
                         this._file = undefined;                    
                         this.dialogElem.open = false;
                     }}>
