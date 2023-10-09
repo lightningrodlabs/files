@@ -111,6 +111,16 @@ export class FileShareDvm extends DnaViewModel {
         const now = Date.now();
         console.log("FileShareDvm received signal", now, signal);
         const deliverySignal = signal.payload as SignalProtocol;
+        if (SignalProtocolType.NewManifest in deliverySignal) {
+            const manifestEh = encodeHashToBase64(deliverySignal.NewManifest[0]);
+            /** Into Notification */
+            const notif = {
+                manifestEh,
+            } as FileShareNotificationVariantPrivateCommitComplete;
+            this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, notif]);
+            this.notifySubscribers();
+            this._uploadState = undefined;
+        }
         if (SignalProtocolType.NewChunk in deliverySignal) {
             console.log("signal NewChunk", deliverySignal.NewChunk);
             //this._perspective.notificationLogs.push([now, SignalProtocolType.NewChunk, deliverySignal]);
@@ -123,15 +133,16 @@ export class FileShareDvm extends DnaViewModel {
                 /** Commit manifest if it was the last chunk */
                 if (this._uploadState.chunks.length == this._uploadState.splitObj.numChunks) {
                     if (this._uploadState.isPrivate) {
-                        this.fileShareZvm.commitPrivateManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks).then((eh) => {
-                            /** Into Notification */
-                            const notif = {
-                                manifestEh: eh,
-                            } as FileShareNotificationVariantPrivateCommitComplete;
-                            this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, notif]);
-                            this.notifySubscribers();
-                            this._uploadState = undefined;
-                        });
+                        this.fileShareZvm.commitPrivateManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks)
+                        //     .then((eh) => {
+                        //     /** Into Notification */
+                        //     const notif = {
+                        //         manifestEh: eh,
+                        //     } as FileShareNotificationVariantPrivateCommitComplete;
+                        //     this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, notif]);
+                        //     this.notifySubscribers();
+                        //     this._uploadState = undefined;
+                        // });
                     } else {
                         this.fileShareZvm.publishFileManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks);
                     }

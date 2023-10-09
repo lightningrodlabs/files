@@ -1,17 +1,17 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
+import {consume} from "@lit-labs/context";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {sharedStyles} from "../sharedStyles";
 import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 import {SlDialog, SlMenu, SlSelect} from "@shoelace-style/shoelace";
 import {arrayBufferToBase64, prettyFileSize, splitData, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
-import {AgentPubKeyB64, EntryHashB64} from "@holochain/client";
-import {consume} from "@lit-labs/context";
+import {AgentPubKeyB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
-import {ParcelDescription} from "@ddd-qc/delivery";
+import {ProfilesPerspective, ProfilesZvm} from "../viewModels/profiles.zvm";
+import {DeliveryPerspective, ParcelDescription} from "@ddd-qc/delivery";
 import {ComboBoxFilterChangedEvent} from "@vaadin/combo-box";
 import {ComboBoxLitRenderer, comboBoxRenderer} from "@vaadin/combo-box/lit";
 
@@ -39,17 +39,37 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
 
+    //@property()
+    //profilesZvm!: ProfilesZvm;
+
+    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+    profilesPerspective!: ProfilesPerspective;
+
+
     /** -- Getters -- */
 
     get dialogElem() : SlDialog {
         return this.shadowRoot.getElementById("send-dialog-inner") as SlDialog;
     }
 
-    get recipientElem() : SlSelect {
-        return this.shadowRoot.getElementById("recipientSelector") as SlSelect;
-    }
+    // get recipientElem() : SlSelect {
+    //     return this.shadowRoot.getElementById("recipientSelector") as SlSelect;
+    // }
+
 
     /** -- Methods -- */
+
+    // /** */
+    // protected async willUpdate(changedProperties: PropertyValues<this>) {
+    //     super.willUpdate(changedProperties);
+    //     console.log("<send-dialog>.willUpdate()", changedProperties);
+    //     if (changedProperties.has("_profilesZvm")) {
+    //         console.log("<send-dialog>.willUpdate() _profilesZvm");
+    //         this.setAgents();
+    //         console.log("<send-dialog>.willUpdate() _profilesZvm count", this._allAgents.length);
+    //     }
+    // }
+
 
     /** */
     open(hash?: EntryHashB64) {
@@ -63,7 +83,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
             });
             return;
         }
-        var input = document.createElement('input');
+        const input = document.createElement('input');
         input.type = 'file';
         input.onchange = async (e:any) => {
                 const file = e.target.files[0];
@@ -79,14 +99,24 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     }
 
 
-    /** */
-    protected override async firstUpdated() {
-        const agentItems = Object.entries(this._profilesZvm.perspective.profiles).map(
+
+    protected async firstUpdated() {
+        const agentItems = Object.entries(await this._profilesZvm.probeAllProfiles()).map(
             ([agentIdB64, profile]) => {return {key: agentIdB64, name: profile.nickname} as AgentItem});
         this._allAgents = agentItems;
-        console.log("_allAgents", this._allAgents);
+        //console.log("_allAgents", this._allAgents);
         this._filteredAgents = agentItems;
-    }
+    };
+
+
+    // /** */
+    // protected async setAgents() {
+    //     const agentItems = Object.entries(this._profilesZvm.perspective.profiles).map(
+    //         ([agentIdB64, profile]) => {return {key: agentIdB64, name: profile.nickname} as AgentItem});
+    //     this._allAgents = agentItems;
+    //     //console.log("_allAgents", this._allAgents);
+    //     this._filteredAgents = agentItems;
+    // }
 
 
     /** */
@@ -113,6 +143,8 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 //   </div>
 // `;
 
+
+    /** */
     private agentRenderer: ComboBoxLitRenderer<AgentItem> = (agent) => html`
   <div style="display: flex; width: 100%;">
     <div>
@@ -126,6 +158,9 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     /** */
     render() {
         console.log("<send-dialog>.render()", this._file, this._recipient, this._allAgents);
+
+        //this.setAgents();
+        //console.log("<send-dialog>.setAgents()", this._allAgents);
 
         // ${comboBoxRenderer(this.agentRenderer, [])}
 
@@ -148,11 +183,11 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     .items=${this._allAgents}
                     .filteredItems=${this._filteredAgents}
                     @filter-changed=${this.filterChanged}
-                    @selected-item-changed=${(e) => {console.log("filter selected:", e.detail); this._recipient = e.detail.value}}
+                    @selected-item-changed=${(e) => {console.log("filter selected:", e.detail); this._recipient = e.detail.value.key}}
                 ></vaadin-combo-box>
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file || !this._recipient} @click=${async (e) => {
-                        this.dispatchEvent(new CustomEvent('sendStarted', {detail: {splitObj: this._splitObj, recipient: this._recipient}, bubbles: true, composed: true}));
+                        this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipient: this._recipient}, bubbles: true, composed: true}));
                         const _splitObject = await this._dvm.startCommitPrivateFile(this._file);
                         this._file = undefined;
                         this._recipient = undefined;

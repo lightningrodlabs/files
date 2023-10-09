@@ -157,9 +157,9 @@ export class FileShareZvm extends ZomeViewModel {
 
 
     /** */
-    async sendFile(manifest_eh: EntryHashB64, recipient: AgentPubKeyB64): Promise<ActionHashB64> {
+    async sendFile(manifestEh: EntryHashB64, recipient: AgentPubKeyB64): Promise<ActionHashB64> {
         const input: SendFileInput = {
-            manifest_eh: decodeHashFromBase64(manifest_eh),
+            manifest_eh: decodeHashFromBase64(manifestEh),
             strategy: { NORMAL: null },
             recipients: [decodeHashFromBase64(recipient)],
         };

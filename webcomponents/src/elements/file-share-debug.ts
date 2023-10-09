@@ -212,8 +212,8 @@ export class FileSharePageDev extends DnaElement<unknown, FileShareDvm> {
 
     /** */
     printNoticeReceived() {
-        for (const [distribAh, noticeAck] of Object.entries(this._dvm.deliveryZvm.perspective.noticeAcks)) {
-            console.log(` - "${distribAh}": distrib = "${encodeHashToBase64(noticeAck.distribution_ah)}"; recipient = "${encodeHashToBase64(noticeAck.recipient)}"`)
+        for (const [distribAh, acks] of Object.entries(this.deliveryPerspective.noticeAcks)) {
+            console.log(` - "${distribAh}": distrib = "${distribAh}"; recipients = "${Object.keys(acks)}"`)
         }
     }
 

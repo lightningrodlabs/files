@@ -89,7 +89,12 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         //console.log("sortedReceptions", sortedReceptions);
 
         const sortedReceptionAcks: [Timestamp, ActionHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.receptionAcks)
-            .map(([ah, [rp, ts]]) => [ts, ah, DeliveryEntryType.ReceptionAck])
+            .map(([ah, acks]) => {
+                const res: [Timestamp, ActionHashB64, DeliveryEntryType][] =  Object.entries(acks)
+                    .map(([_agent, [_ack, ts]]) => [ts, ah, DeliveryEntryType.ReceptionAck]);
+                return res;
+            }).flat()
+
         //console.log("sortedReceptionAcks", sortedReceptionAcks);
 
         const sortedPrivateParcels: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.privateManifests)
@@ -104,8 +109,8 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         /** Concat all */
         const all = sortedReceptions.concat(sortedReceptionAcks, sortedPrivateParcels, sortedPublicParcels)
             .sort(([ts1, _eh1, _t1], [ts2, _eh2, _t2]) => ts2 - ts1);
-        console.table(all);
 
+        //console.table(all);
         return all;
     }
 
@@ -151,8 +156,8 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
             author = this.cell.agentPubKey;
         }
         if (type == DeliveryEntryType.ReceptionAck) {
-            const ack = this.deliveryPerspective.receptionAcks[hash][0];
-            author = encodeHashToBase64(ack.recipient);
+            const [recipient, [_ack, _ts]] = Object.entries(this.deliveryPerspective.receptionAcks[hash])[0];
+            author = recipient
         }
         if (type == DeliveryEntryType.ReceptionProof) {
             const notice = this.deliveryPerspective.notices[hash][0];
@@ -230,7 +235,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
         const items = history.map(
             (activityLog) => {
-                console.log("activityLog", activityLog);
+                //console.log("activityLog", activityLog);
                 return this.activityLog2Html(activityLog);
             }
         )

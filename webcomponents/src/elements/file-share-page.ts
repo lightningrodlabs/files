@@ -43,6 +43,7 @@ import {SelectedType} from "./file-share-menu";
 
 import "./activity-timeline";
 import "./file-table";
+import "./distribution-table";
 import "./file-view";
 import "./file-button";
 import "./file-share-menu";
@@ -87,6 +88,7 @@ import {sharedStyles} from "../sharedStyles";
 import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {PublishDialog} from "./publish-dialog";
 import {SendDialog} from "./send-dialog";
+import {DistributionTableItem} from "./distribution-table";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
@@ -146,7 +148,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         console.log("<file-view>.dvmUpdated()");
         if (oldDvm) {
             console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.fileShareZvm.cell.name)
-            oldDvm.fileShareZvm.unsubscribe(this);
+            //oldDvm.fileShareZvm.unsubscribe(this);
             oldDvm.deliveryZvm.unsubscribe(this);
         }
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
@@ -211,15 +213,15 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     }
 
 
-    /** */
-    async onSendFile(_e: any): Promise<void> {
-        const localFileInput = this.shadowRoot!.getElementById("localFileSelector") as HTMLSelectElement;
-        const agentSelect = this.shadowRoot!.getElementById("recipientSelector") as HTMLSelectElement;
-        console.log("onSendFile():", localFileInput.value, agentSelect.value);
-        let distribAh = await this._dvm.fileShareZvm.sendFile(localFileInput.value, agentSelect.value);
-        console.log("onSendFile() distribAh:", distribAh);
-        localFileInput.value = "";
-    }
+    // /** */
+    // async onSendFile(_e: any): Promise<void> {
+    //     const localFileInput = this.shadowRoot!.getElementById("localFileSelector") as HTMLSelectElement;
+    //     const agentSelect = this.shadowRoot!.getElementById("recipientSelector") as HTMLSelectElement;
+    //     console.log("onSendFile():", localFileInput.value, agentSelect.value);
+    //     let distribAh = await this._dvm.fileShareZvm.sendFile(localFileInput.value, agentSelect.value);
+    //     console.log("onSendFile() distribAh:", distribAh);
+    //     localFileInput.value = "";
+    // }
 
 
     /** */
@@ -246,8 +248,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     printNoticeReceived() {
-        for (const [distribAh, noticeAck] of Object.entries(this.deliveryPerspective.noticeAcks)) {
-            console.log(` - "${distribAh}": distrib = "${encodeHashToBase64(noticeAck.distribution_ah)}"; recipient = "${encodeHashToBase64(noticeAck.recipient)}"`)
+        for (const [distribAh, acks] of Object.entries(this.deliveryPerspective.noticeAcks)) {
+            console.log(` - "${distribAh}": distrib = "${distribAh}"; recipients = "${Object.keys(acks)}"`)
         }
     }
 
@@ -365,7 +367,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 // >`
 //         }
 
-        const crap = [{name: "toto", id:"1"}, {name: "titi", id:"2"}]
         return html`
         ${unrepliedInbounds.length? html`
             <h2>Incoming file requests</h2>
@@ -429,6 +430,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 this._uploading = undefined;
                 /** Now to send? */
                 if (this._mustSendTo) {
+                    console.log("sendFile", maybeManifest[0], this._mustSendTo);
                     this._dvm.fileShareZvm.sendFile(maybeManifest[0], this._mustSendTo).then((distribAh) => this._mustSendTo = undefined);
                 }
             }
@@ -602,21 +604,42 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </ul>`;
         }
         if (this._selected == SelectedType.Sent) {
-            let distributionList = Object.entries(this.deliveryPerspective.distributions)
-                .filter(([distribAh, tuple]) => DistributionStateType.AllAcceptedParcelsReceived in tuple[2])
-                .map(([distribAh, tuple]) => {
-                    const recipients = tuple[0].recipients.map((agent) => this._profilesZvm.perspective.profiles[encodeHashToBase64(agent)].nickname);
-                    const description = tuple[0].delivery_summary.parcel_reference.description;
-                    return html`<li>${description.name}: ${recipients}</li>`
-                });
-            if (distributionList.length == 0) {
-                distributionList = [html`No items found`];
-            }
+            let distributionItems = Object.entries(this.deliveryPerspective.distributions)
+                .filter(([_distribAh, tuple]) => DistributionStateType.AllAcceptedParcelsReceived in tuple[2])
+                .map(([distribAh, [distribution, sentTs, _fullState, _stateMap]]) => {
+                    const description = distribution.delivery_summary.parcel_reference.description;
+                    const ppEh = encodeHashToBase64(distribution.delivery_summary.parcel_reference.eh);
+                    let items: DistributionTableItem[] = []
+                    for (const recipientHash of distribution.recipients) {
+                        const recipient = encodeHashToBase64(recipientHash);
+                        let receptionTs = 0;
+                        let deliveryState = DeliveryStateType.ParcelRefused;
+                        /** If recipient refused, no receptionAck should be found */
+                        if (this.deliveryPerspective.receptionAcks[distribAh] && this.deliveryPerspective.receptionAcks[distribAh][recipient]) {
+                            const [_receptionAck, receptionTs2] = this.deliveryPerspective.receptionAcks[distribAh][recipient];
+                            receptionTs = receptionTs2;
+                            deliveryState = DeliveryStateType.ParcelDelivered;
+                        }
+                        items.push( {
+                            distribAh,
+                            recipient,
+                            deliveryState,
+                            ppEh,
+                            description,
+                            sentTs,
+                            receptionTs,
+                        } as DistributionTableItem);
+                    }
+                    return items;
+                })
+                .flat()
+                .sort((a, b) => b.sentTs - a.sentTs);
             mainArea = html`
                 <h2>Sent</h2>
-                <ul>
-                    ${distributionList}
-                </ul>                
+                <distribution-table .items=${distributionItems}
+                            @download=${(e) => this.downloadFile(e.detail)}
+                            @send=${(e) => this.sendDialogElem.open(e.detail)}
+                ></distribution-table>
             `;
         }
         if (this._selected == SelectedType.InProgress) {
@@ -666,7 +689,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             </sl-button>
         </sl-tooltip>
         <publish-dialog id="publish-dialog" @publishStarted=${(e) => this._uploading = e.detail}></publish-dialog>
-        <send-dialog id="send-dialog" @sendStarted=${(e) => {
+        <send-dialog id="send-dialog" .profilesZvm=${this._profilesZvm} @send-started=${(e) => {
             this._uploading = e.detail.splitObj;
             this._mustSendTo = e.detail.recipient;
         }}></send-dialog>

@@ -31,6 +31,6 @@
     "@vaadin/select": "23.2.0",
     "@vaadin/upload": "23.2.0",
     "eslint-plugin-html": "^7.1.0",
-    "@ddd-qc/delivery": "=0.5.5"
+    "@ddd-qc/delivery": "=0.6.0"
   }
 }

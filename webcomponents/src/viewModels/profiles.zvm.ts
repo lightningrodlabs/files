@@ -83,7 +83,7 @@ export class ProfilesZvm extends ZomeViewModel {
 
 
   /** */
-  async probeAllProfiles(): Promise<void> {
+  async probeAllProfiles(): Promise<Record<AgentPubKeyB64, FileShareProfile>> {
     const allAgents = await this.zomeProxy.getAgentsWithProfile();
     for (const agentPubKey of allAgents) {
       const maybeProfile = await this.zomeProxy.getAgentProfile(agentPubKey);
@@ -97,6 +97,7 @@ export class ProfilesZvm extends ZomeViewModel {
       //this._profile_ahs[pubKeyB64] = encodeHashToBase64(record.signed_action.hashed.hash);
     }
     this.notifySubscribers();
+    return this._profiles;
   }
 
 
