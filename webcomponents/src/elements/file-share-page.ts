@@ -369,12 +369,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             <h2>Incoming file requests</h2>
             <ul>${unrepliedInbounds}</ul>
         ` : html``}
-        <vaadin-combo-box
-                label="test"
-                item-label-path="name"
-                item-value-path="id"
-                .items=${crap}
-        ></vaadin-combo-box>        
         <h2>Recent Activity</h2>
         <activity-timeline @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}></activity-timeline>`;
     }
@@ -656,12 +650,16 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
             </div>
         </div>
-        <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.sendDialogElem.open()}>
-            <sl-icon name="send" label="Send"></sl-icon>
-        </sl-button>        
-        <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.publishDialogElem.open()}>
-            <sl-icon name="plus-lg" label="Add"></sl-icon>
-        </sl-button>
+        <sl-tooltip placement="left" content="Send file" style="--show-delay: 200;">
+            <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.sendDialogElem.open()}>
+                <sl-icon name="send" label="Send"></sl-icon>
+            </sl-button>
+        </sl-tooltip>
+        <sl-tooltip placement="left" content="Publish file" style="--show-delay: 200;">
+            <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.publishDialogElem.open()}>
+                <sl-icon name="plus-lg" label="Add"></sl-icon>
+            </sl-button>
+        </sl-tooltip>
         <publish-dialog id="publish-dialog" @publishStarted=${(e) => this._uploading = e.detail}></publish-dialog>
         <send-dialog id="send-dialog" @sendStarted=${(e) => {
             this._uploading = e.detail.splitObj;

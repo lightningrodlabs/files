@@ -4,7 +4,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {sharedStyles} from "../sharedStyles";
 import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
-import {SlDialog, SlSelect} from "@shoelace-style/shoelace";
+import {SlDialog, SlMenu, SlSelect} from "@shoelace-style/shoelace";
 import {arrayBufferToBase64, prettyFileSize, splitData, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
 import {AgentPubKeyB64, EntryHashB64} from "@holochain/client";
@@ -89,6 +89,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     }
 
 
+    /** */
     private filterChanged(event: ComboBoxFilterChangedEvent) {
         const filter = event.detail.value;
         console.log("filter", filter);
@@ -113,7 +114,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 // `;
 
     private agentRenderer: ComboBoxLitRenderer<AgentItem> = (agent) => html`
-  <div style="display: flex;">
+  <div style="display: flex; width: 100%;">
     <div>
       ${agent.name}
     </div>
@@ -126,10 +127,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     render() {
         console.log("<send-dialog>.render()", this._file, this._recipient, this._allAgents);
 
-        // .filteredItems=${this._filteredAgents}
-        // @filter-changed=${this.filterChanged}
-
-        const crap = [{name: "toto", id:"1"}, {name: "titi", id:"2"}, {name: "tifsdfti", id:"3"}]
+        // ${comboBoxRenderer(this.agentRenderer, [])}
 
         /** render all */
         return html`
@@ -142,21 +140,16 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     <div>Type: ${this._file? this._file.type : ""}</div>
                     <div>Hash: ${!this._file || !this._splitObj? "" : this._splitObj.dataHash}</div>
                 </div>
-                <vaadin-combo-box
-                        label="test"
-                        item-label-path="name"
-                        item-value-path="id"
-                        .items=${crap}
-                ></vaadin-combo-box>
                 to:       
                 <vaadin-combo-box
                     label=""
                     item-label-path="name"
                     item-value-path="key"
                     .items=${this._allAgents}
-                    ${comboBoxRenderer(this.agentRenderer, [])}
+                    .filteredItems=${this._filteredAgents}
+                    @filter-changed=${this.filterChanged}
                     @selected-item-changed=${(e) => {console.log("filter selected:", e.detail); this._recipient = e.detail.value}}
-            ></vaadin-combo-box>
+                ></vaadin-combo-box>
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file || !this._recipient} @click=${async (e) => {
                         this.dispatchEvent(new CustomEvent('sendStarted', {detail: {splitObj: this._splitObj, recipient: this._recipient}, bubbles: true, composed: true}));
@@ -179,17 +172,8 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
         return [
             sharedStyles,
             css`
-              vaadin-combo-box {
-                position: relative;
-                z-index: 900;
-              }
-              vaadin-combo-box-overlay {
-                position: relative;
-                z-index: 900;
-              }
-              #overlay {
-                position: relative;
-                z-index: 900;
+              sl-dialog::part(base) {
+                z-index:auto;
               }
             `
         ];
