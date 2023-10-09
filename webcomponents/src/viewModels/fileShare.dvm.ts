@@ -12,14 +12,13 @@ import {
     AppSignalCb,
     decodeHashFromBase64, encodeHashToBase64,
     EntryHash,
-    EntryHashB64, InstalledAppId, Timestamp,
+    EntryHashB64,
 } from "@holochain/client";
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 import {FileShareZvm} from "./fileShare.zvm";
 import {base64ToArrayBuffer, splitFile, SplitObject} from "../utils";
 import { decode } from "@msgpack/msgpack";
-import {Dictionary} from "@ddd-qc/cell-proxy";
 import {
     FileShareDvmPerspective,
     FileShareNotificationType,
@@ -30,16 +29,8 @@ import {
     FileShareNotificationVariantPublicSharingComplete,
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
 } from "./fileShare.perspective";
-import {ReactiveElement} from "lit";
 
 
-/** */
-interface UploadState {
-    isPrivate: boolean,
-    file: File,
-    splitObj: SplitObject,
-    chunks: EntryHash[],
-}
 
 
 /**
@@ -47,9 +38,9 @@ interface UploadState {
  */
 export class FileShareDvm extends DnaViewModel {
 
-    private _uploadState?: UploadState;
+    /** For commit & send follow-up */
+    private _mustSendTo?: AgentPubKeyB64;
 
-    //private _latestPublic: EntryHashB64[] = [];
 
     /** -- DnaViewModel Interface -- */
 
@@ -112,14 +103,21 @@ export class FileShareDvm extends DnaViewModel {
         console.log("FileShareDvm received signal", now, signal);
         const deliverySignal = signal.payload as SignalProtocol;
         if (SignalProtocolType.NewManifest in deliverySignal) {
-            const manifestEh = encodeHashToBase64(deliverySignal.NewManifest[0]);
+            const manifestEh = encodeHashToBase64(deliverySignal.NewManifest[0])
+            /** Follow-up send if requested */
+            if (this._mustSendTo) {
+                console.log("sendFile follow up", manifestEh, this._mustSendTo);
+                this.fileShareZvm.sendFile(manifestEh, this._mustSendTo);
+                this._mustSendTo = undefined;
+            }
             /** Into Notification */
             const notif = {
                 manifestEh,
             } as FileShareNotificationVariantPrivateCommitComplete;
             this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, notif]);
+            this._perspective.uploadState = undefined;
+            /** Done */
             this.notifySubscribers();
-            this._uploadState = undefined;
         }
         if (SignalProtocolType.NewChunk in deliverySignal) {
             console.log("signal NewChunk", deliverySignal.NewChunk);
@@ -128,12 +126,12 @@ export class FileShareDvm extends DnaViewModel {
             const manifestPair = this.deliveryZvm.perspective.localManifestByData[chunk.data_hash];
             if (!manifestPair) {
                 /** We are the original creator of this file */
-                this._uploadState.chunks.push(deliverySignal.NewChunk[0]);
-                const index = this._uploadState.chunks.length;
+                this._perspective.uploadState.chunks.push(deliverySignal.NewChunk[0]);
+                const index = this._perspective.uploadState.chunks.length;
                 /** Commit manifest if it was the last chunk */
-                if (this._uploadState.chunks.length == this._uploadState.splitObj.numChunks) {
-                    if (this._uploadState.isPrivate) {
-                        this.fileShareZvm.commitPrivateManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks)
+                if (this._perspective.uploadState.chunks.length == this._perspective.uploadState.splitObj.numChunks) {
+                    if (this._perspective.uploadState.isPrivate) {
+                        this.fileShareZvm.commitPrivateManifest(this._perspective.uploadState.file, this._perspective.uploadState.splitObj.dataHash, this._perspective.uploadState.chunks)
                         //     .then((eh) => {
                         //     /** Into Notification */
                         //     const notif = {
@@ -144,11 +142,11 @@ export class FileShareDvm extends DnaViewModel {
                         //     this._uploadState = undefined;
                         // });
                     } else {
-                        this.fileShareZvm.publishFileManifest(this._uploadState.file, this._uploadState.splitObj.dataHash, this._uploadState.chunks);
+                        this.fileShareZvm.publishFileManifest(this._perspective.uploadState.file, this._perspective.uploadState.splitObj.dataHash, this._perspective.uploadState.chunks);
                     }
                 } else {
                     /** Otherwise commit next one */
-                    this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: this._uploadState.splitObj.dataHash, data: this._uploadState.splitObj.chunks[index]});
+                    this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: this._perspective.uploadState.splitObj.dataHash, data: this._perspective.uploadState.splitObj.chunks[index]});
                 }
             }
         }
@@ -182,8 +180,9 @@ export class FileShareDvm extends DnaViewModel {
                     manifestEh: ppEh,
                 } as FileShareNotificationVariantPublicSharingComplete;
                 this._perspective.notificationLogs.push([now, FileShareNotificationType.PublicSharingComplete, notif]);
+                this._perspective.uploadState = undefined;
+
                 this.notifySubscribers();
-                this._uploadState = undefined;
 
                 /** Notify peers that we published something */
                 //const peers = this._profilesZvm.getAgents().map((peer) => decodeHashFromBase64(peer));
@@ -266,9 +265,15 @@ export class FileShareDvm extends DnaViewModel {
 
 
     /** */
+    async startCommitPrivateAndSendFile(file: File, recipient: AgentPubKeyB64): Promise<SplitObject> {
+        this._mustSendTo = recipient;
+        return this.startCommitPrivateFile(file);
+    }
+
+    /** */
     async startCommitPrivateFile(file: File): Promise<SplitObject> {
         console.log('dvm.commitPrivateFile: ', file);
-        if (this._uploadState) {
+        if (this._perspective.uploadState) {
             return Promise.reject("File commit already in progress");
         }
         const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
@@ -278,7 +283,7 @@ export class FileShareDvm extends DnaViewModel {
             //return this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
             return;
         }
-        this._uploadState = {
+        this._perspective.uploadState = {
             splitObj,
             file,
             isPrivate: true,
@@ -296,7 +301,7 @@ export class FileShareDvm extends DnaViewModel {
     /** */
     async startPublishFile(file: File): Promise<SplitObject> {
         console.log('dvm.commitPublicFile: ', file);
-        if (this._uploadState) {
+        if (this._perspective.uploadState) {
             return Promise.reject("File commit already in progress");
         }
         const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
@@ -305,7 +310,7 @@ export class FileShareDvm extends DnaViewModel {
             console.warn("File already stored locally");
             return;
         }
-        this._uploadState = {
+        this._perspective.uploadState = {
             splitObj,
             file,
             isPrivate: false,

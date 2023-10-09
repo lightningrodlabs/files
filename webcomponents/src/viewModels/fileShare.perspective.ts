@@ -1,9 +1,20 @@
-import {ActionHashB64, AgentPubKeyB64, EntryHashB64, Timestamp} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, EntryHash, EntryHashB64, Timestamp} from "@holochain/client";
 import {ParcelDescription, SignalProtocol, SignalProtocolType} from "@ddd-qc/delivery";
+import {SplitObject} from "../utils";
+
+
+/** */
+interface UploadState {
+    isPrivate: boolean,
+    file: File,
+    splitObj: SplitObject,
+    chunks: EntryHash[],
+}
 
 
 /** */
 export interface FileShareDvmPerspective {
+    uploadState?: UploadState;
     /** Notifications */
     notificationLogs: [Timestamp, FileShareNotificationType, FileShareNotification][];
 }

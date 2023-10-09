@@ -61,7 +61,7 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file} @click=${async (e) => {
-                        this.dispatchEvent(new CustomEvent('publishStarted', {detail: this._splitObj, bubbles: true, composed: true}));
+                        this.dispatchEvent(new CustomEvent('publish-started', {detail: this._splitObj, bubbles: true, composed: true}));
                         const _splitObj = await this._dvm.startPublishFile(this._file);
                         this._file = undefined;                    
                         this.dialogElem.open = false;

@@ -108,8 +108,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** -- Fields -- */
     @state() private _initialized = false;
-    @state() private _uploading?: SplitObject;
-    @state() private _mustSendTo?: AgentPubKeyB64;
+    //@state() private _uploading?: SplitObject;
+    //@state() private _mustSendTo?: AgentPubKeyB64;
     @property() appletHash: EntryHashB64;
 
     @property() devmode: boolean = false;
@@ -423,18 +423,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
         /** -- -- */
 
-        if (this._uploading) {
-            const maybeManifest = this.deliveryPerspective.localManifestByData[this._uploading.dataHash];
-            if (maybeManifest) {
-                /** Finished adding to source-chain */
-                this._uploading = undefined;
-                /** Now to send? */
-                if (this._mustSendTo) {
-                    console.log("sendFile", maybeManifest[0], this._mustSendTo);
-                    this._dvm.fileShareZvm.sendFile(maybeManifest[0], this._mustSendTo).then((distribAh) => this._mustSendTo = undefined);
-                }
-            }
-        }
 
         const agentOptions = Object.entries(this._profilesZvm.perspective.profiles).map(
             ([agentIdB64, profile]) => {
@@ -679,21 +667,17 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             </div>
         </div>
         <sl-tooltip placement="left" content="Send file" style="--show-delay: 200;">
-            <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.sendDialogElem.open()}>
+            <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.sendDialogElem.open()}>
                 <sl-icon name="send" label="Send"></sl-icon>
             </sl-button>
         </sl-tooltip>
         <sl-tooltip placement="left" content="Publish file" style="--show-delay: 200;">
-            <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this._uploading} circle @click=${(e) => this.publishDialogElem.open()}>
+            <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.publishDialogElem.open()}>
                 <sl-icon name="plus-lg" label="Add"></sl-icon>
             </sl-button>
         </sl-tooltip>
-        <publish-dialog id="publish-dialog" @publishStarted=${(e) => this._uploading = e.detail}></publish-dialog>
-        <send-dialog id="send-dialog" .profilesZvm=${this._profilesZvm} @send-started=${(e) => {
-            this._uploading = e.detail.splitObj;
-            this._mustSendTo = e.detail.recipient;
-        }}></send-dialog>
-        
+        <publish-dialog id="publish-dialog"></publish-dialog>
+        <send-dialog id="send-dialog"></send-dialog>
         `;
     }
 

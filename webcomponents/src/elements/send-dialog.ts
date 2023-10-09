@@ -15,7 +15,6 @@ import {DeliveryPerspective, ParcelDescription} from "@ddd-qc/delivery";
 import {ComboBoxFilterChangedEvent} from "@vaadin/combo-box";
 import {ComboBoxLitRenderer, comboBoxRenderer} from "@vaadin/combo-box/lit";
 
-//import '@vaadin/combo-box/theme/lumo/vaadin-combo-box.js';
 
 interface AgentItem {
     key: AgentPubKeyB64,
@@ -32,15 +31,12 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     @state() private _filteredAgents: AgentItem[] = [];
     @state() private _recipient?: AgentPubKeyB64;
 
-    @state() private _description?: ParcelDescription;
     @state() private _file?: File;
     private _splitObj?: SplitObject;
 
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
 
-    //@property()
-    //profilesZvm!: ProfilesZvm;
 
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     profilesPerspective!: ProfilesPerspective;
@@ -52,23 +48,12 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
         return this.shadowRoot.getElementById("send-dialog-inner") as SlDialog;
     }
 
-    // get recipientElem() : SlSelect {
-    //     return this.shadowRoot.getElementById("recipientSelector") as SlSelect;
-    // }
+    get recipientElem() : HTMLElement {
+        return this.shadowRoot.getElementById("recipientSelector") as HTMLElement;
+    }
 
 
     /** -- Methods -- */
-
-    // /** */
-    // protected async willUpdate(changedProperties: PropertyValues<this>) {
-    //     super.willUpdate(changedProperties);
-    //     console.log("<send-dialog>.willUpdate()", changedProperties);
-    //     if (changedProperties.has("_profilesZvm")) {
-    //         console.log("<send-dialog>.willUpdate() _profilesZvm");
-    //         this.setAgents();
-    //         console.log("<send-dialog>.willUpdate() _profilesZvm count", this._allAgents.length);
-    //     }
-    // }
 
 
     /** */
@@ -100,6 +85,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 
 
 
+    /** */
     protected async firstUpdated() {
         const agentItems = Object.entries(await this._profilesZvm.probeAllProfiles()).map(
             ([agentIdB64, profile]) => {return {key: agentIdB64, name: profile.nickname} as AgentItem});
@@ -107,16 +93,6 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
         //console.log("_allAgents", this._allAgents);
         this._filteredAgents = agentItems;
     };
-
-
-    // /** */
-    // protected async setAgents() {
-    //     const agentItems = Object.entries(this._profilesZvm.perspective.profiles).map(
-    //         ([agentIdB64, profile]) => {return {key: agentIdB64, name: profile.nickname} as AgentItem});
-    //     this._allAgents = agentItems;
-    //     //console.log("_allAgents", this._allAgents);
-    //     this._filteredAgents = agentItems;
-    // }
 
 
     /** */
@@ -143,7 +119,6 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 //   </div>
 // `;
 
-
     /** */
     private agentRenderer: ComboBoxLitRenderer<AgentItem> = (agent) => html`
   <div style="display: flex; width: 100%;">
@@ -158,9 +133,6 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     /** */
     render() {
         console.log("<send-dialog>.render()", this._file, this._recipient, this._allAgents);
-
-        //this.setAgents();
-        //console.log("<send-dialog>.setAgents()", this._allAgents);
 
         // ${comboBoxRenderer(this.agentRenderer, [])}
 
@@ -177,6 +149,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 </div>
                 to:       
                 <vaadin-combo-box
+                    id="recipientSelector"
                     label=""
                     item-label-path="name"
                     item-value-path="key"
@@ -188,7 +161,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file || !this._recipient} @click=${async (e) => {
                         this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipient: this._recipient}, bubbles: true, composed: true}));
-                        const _splitObject = await this._dvm.startCommitPrivateFile(this._file);
+                        const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient);
                         this._file = undefined;
                         this._recipient = undefined;
                         this.dialogElem.open = false;
