@@ -111,7 +111,21 @@ export class FileTable extends LitElement {
                 <vaadin-grid-column
                         path="pp_eh" header=""
                         ${columnBodyRenderer(
-                                ({pp_eh}) => html`<vaadin-button theme="tertiary-inline" style="cursor: pointer;" @click=${(e) => {this.onDownload(encodeHashToBase64(pp_eh))}}>Download</vaadin-button>`,
+                                ({pp_eh}) => {
+                                    const ppEh = encodeHashToBase64(pp_eh);
+                                    return html`
+                                        <sl-button size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
+                                            this.dispatchEvent(new CustomEvent('download', {detail: ppEh, bubbles: true, composed: true}));
+                                        }}>
+                                            <sl-icon name="download"></sl-icon>
+                                        </sl-button>
+                                        <sl-button size="small" variant="primary" @click=${async (e) => {
+                                            this.dispatchEvent(new CustomEvent('send', {detail: ppEh, bubbles: true, composed: true}));
+                                        }}>
+                                            <sl-icon name="send"></sl-icon>
+                                        </sl-button>
+                                    `
+                                },
                                 []
                         )}
                         ${columnFooterRenderer(() => html`<span>${this.items.length} files</span>`, [this.items])}

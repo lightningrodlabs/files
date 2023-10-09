@@ -89,6 +89,8 @@ import {PublishDialog} from "./publish-dialog";
 import {SendDialog} from "./send-dialog";
 
 
+export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
+
 /**
  * @element
  */
@@ -554,6 +556,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <h2>All Files</h2>
                 <file-table .items=${allItems}
                             @download=${(e) => this.downloadFile(e.detail)}
+                            @send=${(e) => this.sendDialogElem.open(e.detail)}
                 ></file-table>
             `;
         }
@@ -565,6 +568,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                                 return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp} as FileTableItem;
                             })}
                             @download=${(e) => this.downloadFile(e.detail)}
+                            @send=${(e) => this.sendDialogElem.open(e.detail)}
                 ></file-table>
             `;
         }
@@ -585,6 +589,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <h2>Public Files</h2>
                 <file-table .items=${dhtPublicItems} 
                             @download=${(e) => this.downloadFile(e.detail)}
+                            @send=${(e) => this.sendDialogElem.open(e.detail)}
                 ></file-table>              
             `;
         }
@@ -632,7 +637,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
                         <sl-avatar label=${this._myProfile.nickname} image=${avatarUrl}></sl-avatar>
                     </sl-tooltip>
-                    <sl-button variant="default" size="medium">
+                    <sl-button variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
                     ${this.devmode? html`
