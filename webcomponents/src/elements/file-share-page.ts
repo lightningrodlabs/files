@@ -20,7 +20,15 @@ import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {base64ToArrayBuffer, emptyAppletHash, getInitials, prettyFileSize, prettyFiletype, SplitObject} from "../utils";
+import {
+    base64ToArrayBuffer,
+    emptyAppletHash,
+    getInitials,
+    prettyFileSize,
+    prettyFiletype,
+    prettyTimestamp,
+    SplitObject
+} from "../utils";
 import {
     DeliveryPerspective,
     DeliveryStateType,
@@ -70,6 +78,7 @@ import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
+import "@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
@@ -89,6 +98,7 @@ import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.typ
 import {PublishDialog} from "./publish-dialog";
 import {SendDialog} from "./send-dialog";
 import {DistributionTableItem} from "./distribution-table";
+import {columnBodyRenderer} from "@vaadin/grid/lit";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
@@ -450,77 +460,98 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 const senderProfile = this._profilesZvm.getProfile(senderKey);
                 let sender = senderKey;
                 if (senderProfile) {
-                    sender = senderProfile.nickname
+                    sender = senderProfile.nickname;
                 }
                 if (pct == -1) {
                     const unrepliedLi = html`
                         <li id="inbound_${noticeEh}">
-                            "${notice.summary.parcel_reference.description.name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_reference.description.size)}
-                            <button type="button" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
-                                accept
-                            </button>
-                            <button type="button" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
-                                decline
-                            </button>
+                            <span class="nickname">${sender}</span>
+                            wants to send you 
+                            <span style="font-weight: bold">${notice.summary.parcel_reference.description.name}</span>
+                            (${prettyFileSize(notice.summary.parcel_reference.description.size)})
+                            <div style="margin: 10px 10px 20px 20px;">
+                                <sl-button type="button" variant="default" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
+                                    <sl-icon slot="prefix" name="check"></sl-icon>
+                                    Accept
+                                </sl-button>
+                                <sl-button type="button" variant="default" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
+                                    <sl-icon slot="prefix" name="x"></sl-icon>
+                                    Decline
+                                </sl-button>
+                            </divstyle>
                         </li>`
                     unrepliedInbounds.push(unrepliedLi);
                     return unrepliedLi;
                 } else {
                     return html`<li id="inbound_${noticeEh}">
-                            "${notice.summary.parcel_reference.description.name}" - From: ${sender} - ${prettyFileSize(notice.summary.parcel_reference.description.size)} | RETRIEVING ${pct}%
+                        <span class="nickname">${sender}</span>
+                        wants to send you
+                        <span style="font-weight: bold">${notice.summary.parcel_reference.description.name}</span>
+                            (${prettyFileSize(notice.summary.parcel_reference.description.size)})
+                        <sl-progress-bar .value=${pct}>TRANSFERING ${pct}%</sl-progress-bar>
                     </li>`;
                 }
             });
 
-        if (inboundList.length == 0) {
-            inboundList = [html`No files inbound`];
-        }
-
-
         /** Unreplied outbounds */
-        let outboundList = Object.entries(this._dvm.deliveryZvm.outbounds()).map(
-            ([distribEh, [distrib, ts, deliveryStates]]) => {
-                //console.log("" + index + ". " + agentIdB64)
-                const manifestEh = encodeHashToBase64(distrib.delivery_summary.parcel_reference.eh);
-                const manifest = this.deliveryPerspective.privateManifests[manifestEh][0];
-                const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-                const date_str = date.toLocaleString('en-US', {hour12: false});
-
-                const outboundItems = Object.entries(deliveryStates).map( ([recipientKey, state]) => {
-                    //const [_nts, notice] = this._dvm.deliveryZvm.perspective.allNotices[noticeEh];
-                    const profile = this._profilesZvm.getProfile(recipientKey);
-                    let recipient = recipientKey;
-                    if (profile) {
-                        recipient = profile.nickname
-                    }
-                    if (DeliveryStateType.Unsent in state) {
-                        return html`<li>${recipient} | Delivery notice unsent</li>`
-                    }
-                    if (DeliveryStateType.PendingNotice in state) {
-                        return html`<li>${recipient} | Delivery notice pending reception</li>`
-                    }
-                    if (DeliveryStateType.NoticeDelivered in state) {
-                        return html`<li>${recipient} | Waiting for reply</li>`
-                    }
-                })
-
-                if (outboundItems.length == 0) {
-                    return html``;
-                } else {
-                    return html`
-                        <li>
-                            <div>${manifest.description.name} (${prettyFileSize(manifest.description.size)}) [${date_str}]</div>
-                            <ul id="outboud_${distribEh}">
-                                ${outboundItems}
-                            </ul>
-                        </li>`
-                }
-            }
-        )
-        if (outboundList.length == 0) {
-            outboundList[0] = html`No files outbound`;
-        }
-
+        let outboundList = Object.entries(this._dvm.deliveryZvm.outbounds())
+            .map(([_distribAh, [distribution, ts, deliveryStates]]) => {
+                const outboundItems = Object.entries(deliveryStates).map(
+                    ([recipient, state]) => {
+                        return {
+                            distribution,
+                            recipient,
+                            timestamp: ts,
+                            state,
+                        }
+                });
+                return outboundItems;
+            })
+            .flat();
+        let outboundTable = html`
+                    <vaadin-grid .items="${outboundList}">
+                        <vaadin-grid-column path="distribution" header="Filename"
+                                            ${columnBodyRenderer(
+                                                    ({ distribution }) => html`<span>${distribution.delivery_summary.parcel_reference.description.name}</span>`,
+                                                    [],
+                                            )}>
+                        </vaadin-grid-column>                        
+                        <vaadin-grid-column path="recipient" header="Recipient"
+                                            ${columnBodyRenderer(
+                                                    ({ recipient }) => {
+                                                        const maybeProfile = this._profilesZvm.perspective.profiles[recipient];
+                                                        return maybeProfile
+                                                                ? html`<span>${maybeProfile.nickname}</span>`
+                                                                : html`<sl-skeleton effect="sheen"></sl-skeleton>`
+                                                    },
+                                                    [],
+                                            )}
+                        ></vaadin-grid-column>                        
+                        <vaadin-grid-column path="state" header="State"
+                            ${columnBodyRenderer(
+                            ({ state }) => {
+                                if (DeliveryStateType.Unsent in state) {
+                                    return html`<span>Delivery notice unsent</span>`
+                                }
+                                if (DeliveryStateType.PendingNotice in state) {
+                                    return html`<span>Delivery notice pending reception</span>`
+                                }
+                                if (DeliveryStateType.NoticeDelivered in state) {
+                                    return html`<span>Waiting for reply</span>`
+                                }
+                                return html`<span>Unknown</span>`
+                            },
+                            [],
+                        )}>
+                        </vaadin-grid-column>
+                        <vaadin-grid-column path="timestamp" header="Sent Date"
+                                            ${columnBodyRenderer(
+                                                    ({ timestamp }) => html`<span>${prettyTimestamp(timestamp)}</span>`,
+                                                    [],
+                                            )}
+                        ></vaadin-grid-column>                        
+                    </vaadin-grid>
+                `;
 
         /** Choose what to display */
         let mainArea = html``;
@@ -634,7 +665,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             mainArea = html`
                 <h2>Outbound files</h2>
                 <ul>
-                    ${outboundList}
+                    ${outboundTable}
                 </ul>`;
         }
 
