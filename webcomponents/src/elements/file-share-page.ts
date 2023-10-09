@@ -118,8 +118,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** -- Fields -- */
     @state() private _initialized = false;
-    //@state() private _uploading?: SplitObject;
-    //@state() private _mustSendTo?: AgentPubKeyB64;
     @property() appletHash: EntryHashB64;
 
     @property() devmode: boolean = false;
@@ -142,12 +140,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** AppletId -> AppletInfo */
     @state() private _appletInfos: Dictionary<AppletInfo> = {}
 
-    @state() private _selected: string = SelectedType.Home.toString();
-
-
-    // get drawerElem() : SlDrawer {
-    //     return this.shadowRoot.getElementById("activityDrawer") as SlDrawer;
-    // }
+    @state() private _selectedMenuItem: string = SelectedType.Home.toString();
 
 
     /**
@@ -169,7 +162,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** After first render only */
     async firstUpdated() {
         console.log("<file-share-page> firstUpdated()", this.appletHash);
-
         /** Generate test data */
         if (!this.appletHash) {
             this.appletHash = encodeHashToBase64(await emptyAppletHash());
@@ -212,15 +204,15 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     }
 
 
-    /** */
-    async onPublishFile(): Promise<SplitObject | undefined> {
-        const fileInput = this.shadowRoot!.getElementById("publishFile") as HTMLInputElement;
-        console.log("onPublishFile():", fileInput.files.length);
-        const splitObj = await this._dvm.startPublishFile(fileInput.files[0]);
-        console.log("onPublishFile() splitObj:", splitObj);
-        fileInput.value = "";
-        return splitObj;
-    }
+    // /** */
+    // async onPublishFile(): Promise<SplitObject | undefined> {
+    //     const fileInput = this.shadowRoot!.getElementById("publishFile") as HTMLInputElement;
+    //     console.log("onPublishFile():", fileInput.files.length);
+    //     const splitObj = await this._dvm.startPublishFile(fileInput.files[0]);
+    //     console.log("onPublishFile() splitObj:", splitObj);
+    //     fileInput.value = "";
+    //     return splitObj;
+    // }
 
 
     // /** */
@@ -363,20 +355,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     /** */
-    renderHome(fileOptions, agentOptions, unrepliedInbounds) {
-//         ${this._uploading? html`Uploading... ${Math.ceil(this.deliveryPerspective.chunkCounts[this._uploading.dataHash] / this._uploading.numChunks * 100)}%` : html`
-//         <label for="addLocalFile">Add private file to source-chain:</label>
-//         <input type="file" id="addLocalFile" name="addLocalFile" />
-//         <input type="button" value="Add" @click=${async() => {
-//                 const maybeSplitObj = await this.onAddFile();
-//                 if (maybeSplitObj) {
-//                     this._uploading = maybeSplitObj;
-//                 }
-//     }
-// }
-// >`
-//         }
-
+    renderHome(unrepliedInbounds) {
         return html`
         ${unrepliedInbounds.length? html`
             <h2>Incoming file requests</h2>
@@ -389,7 +368,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     render() {
-        console.log("<file-share-page>.render()", this._initialized, this._selected, this.deliveryPerspective, this._profilesZvm.perspective);
+        console.log("<file-share-page>.render()", this._initialized, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
         //this.printNoticeReceived();
 
         if (!this._profilesZvm) {
@@ -555,10 +534,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
         /** Choose what to display */
         let mainArea = html``;
-        if (this._selected == SelectedType.Home) {
-            mainArea = this.renderHome(fileOptions, agentOptions, unrepliedInbounds);
+        if (this._selectedMenuItem == SelectedType.Home) {
+            mainArea = this.renderHome(unrepliedInbounds);
         }
-        if (this._selected == SelectedType.AllFiles) {
+        if (this._selectedMenuItem == SelectedType.AllFiles) {
             const privateItems = Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
                 //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
                 return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: true} as FileTableItem;
@@ -581,7 +560,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 ></file-table>
             `;
         }
-        if (this._selected == SelectedType.PrivateFiles) {
+        if (this._selectedMenuItem == SelectedType.PrivateFiles) {
             mainArea = html`
                 <h2>Private Files</h2>
                 <file-table .items=${Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm,timestamp]]) => {
@@ -593,7 +572,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 ></file-table>
             `;
         }
-        if (this._selected == SelectedType.PublicFiles) {
+        if (this._selectedMenuItem == SelectedType.PublicFiles) {
             // console.log("this.deliveryPerspective.localPublicManifests", this.deliveryPerspective.localPublicManifests)
             // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
             //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
@@ -615,14 +594,14 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             `;
         }
 
-        if (this._selected == SelectedType.Inbox) {
+        if (this._selectedMenuItem == SelectedType.Inbox) {
             mainArea = html`
                 <h2>Inbound files</h2>
                 <ul>
                     ${inboundList}
                 </ul>`;
         }
-        if (this._selected == SelectedType.Sent) {
+        if (this._selectedMenuItem == SelectedType.Sent) {
             let distributionItems = Object.entries(this.deliveryPerspective.distributions)
                 .filter(([_distribAh, tuple]) => DistributionStateType.AllAcceptedParcelsReceived in tuple[2])
                 .map(([distribAh, [distribution, sentTs, _fullState, _stateMap]]) => {
@@ -661,7 +640,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 ></distribution-table>
             `;
         }
-        if (this._selected == SelectedType.InProgress) {
+        if (this._selectedMenuItem == SelectedType.InProgress) {
             mainArea = html`
                 <h2>Outbound files</h2>
                 <ul>
@@ -673,7 +652,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         /** Render all */
         return html`
         <div id="main">
-            <file-share-menu @selected=${(e) => this._selected = e.detail}></file-share-menu>
+            <file-share-menu @selected=${(e) => this._selectedMenuItem = e.detail}></file-share-menu>
             <div id="rhs">
                 <div id="topBar">
                     <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
@@ -697,18 +676,25 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
             </div>
         </div>
-        <sl-tooltip placement="left" content="Send file" style="--show-delay: 200;">
-            <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.sendDialogElem.open()}>
-                <sl-icon name="send" label="Send"></sl-icon>
-            </sl-button>
-        </sl-tooltip>
-        <sl-tooltip placement="left" content="Publish file" style="--show-delay: 200;">
-            <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.publishDialogElem.open()}>
-                <sl-icon name="plus-lg" label="Add"></sl-icon>
-            </sl-button>
-        </sl-tooltip>
         <publish-dialog id="publish-dialog"></publish-dialog>
         <send-dialog id="send-dialog"></send-dialog>
+        ${this.perspective.uploadState? html`
+            <div id="uploadingView">
+                <span style="font-weight: bold; overflow:clip; width: inherit">${this.perspective.uploadState.file.name}</span>
+                <sl-progress-bar .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
+                </div>
+            ` : html`
+            <sl-tooltip placement="left" content="Send file" style="--show-delay: 200;">
+                <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.sendDialogElem.open()}>
+                    <sl-icon name="send" label="Send"></sl-icon>
+                </sl-button>
+            </sl-tooltip>
+            <sl-tooltip placement="left" content="Publish file" style="--show-delay: 200;">
+                <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.publishDialogElem.open()}>
+                    <sl-icon name="plus-lg" label="Add"></sl-icon>
+                </sl-button>
+            </sl-tooltip>
+        `}
         `;
     }
 
@@ -758,7 +744,19 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 position: absolute;
                 bottom: 90px;
                 right: 30px;
-              }              
+              }   
+              #uploadingView {
+                position: absolute;
+                bottom: 0px;
+                width: 250px;
+                /*left: 40%;*/
+                right:10px;
+                margin-botton: 10px;
+                padding: 5px;
+                background: #ffffff;
+                border-radius: 12px;                
+                box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+              }
             `,];
     }
 }

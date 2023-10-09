@@ -106,54 +106,55 @@ export class FileShareZvm extends ZomeViewModel {
     }
 
 
-    /** */
-    async commitPrivateFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {
-      /** Commit each chunk */
-      const chunksToSend: EntryHash[] = [];
-      for (let i = 0; i < splitObj.numChunks; ++i) {
-        const eh = await this.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[i]});
-        chunksToSend.push(eh);
-        //await delay(splitObj.numChunks);
-        await delay(40);
-      }
-      /** Commit file manifest */
-      const params = {
-        filename: file.name,
-        filetype: file.type,
-        data_hash: splitObj.dataHash,
-        orig_filesize: file.size,
-        chunks: chunksToSend,
-      }
-      const [manifest_eh, _description] =  await this.zomeProxy.commitPrivateFile(params);
-      const ehb64 = encodeHashToBase64(manifest_eh);
-      /** Done */
-      this.notifySubscribers();
-      return ehb64;
-    }
+    // /** */
+    // async commitPrivateFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {
+    //   /** Commit each chunk */
+    //   const chunksToSend: EntryHash[] = [];
+    //   for (let i = 0; i < splitObj.numChunks; ++i) {
+    //     const eh = await this.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[i]});
+    //     chunksToSend.push(eh);
+    //     //await delay(splitObj.numChunks);
+    //     await delay(40);
+    //   }
+    //   /** Commit file manifest */
+    //   const params = {
+    //     filename: file.name,
+    //     filetype: file.type,
+    //     data_hash: splitObj.dataHash,
+    //     orig_filesize: file.size,
+    //     chunks: chunksToSend,
+    //   }
+    //   const [manifest_eh, _description] =  await this.zomeProxy.commitPrivateFile(params);
+    //   const ehb64 = encodeHashToBase64(manifest_eh);
+    //   /** Done */
+    //   this.notifySubscribers();
+    //   return ehb64;
+    // }
 
-    /** */
-    async publishFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {
-        console.log('zvm.commitPublicFile: ', splitObj)
-        /** Commit each chunk */
-        const chunksToSend: EntryHash[] = [];
-        for (let i = 0; i < splitObj.numChunks; ++i) {
-            const eh = await this.zomeProxy.writePublicFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[i]});
-            chunksToSend.push(eh);
-        }
-        /** Commit file manifest */
-        const params = {
-            filename: file.name,
-            filetype: file.type,
-            data_hash: splitObj.dataHash,
-            orig_filesize: file.size,
-            chunks: chunksToSend,
-        }
-        const [manifest_eh, _description] = await this.zomeProxy.publishFileManifest(params);
-        const ehb64 = encodeHashToBase64(manifest_eh);
-        /** Done */
-        this.notifySubscribers();
-        return ehb64;
-    }
+
+    // /** */
+    // async publishFile(file: File, splitObj: SplitObject): Promise<EntryHashB64> {
+    //     console.log('zvm.commitPublicFile: ', splitObj)
+    //     /** Commit each chunk */
+    //     const chunksToSend: EntryHash[] = [];
+    //     for (let i = 0; i < splitObj.numChunks; ++i) {
+    //         const eh = await this.zomeProxy.writePublicFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[i]});
+    //         chunksToSend.push(eh);
+    //     }
+    //     /** Commit file manifest */
+    //     const params = {
+    //         filename: file.name,
+    //         filetype: file.type,
+    //         data_hash: splitObj.dataHash,
+    //         orig_filesize: file.size,
+    //         chunks: chunksToSend,
+    //     }
+    //     const [manifest_eh, _description] = await this.zomeProxy.publishFileManifest(params);
+    //     const ehb64 = encodeHashToBase64(manifest_eh);
+    //     /** Done */
+    //     this.notifySubscribers();
+    //     return ehb64;
+    // }
 
 
     /** */
