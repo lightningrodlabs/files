@@ -57,6 +57,7 @@ import "./file-button";
 import "./file-share-menu";
 import "./publish-dialog";
 import "./send-dialog";
+import "./edit-profile";
 
 import {
     SlAlert,
@@ -142,6 +143,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     @state() private _selectedMenuItem: string = SelectedType.Home.toString();
 
+
+    get profileDialogElem(): SlDialog {
+        return this.shadowRoot!.getElementById("profile-dialog") as SlDialog;
+    }
 
     /**
      * In dvmUpdated() this._dvm is not already set!
@@ -351,6 +356,22 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             msg = `For "${description.name}" from ${recipientName}`;
         }
         createAlert(title, msg, variant, icon, duration, extraHtml, id);
+    }
+
+
+
+    /** */
+    private async onSaveProfile(profile: FileShareProfile) {
+        console.log("onSavProfile()", this._myProfile)
+        try {
+            await this._profilesZvm.updateMyProfile(profile);
+        } catch(e) {
+            await this._profilesZvm.createMyProfile(profile);
+            this._myProfile = profile;
+        }
+        this.profileDialogElem.open = false;
+        this._myProfile.fields.avatar = profile.fields.avatar;
+        this.requestUpdate();
     }
 
 
@@ -656,7 +677,11 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             <div id="rhs">
                 <div id="topBar">
                     <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
-                        <sl-avatar label=${this._myProfile.nickname} image=${avatarUrl}></sl-avatar>
+                        <sl-avatar 
+                                style="cursor:pointer"
+                                label=${this._myProfile.nickname} 
+                                image=${avatarUrl} 
+                                @click=${() => this.profileDialogElem.open = true}></sl-avatar>
                     </sl-tooltip>
                     <sl-button variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bug" label="Report bug"></sl-icon>
@@ -676,8 +701,17 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
             </div>
         </div>
+        <!-- dialogs -->
+        <sl-dialog id="profile-dialog" label="Edit Profile">        
+            <edit-profile
+                    allowCancel
+                    .profile="${this._myProfile}"
+                    @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail.profile)}
+            ></edit-profile>
+        </sl-dialog>
         <publish-dialog id="publish-dialog"></publish-dialog>
         <send-dialog id="send-dialog"></send-dialog>
+        <!-- commit widget -->
         ${this.perspective.uploadState? html`
             <div id="uploadingView">
                 <span style="font-weight: bold; overflow:clip; width: inherit">${this.perspective.uploadState.file.name}</span>
@@ -695,6 +729,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </sl-button>
             </sl-tooltip>
         `}
+        
         `;
     }
 
