@@ -1,4 +1,4 @@
-import {ActionHashB64, AgentPubKeyB64, EntryHash, EntryHashB64, Timestamp} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, Entry, EntryHash, EntryHashB64, Timestamp} from "@holochain/client";
 import {ParcelDescription, SignalProtocol, SignalProtocolType} from "@ddd-qc/delivery";
 import {SplitObject} from "../utils";
 
@@ -23,6 +23,7 @@ export interface FileShareDvmPerspective {
 /** */
 export enum FileShareNotificationType {
     //NewPublicFile = 'NewPublicFile',
+    DeliveryRequestSent = 'DeliveryRequestSent',
     ReceptionComplete = 'ReceptionComplete',
     DistributionToRecipientComplete = 'DistributionToRecipientComplete',
     PublicSharingComplete = 'PublicSharingComplete',
@@ -32,6 +33,7 @@ export enum FileShareNotificationType {
 }
 
 //export type FileShareNotificationVariantNewPublicFile = { manifestEh: EntryHashB64, description: ParcelDescription }
+export type FileShareNotificationVariantDeliveryRequestSent = {distribAh: ActionHashB64, manifestEh: EntryHashB64, recipient: AgentPubKeyB64 }
 export type FileShareNotificationVariantReceptionComplete = {noticeEh: EntryHashB64, manifestEh: EntryHashB64 }
 export type FileShareNotificationVariantDistributionToRecipientComplete = {distribAh: ActionHashB64, recipient: AgentPubKeyB64 }
 export type FileShareNotificationVariantPublicSharingComplete = {manifestEh: EntryHashB64 }

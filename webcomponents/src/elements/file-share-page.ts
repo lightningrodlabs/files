@@ -39,7 +39,7 @@ import {
 import {
     FileShareDvmPerspective,
     FileShareNotification,
-    FileShareNotificationType,
+    FileShareNotificationType, FileShareNotificationVariantDeliveryRequestSent,
     FileShareNotificationVariantDistributionToRecipientComplete,
     FileShareNotificationVariantNewNoticeReceived,
     FileShareNotificationVariantPrivateCommitComplete,
@@ -274,6 +274,18 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         let extraHtml;
         let id;
 
+        if (FileShareNotificationType.DeliveryRequestSent == type) {
+            const manifestEh = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).manifestEh;
+            const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
+            const recipient = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).recipient;
+            const maybeProfile = this._profilesZvm.getProfile(recipient);
+            const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
+            console.log("DeliveryRequestSent", notifLog, recipient, maybeProfile);
+            variant = 'success';
+            icon = "check2-circle";
+            title = "File delivery request sent";
+            msg = `"${privateManifest.description.name}" to ${recipientName}`;
+        }
         if (FileShareNotificationType.ReceptionComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).manifestEh;
             //const noticeEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).noticeEh;

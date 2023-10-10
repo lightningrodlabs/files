@@ -229,7 +229,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
     /** */
     render() {
-        console.log("<activity-timeline>.render()", this._dvm.deliveryZvm.perspective, this._profilesZvm.perspective);
+        console.log("<activity-timeline>.render()");
         const history = this.determineHistory();
 
 

@@ -104,23 +104,29 @@ export class FileShareDvm extends DnaViewModel {
         const deliverySignal = signal.payload as SignalProtocol;
         /** */
         if (SignalProtocolType.NewLocalManifest in deliverySignal) {
-            const manifest = deliverySignal.NewLocalManifest[2];
+            //const manifest = deliverySignal.NewLocalManifest[2];
             const manifestEh = encodeHashToBase64(deliverySignal.NewLocalManifest[0])
             /** Follow-up send if requested */
             if (this._mustSendTo) {
+                const recipient = (' ' + this._mustSendTo).slice(1); // deep copy string for promise
                 console.log("sendFile follow up", manifestEh, this._mustSendTo);
-                /*await */ this.fileShareZvm.sendFile(manifestEh, this._mustSendTo);
+                this.fileShareZvm.sendFile(manifestEh, this._mustSendTo).then((distribAh) => {
+                    /** Into Notification */
+                    console.log("File delivery request sent", deliverySignal.NewLocalManifest, recipient);
+                    this._perspective.notificationLogs.push([now, FileShareNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipient}]);
+                    this.notifySubscribers();
+                });
                 this._mustSendTo = undefined;
             }
-            /** Into Notification */
-            console.log("dvm signal NewLocalManifest", deliverySignal.NewLocalManifest);
-            const isPrivate = "Private" in manifest.description.visibility;
-            // this._perspective.notificationLogs.push([now, isPrivate? FileShareNotificationType.PrivateCommitComplete : FileShareNotificationType.PublicSharingComplete, {manifestEh}]);
-            if (isPrivate) {
-                this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, {manifestEh}]);
-            }
-            this._perspective.uploadState = undefined;
+            // /** Into Notification */
+            // console.log("dvm signal NewLocalManifest", deliverySignal.NewLocalManifest);
+            // const isPrivate = "Private" in manifest.description.visibility;
+            // const hasNotice = this.deliveryZvm.perspective.noticeByParcel[manifestEh];
+            // if (isPrivate && !hasNotice) {
+            //     this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, {manifestEh}]);
+            // }
             /** Done */
+            this._perspective.uploadState = undefined;
             this.notifySubscribers();
         }
         if (SignalProtocolType.NewLocalChunk in deliverySignal) {
