@@ -65,7 +65,7 @@ import "./inbound-stack";
 import {
     SlAlert,
     SlSkeleton,
-    SlDrawer, SlDialog
+    SlDrawer, SlDialog, SlInput
 } from "@shoelace-style/shoelace";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js";
@@ -147,9 +147,23 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     @state() private _selectedMenuItem: string = SelectedType.Home.toString();
 
 
+    /** -- Getters -- */
+
     get profileDialogElem(): SlDialog {
         return this.shadowRoot!.getElementById("profile-dialog") as SlDialog;
     }
+
+    get publishDialogElem() : PublishDialog {
+        return this.shadowRoot.getElementById("publish-dialog") as PublishDialog;
+    }
+    get sendDialogElem() : SendDialog {
+        return this.shadowRoot.getElementById("send-dialog") as SendDialog;
+    }
+
+    get searchInputElem() : SlInput {
+        return this.shadowRoot.getElementById("search-input") as SlInput;
+    }
+
 
     /**
      * In dvmUpdated() this._dvm is not already set!
@@ -405,7 +419,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** */
     render() {
         console.log("<file-share-page>.render()", this._initialized, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
-        //this.printNoticeReceived();
+
 
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
@@ -417,7 +431,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             this._myProfile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
             this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
         }
-
 
         /** This agent's profile info */
         let agent = {nickname: "unknown", fields: {}} as FileShareProfile;
@@ -432,6 +445,20 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
         //const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
+
+        let searchResultItems = [];
+        /** Search results */
+        if (this.searchInputElem) {
+            const filter = this.searchInputElem.value;
+            const results = this._dvm.searchParcel(filter);
+            console.log("searchInputElem", filter, results);
+            searchResultItems = results.map((ppEh) => html`
+                <file-button    hash="${ppEh}"
+                                @download=${(e) => this.downloadFile(e.detail)}
+                                @send=${(e) => this.sendDialogElem.open(e.detail)}
+                ></file-button>
+            `);
+        }
 
 
         /** -- Notifications -- */
@@ -706,8 +733,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                         <button type="button" @click=${() => {this.refresh();}}>refresh</button>
                     `: html``
                     }
-                    <sl-input placeholder="Search" size="large" clearable
-                        style="flex-grow: 2">
+                    <sl-input id="search-input" placeholder="Search" size="large" clearable 
+                              @sl-input=${(e) => {console.log("sl-change", this.searchInputElem.value);this.requestUpdate();}}
+                              style="flex-grow: 2">
                         <sl-icon name="search" slot="prefix"></sl-icon>
                     </sl-input>            
                 </div>
@@ -716,6 +744,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
             </div>
         </div>
+        <!-- Search result -->
+        <div id="searchResultView" style="display:${searchResultItems.length? "flex" :"none"}">
+            ${searchResultItems}
+        </div>        
         <!-- dialogs -->
         <sl-dialog id="profile-dialog" label="Edit Profile">        
             <edit-profile
@@ -733,7 +765,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <span style="font-weight: bold; overflow:clip; width:inherit; margin-right:3px;">${this.perspective.uploadState.file.name}</span>
                 <sl-icon style="margin-right:3px;" name="arrow-right"></sl-icon><sl-icon name="hdd"></sl-icon>
                 <sl-progress-bar .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
-                </div>
+            </div>
             ` : html`
             <sl-tooltip placement="left" content="Send file" style="--show-delay: 200;">
                 <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.sendDialogElem.open()}>
@@ -750,12 +782,6 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         `;
     }
 
-    get publishDialogElem() : PublishDialog {
-        return this.shadowRoot.getElementById("publish-dialog") as PublishDialog;
-    }
-    get sendDialogElem() : SendDialog {
-        return this.shadowRoot.getElementById("send-dialog") as SendDialog;
-    }
 
     /** */
     static get styles() {
@@ -808,6 +834,19 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 background: #ffffff;
                 border-radius: 12px;                
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+              }
+              #searchResultView {
+                position: absolute;
+                top: 70px;
+                left: 25%;
+                padding: 15px;
+                background: rgb(255, 255, 255);
+                border-radius: 12px;
+                box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+                display: flex;
+                gap: 15px;
+                max-width: 500px;
+                flex-wrap: wrap;
               }
             `,];
     }

@@ -271,6 +271,25 @@ export class FileShareDvm extends DnaViewModel {
     // }
 
 
+
+    /** Return list of ParcelEh that holds a file with a name that matches filter */
+    searchParcel(filter: string): EntryHashB64[] {
+        if (filter.length < 2) {
+            return [];
+        }
+        const pps = Object.entries(this.deliveryZvm.perspective.publicParcels)
+            .filter(([_ppEh, [description, _ts, _agent]]) => description.name.includes(filter))
+            .map(([ppEh, _tuple]) => ppEh);
+
+
+        const pms = Object.entries(this.deliveryZvm.perspective.privateManifests)
+            .filter(([ppEh, [manifest, _ts]]) => manifest.description.name.includes(filter))
+            .map(([ppEh, _tuple]) => ppEh);
+
+        return pps.concat(pms);
+    }
+
+
     /** */
     async startCommitPrivateAndSendFile(file: File, recipient: AgentPubKeyB64): Promise<SplitObject> {
         this._mustSendTo = recipient;
