@@ -49,6 +49,8 @@ import {
 import {createAlert} from "../toast";
 import {SelectedType} from "./file-share-menu";
 
+
+/** Define my custom elements */
 import "./activity-timeline";
 import "./file-table";
 import "./distribution-table";
@@ -58,6 +60,7 @@ import "./file-share-menu";
 import "./publish-dialog";
 import "./send-dialog";
 import "./edit-profile";
+import "./inbound-stack";
 
 import {
     SlAlert,
@@ -500,7 +503,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                         wants to send you
                         <span style="font-weight: bold">${notice.summary.parcel_reference.description.name}</span>
                             (${prettyFileSize(notice.summary.parcel_reference.description.size)})
-                        <sl-progress-bar .value=${pct}>TRANSFERING ${pct}%</sl-progress-bar>
+                        <sl-progress-bar .value=${pct}>${pct}%</sl-progress-bar>
                     </li>`;
                 }
             });
@@ -724,9 +727,11 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         <publish-dialog id="publish-dialog"></publish-dialog>
         <send-dialog id="send-dialog"></send-dialog>
         <!-- commit widget -->
+        <inbound-stack></inbound-stack>
         ${this.perspective.uploadState? html`
             <div id="uploadingView">
-                <span style="font-weight: bold; overflow:clip; width: inherit">${this.perspective.uploadState.file.name}</span>
+                <span style="font-weight: bold; overflow:clip; width:inherit; margin-right:3px;">${this.perspective.uploadState.file.name}</span>
+                <sl-icon style="margin-right:3px;" name="arrow-right"></sl-icon><sl-icon name="hdd"></sl-icon>
                 <sl-progress-bar .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
                 </div>
             ` : html`

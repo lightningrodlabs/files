@@ -85,9 +85,9 @@ export class FileShareDvm extends DnaViewModel {
 
     /** */
     get perspective(): FileShareDvmPerspective { return this._perspective }
-    //get perspective(): unknown { return {} }
 
 
+    /** */
     get dnaProperties(): DeliveryProperties {
         const properties = decode(this.cell.dnaModifiers.properties as Uint8Array) as DeliveryProperties;
         //console.log('properties', properties);
@@ -118,6 +118,7 @@ export class FileShareDvm extends DnaViewModel {
                 });
                 this._mustSendTo = undefined;
             }
+
             // /** Into Notification */
             // console.log("dvm signal NewLocalManifest", deliverySignal.NewLocalManifest);
             // const isPrivate = "Private" in manifest.description.visibility;
@@ -125,6 +126,7 @@ export class FileShareDvm extends DnaViewModel {
             // if (isPrivate && !hasNotice) {
             //     this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, {manifestEh}]);
             // }
+
             /** Done */
             this._perspective.uploadState = undefined;
             this.notifySubscribers();

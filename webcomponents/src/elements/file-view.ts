@@ -30,10 +30,6 @@ import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 @customElement("file-view")
 export class FileView extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
-    // constructor() {
-    //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
-    // }
-
     @consume({context: globalProfilesContext, subscribe: true})
     _profilesZvm!: ProfilesZvm;
 
