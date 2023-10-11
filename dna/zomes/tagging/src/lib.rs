@@ -19,5 +19,5 @@ use hdk::prelude::*;
 pub struct TaggingInput {
     tags: Vec<String>,
     target: EntryHash,
-    link_tag_to_entry: Vec<u8>
+    link_tag_to_entry: String, // Base64 string of data
 }

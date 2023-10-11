@@ -158,6 +158,10 @@ export class TaggingProxy extends ZomeProxy {
     return this.call('get_private_tags', eh);
   }
 
+  async getPrivateEntriesWithTag(tag: string): Promise<[EntryHash, string][]> {
+    return this.call('get_private_entries_with_tag', tag);
+  }
+
   async getAllPublicTags(): Promise<[EntryHash, string][]> {
     return this.call('get_all_public_tags', null);
   }
@@ -172,5 +176,9 @@ export class TaggingProxy extends ZomeProxy {
 
   async getPublicTags(eh: EntryHash): Promise<string[]> {
     return this.call('get_public_tags', eh);
+  }
+
+  async getPublicEntriesWithTag(tag: string): Promise<[EntryHash, string][]> {
+    return this.call('get_public_entries_with_tag', tag);
   }
 }

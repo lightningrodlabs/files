@@ -99,7 +99,7 @@ fn tag_public_entry(input: TaggingInput) -> ExternResult<()> {
                 eh
             }
             ;
-        let _ = create_link(tag_eh.clone(), input.target.clone(), TaggingLinkTypes::PublicEntry, LinkTag::from(input.link_tag_to_entry.clone()))?;
+        let _ = create_link(tag_eh.clone(), input.target.clone(), TaggingLinkTypes::PublicEntry, str2tag(&input.link_tag_to_entry.clone()))?;
         let _ = create_link( input.target.clone(), tag_eh, TaggingLinkTypes::PublicTags, str2tag(&tag))?;
     }
     Ok(())
@@ -116,6 +116,24 @@ pub fn get_public_tags(eh: EntryHash) -> ExternResult<Vec<String>> {
     let links = get_links(eh, TaggingLinkTypes::PrivateTags, None)?;
     let res = links.into_iter()
         .map(|link| (tag2str(&link.tag).unwrap()))
+        .collect();
+    /// Done
+    Ok(res)
+}
+
+
+///
+#[hdk_extern]
+pub fn get_public_entries_with_tag(tag: String) -> ExternResult<Vec<(EntryHash, String)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
+    /// Form path
+    let mut tp = root_path()?;
+    tp.path.append_component(tag.into());
+    /// Grab entries
+    //let links = tp_children(&tp)?;
+    let links = get_links(tp.path_entry_hash()?, TaggingLinkTypes::PublicEntry, None)?;
+    let res = links.into_iter()
+        .map(|link| (link.target.into_entry_hash().unwrap(), tag2str(&link.tag).unwrap()))
         .collect();
     /// Done
     Ok(res)

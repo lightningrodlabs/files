@@ -85,7 +85,6 @@ fn tag_private_entry(input: TaggingInput) -> ExternResult<()> {
     /// Link to/from each tag (create PrivateTag entry if necessary)
     for tag in tags {
         let maybe_index = private_tags.iter().position(|r| r == &tag);
-
         let tag_eh =
             if maybe_index.is_none() {
                 let eh = create_private_tag(tag)?;
@@ -95,9 +94,10 @@ fn tag_private_entry(input: TaggingInput) -> ExternResult<()> {
                 eh
             }
         ;
-        let _ = create_link(tag_eh.clone(), input.target.clone(), TaggingLinkTypes::PrivateEntry, LinkTag::from(input.link_tag_to_entry.clone()))?;
+        let _ = create_link(tag_eh.clone(), input.target.clone(), TaggingLinkTypes::PrivateEntry, str2tag(&input.link_tag_to_entry.clone()))?;
         let _ = create_link( input.target.clone(), tag_eh, TaggingLinkTypes::PrivateTags, LinkTag::from(()))?;
     }
+    /// Done
     Ok(())
 }
 
@@ -115,4 +115,26 @@ pub fn get_private_tags(eh: EntryHash) -> ExternResult<Vec<(EntryHash, String)>>
         .collect();
     /// Done
     Ok(res)
+}
+
+
+///
+#[hdk_extern]
+pub fn get_private_entries_with_tag(tag: String) -> ExternResult<Vec<(EntryHash, String)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
+    /// Search for tag
+    let private_tags = query_all_PrivateTags(())?;
+    for tuple in private_tags {
+        if tuple.2 == tag {
+            /// Found: grab links
+            let links = get_links(tuple.0, TaggingLinkTypes::PrivateEntry, None)?;
+            let res = links.into_iter()
+                .map(|link| (link.target.into_entry_hash().unwrap(), tag2str(&link.tag).unwrap()))
+                .collect();
+            return Ok(res);
+        }
+    }
+    /// Done
+    debug!("Tag not found");
+    return Ok(Vec::new());
 }

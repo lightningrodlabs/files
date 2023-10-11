@@ -134,7 +134,7 @@ ValidationReceipt,
 export interface TaggingInput {
   tags: string[]
   target: EntryHash
-  link_tag_to_entry: number[]
+  link_tag_to_entry: string
 }
 
 export const TAGGING_ZOME_NAME = "tagging_integrity";

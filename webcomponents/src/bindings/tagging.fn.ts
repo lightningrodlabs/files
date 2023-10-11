@@ -12,10 +12,12 @@ export const taggingFunctionNames: FunctionName[] = [
 	"create_private_tag",
 	"tag_private_entry",
 	"get_private_tags",
+	"get_private_entries_with_tag",
 	"get_all_public_tags",
 	"create_public_tag",
 	"tag_public_entry",
-	"get_public_tags",];
+	"get_public_tags",
+	"get_public_entries_with_tag",];
 
 
 /** Generate tuple array of function names with given zomeName */
