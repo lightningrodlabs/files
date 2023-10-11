@@ -16,7 +16,7 @@ pub const FILE_SHARE_ZOME_NAME: &str = "file_share_integrity";
 /// does not support well a zome that does not have one.
 
 #[hdk_entry_defs]
-#[unit_enum(SecretEntryTypes)]
+#[unit_enum(FileShareEntryTypes)]
 pub enum FileShareEntry {
    #[entry_def(required_validations = 2, visibility = "private")]
    FileShare(FileShare),

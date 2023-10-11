@@ -1,0 +1,17 @@
+[package]
+name = "tagging"
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde.workspace = true
+hdk.workspace = true
+zome_utils.workspace = true
+path_explorer_types.workspace = true
+
+zome_tagging_integrity = {path = "../tagging_integrity" }
+
