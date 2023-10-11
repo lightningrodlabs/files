@@ -87,6 +87,9 @@ export class TaggingZvm extends ZomeViewModel {
 
     /** -- Methods -- */
 
+    get allPublicTags(): string[] {return Object.keys(this._perspective.publicTags) }
+    get allPrivateTags(): string[] {return Object.keys(this._perspective.privateTags) }
+
 
     /** */
     async getPrivateEntriesWithTag(tag: string): Promise<[EntryHashB64, string][]> {
@@ -144,6 +147,9 @@ export class TaggingZvm extends ZomeViewModel {
 
     /** */
     async addPrivateTag(tag: string) {
+        if (!tag || tag == "") {
+            return;
+        }
         let _eh = await this.zomeProxy.createPrivateTag(tag);
         this._perspective.privateTags[tag] = [];
         this.notifySubscribers();
@@ -152,6 +158,9 @@ export class TaggingZvm extends ZomeViewModel {
 
     /** */
     async addPublicTag(tag: string) {
+        if (!tag || tag == "") {
+            return;
+        }
         let _eh = await this.zomeProxy.createPublicTag(tag);
         this._perspective.publicTags[tag] = [];
         this.notifySubscribers();

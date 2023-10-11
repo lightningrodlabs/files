@@ -5,7 +5,7 @@ import {consume} from "@lit-labs/context";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {sharedStyles} from "../sharedStyles";
 import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
-import {SlDialog, SlMenu, SlSelect} from "@shoelace-style/shoelace";
+import {SlDialog, SlInput, SlMenu, SlSelect} from "@shoelace-style/shoelace";
 import {arrayBufferToBase64, prettyFileSize, splitData, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
 import {AgentPubKeyB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
@@ -14,6 +14,7 @@ import {ProfilesPerspective, ProfilesZvm} from "../viewModels/profiles.zvm";
 import {DeliveryPerspective, ParcelDescription} from "@ddd-qc/delivery";
 import {ComboBoxFilterChangedEvent} from "@vaadin/combo-box";
 import {ComboBoxLitRenderer, comboBoxRenderer} from "@vaadin/combo-box/lit";
+import {MultiSelectComboBoxSelectedItemsChangedEvent} from "@vaadin/multi-select-combo-box";
 
 
 interface AgentItem {
@@ -121,13 +122,27 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 
     /** */
     private agentRenderer: ComboBoxLitRenderer<AgentItem> = (agent) => html`
-  <div style="display: flex; width: 100%;">
-    <div>
-      ${agent.name}
-    </div>
-  </div>
-`;
+      <div style="display: flex; width: 100%;">
+        <div>
+          ${agent.name}
+        </div>
+      </div>
+    `;
 
+
+    @state() private _selectedTags = [];
+
+    get inputElem() : SlInput {
+        return this.shadowRoot.getElementById("tag-input") as SlInput;
+    }
+
+
+    async onAddTag(e) {
+        console.log("tag sl-change", this.inputElem.value);
+        await this._dvm.taggingZvm.addPrivateTag(this.inputElem.value);
+        this.inputElem.value = "";
+        this.requestUpdate();
+    }
 
 
     /** */
@@ -135,6 +150,8 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
         console.log("<send-dialog>.render()", this._file, this._recipient, this._allAgents);
 
         // ${comboBoxRenderer(this.agentRenderer, [])}
+
+        const allTags = this._dvm.taggingZvm.allPrivateTags.map((tag) => { return {value: tag};})
 
         /** render all */
         return html`
@@ -158,10 +175,27 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     @filter-changed=${this.filterChanged}
                     @selected-item-changed=${(e) => {console.log("filter selected:", e.detail); this._recipient = e.detail.value.key}}
                 ></vaadin-combo-box>
+                
+                <vaadin-multi-select-combo-box
+                        label="Tags"
+                        item-label-path="value"
+                        item-id-path="value"
+                        .items="${allTags}"
+                        .selectedItems="${this._selectedTags}"
+                        @selected-items-changed="${(e: MultiSelectComboBoxSelectedItemsChangedEvent<string>) => {
+                            this._selectedTags = e.detail.value;
+                        }}"
+                ></vaadin-multi-select-combo-box>
+                <sl-input id="tag-input" placeholder="Add tag" clearable
+                          @sl-change=${this.onAddTag}}
+                >
+                    <sl-icon name="plus" slot="prefix"></sl-icon>
+                </sl-input>
+                
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file || !this._recipient} @click=${async (e) => {
                         this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipient: this._recipient}, bubbles: true, composed: true}));
-                        const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient);
+                        const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags);
                         this._file = undefined;
                         this._recipient = undefined;
                         this.dialogElem.open = false;

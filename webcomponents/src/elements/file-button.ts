@@ -2,24 +2,10 @@ import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {
-    ActionHashB64,
-    decodeHashFromBase64,
-    DnaHashB64,
-    encodeHashToBase64,
     EntryHashB64,
 } from "@holochain/client";
-import {consume} from "@lit-labs/context";
-import {
-    AppletInfo,
-    Hrl,
-    WeServices, weServicesContext,
-} from "@lightningrodlabs/we-applet";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
-import {FileShareProfile} from "../viewModels/profiles.proxy";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
-import {globalProfilesContext} from "../viewModels/happDef";
-import {emptyAppletHash, getInitials, mime2icon, prettyFiletype} from "../utils";
-import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
+import {mime2icon, prettyFiletype} from "../utils";
 import {sharedStyles} from "../sharedStyles";
 import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 
@@ -57,8 +43,10 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
         /** Retrieve File description */
         const tuple = this._dvm.deliveryZvm.perspective.privateManifests[this.hash];
         let fileDescription;
+        let isPrivate = false;
         if (tuple) {
             fileDescription = tuple[0].description;
+            isPrivate = true;
         } else {
             const tuple = this._dvm.deliveryZvm.perspective.localPublicManifests[this.hash];
             if (tuple) {
@@ -72,6 +60,7 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 }
             }
         }
+
 
         /** render all */
         return html`
@@ -88,6 +77,7 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     }}>
                     <sl-icon name="send"></sl-icon>
                 </sl-button>
+                <tag-list class="hide" .hash=${this.hash} .isPrivate=${isPrivate}></tag-list>
             </div>
         `;
     }
@@ -108,14 +98,6 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 padding: 5px;
               }
 
-              .fileButton:hover {
-                color: #09c8f3;
-              }
-
-              .fileButton:hover .hide {
-                display: inline-block;
-              }
-
               .prefixIcon {
                 font-size: 1.275rem;
                 margin-right: 2px;
@@ -125,10 +107,22 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
               sl-icon {
                 font-weight: bold;
               }
+              
+              .fileButton:hover {
+                color: #09c8f3;
+              }
 
+              .fileButton:hover sl-button.hide {
+                display: inline-block;
+              }
+              .fileButton:hover tag-list.hide {
+                display: flex;
+              }
+              
               .hide {
                 display: none;
               }
+             
             `
         ];
     }

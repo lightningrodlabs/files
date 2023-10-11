@@ -61,6 +61,7 @@ import "./publish-dialog";
 import "./send-dialog";
 import "./edit-profile";
 import "./inbound-stack";
+import "./tag-list";
 
 import {
     SlAlert,
@@ -90,6 +91,7 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 //import {Upload, UploadBeforeEvent, UploadFileRejectEvent} from "@vaadin/upload";
 // import {UploadFile} from "@vaadin/upload/src/vaadin-upload";
 
+import '@vaadin/multi-select-combo-box/theme/lumo/vaadin-multi-select-combo-box.js';
 import '@vaadin/combo-box/theme/lumo/vaadin-combo-box.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
@@ -218,7 +220,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         const fileInput = this.shadowRoot!.getElementById("addLocalFile") as HTMLInputElement;
         console.log("onAddFile():", fileInput.files.length);
         if (fileInput.files.length > 0) {
-            let res = await this._dvm.startCommitPrivateFile(fileInput.files[0]);
+            let res = await this._dvm.startCommitPrivateFile(fileInput.files[0], []);
             console.log("onAddFile() res:", res);
             fileInput.value = "";
             return res;

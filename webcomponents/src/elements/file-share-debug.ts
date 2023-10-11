@@ -142,7 +142,7 @@ export class FileSharePageDev extends DnaElement<unknown, FileShareDvm> {
         const fileInput = this.shadowRoot!.getElementById("addLocalFile") as HTMLInputElement;
         console.log("onAddFile():", fileInput.files.length);
         if (fileInput.files.length > 0) {
-            let res = await this._dvm.startCommitPrivateFile(fileInput.files[0]);
+            let res = await this._dvm.startCommitPrivateFile(fileInput.files[0], []);
             console.log("onAddFile() res:", res);
             fileInput.value = "";
             return res;
@@ -154,7 +154,7 @@ export class FileSharePageDev extends DnaElement<unknown, FileShareDvm> {
     async onPublishFile(): Promise<SplitObject | undefined> {
         const fileInput = this.shadowRoot!.getElementById("publishFile") as HTMLInputElement;
         console.log("onPublishFile():", fileInput.files.length);
-        const splitObj = await this._dvm.startPublishFile(fileInput.files[0]);
+        const splitObj = await this._dvm.startPublishFile(fileInput.files[0], []);
         console.log("onPublishFile() splitObj:", splitObj);
         fileInput.value = "";
         return splitObj;

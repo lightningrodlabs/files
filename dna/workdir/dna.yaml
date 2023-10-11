@@ -8,9 +8,13 @@ integrity:
     maxParcelSize: 104857600
     maxParcelNameLength: 256
     minParcelNameLength: 1
+    maxTagNameLength: 32
+    minTagNameLength: 2
   zomes:
     - name: file_share_integrity
       bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share_integrity.wasm
+    - name: tagging_integrity
+      bundled: ../../target/wasm32-unknown-unknown/release/zome_tagging_integrity.wasm
     - name: zDeliveryIntegrity
       bundled: ../../target/wasm32-unknown-unknown/release/delivery_integrity.wasm
 coordinator:
@@ -21,6 +25,10 @@ coordinator:
       bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share.wasm
       dependencies:
         - name: file_share_integrity
+    - name: zTagging
+      bundled: ../../target/wasm32-unknown-unknown/release/tagging.wasm
+      dependencies:
+        - name: tagging_integrity
     - name: zDelivery
       bundled: ../../target/wasm32-unknown-unknown/release/delivery.wasm
       dependencies:

@@ -29,6 +29,7 @@ import {
     FileShareNotificationVariantPublicSharingComplete,
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
 } from "./fileShare.perspective";
+import {TaggingZvm} from "./tagging.zvm";
 
 
 
@@ -40,13 +41,15 @@ export class FileShareDvm extends DnaViewModel {
 
     /** For commit & send follow-up */
     private _mustSendTo?: AgentPubKeyB64;
-
+    /** For publish / send follow-up */
+    private _mustAddTags?;
 
     /** -- DnaViewModel Interface -- */
 
     static readonly DEFAULT_BASE_ROLE_NAME = "rFileShare";
     static readonly ZVM_DEFS: ZvmDef[] = [
         FileShareZvm,
+        TaggingZvm,
         [DeliveryZvm, "zDelivery"],
     ];
 
@@ -57,6 +60,7 @@ export class FileShareDvm extends DnaViewModel {
     get fileShareZvm(): FileShareZvm {return this.getZomeViewModel(FileShareZvm.DEFAULT_ZOME_NAME) as FileShareZvm}
     get deliveryZvm(): DeliveryZvm {return this.getZomeViewModel("zDelivery") as DeliveryZvm}
 
+    get taggingZvm(): TaggingZvm {return this.getZomeViewModel("zTagging") as TaggingZvm}
 
     /** -- ViewModel Interface -- */
 
@@ -104,7 +108,7 @@ export class FileShareDvm extends DnaViewModel {
         const deliverySignal = signal.payload as SignalProtocol;
         /** */
         if (SignalProtocolType.NewLocalManifest in deliverySignal) {
-            //const manifest = deliverySignal.NewLocalManifest[2];
+            const manifest = deliverySignal.NewLocalManifest[2];
             const manifestEh = encodeHashToBase64(deliverySignal.NewLocalManifest[0])
             /** Follow-up send if requested */
             if (this._mustSendTo) {
@@ -117,6 +121,15 @@ export class FileShareDvm extends DnaViewModel {
                     this.notifySubscribers();
                 });
                 this._mustSendTo = undefined;
+            }
+
+            if (this._mustAddTags) {
+                if (this._mustAddTags.isPrivate) {
+                    /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
+                } else {
+                    /*await*/ this.taggingZvm.tagPublicEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
+                }
+                this._mustAddTags = undefined;
             }
 
             // /** Into Notification */
@@ -291,14 +304,14 @@ export class FileShareDvm extends DnaViewModel {
 
 
     /** */
-    async startCommitPrivateAndSendFile(file: File, recipient: AgentPubKeyB64): Promise<SplitObject> {
+    async startCommitPrivateAndSendFile(file: File, recipient: AgentPubKeyB64, tags: string[]): Promise<SplitObject> {
         this._mustSendTo = recipient;
-        return this.startCommitPrivateFile(file);
+        return this.startCommitPrivateFile(file, tags);
     }
 
     /** */
-    async startCommitPrivateFile(file: File): Promise<SplitObject> {
-        console.log('dvm.commitPrivateFile: ', file);
+    async startCommitPrivateFile(file: File, tags: string[]): Promise<SplitObject> {
+        console.log('dvm.startCommitPrivateFile: ', file, tags);
         if (this._perspective.uploadState) {
             return Promise.reject("File commit already in progress");
         }
@@ -319,6 +332,7 @@ export class FileShareDvm extends DnaViewModel {
 
         /** Initial write chunk loop */
         /* await */ this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
+        this._mustAddTags = {isPrivate: true, tags};
 
         /* Done */
         return splitObj;
@@ -326,8 +340,8 @@ export class FileShareDvm extends DnaViewModel {
 
 
     /** */
-    async startPublishFile(file: File): Promise<SplitObject> {
-        console.log('dvm.commitPublicFile: ', file);
+    async startPublishFile(file: File, tags: string[]): Promise<SplitObject> {
+        console.log('dvm.startPublishFile: ', file, tags);
         if (this._perspective.uploadState) {
             return Promise.reject("File commit already in progress");
         }
@@ -347,6 +361,7 @@ export class FileShareDvm extends DnaViewModel {
 
         /** Initial write chunk loop */
          /*await */ this.fileShareZvm.zomeProxy.writePublicFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
+         this._mustAddTags = {isPrivate: false, tags};
         /** Done */
         return splitObj;
     }
