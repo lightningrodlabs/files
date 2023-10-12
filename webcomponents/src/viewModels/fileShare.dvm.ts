@@ -305,9 +305,12 @@ export class FileShareDvm extends DnaViewModel {
 
     /** */
     async startCommitPrivateAndSendFile(file: File, recipient: AgentPubKeyB64, tags: string[]): Promise<SplitObject> {
-        this._mustSendTo = recipient;
+        if (recipient != this.cell.agentPubKey) {
+            this._mustSendTo = recipient;
+        }
         return this.startCommitPrivateFile(file, tags);
     }
+
 
     /** */
     async startCommitPrivateFile(file: File, tags: string[]): Promise<SplitObject> {

@@ -21,3 +21,10 @@ pub struct TaggingInput {
     target: EntryHash,
     link_tag_to_entry: String, // Base64 string of data
 }
+
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, SerializedBytes)]
+pub struct UntagInput {
+    tag: String,
+    target: EntryHash,
+}

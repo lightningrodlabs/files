@@ -7,7 +7,7 @@ import {
 import {delay, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {TaggingProxy} from "../bindings/tagging.proxy";
 import {Dictionary} from "@ddd-qc/cell-proxy";
-import {TaggingInput} from "../bindings/tagging.types";
+import {TaggingInput, UntagInput} from "../bindings/tagging.types";
 
 
 /** */
@@ -145,6 +145,7 @@ export class TaggingZvm extends ZomeViewModel {
     }
 
 
+
     /** */
     async addPrivateTag(tag: string) {
         if (!tag || tag == "") {
@@ -163,6 +164,39 @@ export class TaggingZvm extends ZomeViewModel {
         }
         let _eh = await this.zomeProxy.createPublicTag(tag);
         this._perspective.publicTags[tag] = [];
+        this.notifySubscribers();
+    }
+
+
+    /** */
+    async untagPrivateEntry(eh: EntryHashB64, tag: string) {
+        const input = {
+            target: decodeHashFromBase64(eh),
+            tag,
+        } as UntagInput;
+        await this.zomeProxy.untagPrivateEntry(input);
+        /** update perspective */
+        // let i = 0;
+        // for (const [curEh, _targetInfo] of this._perspective.privateTags[tag]) {
+        //     if (eh == curEh) {
+        //         break;
+        //     }
+        //     i += 1;
+        // }
+        // if (i < this._perspective.privateTags[tag].length) {
+        //     this._perspective.privateTags[tag].splice(i, 1);
+        // }
+        const isSameEh = (pair) => eh == pair[0];
+        const i = this._perspective.privateTagsByTarget[eh].findIndex(isSameEh);
+        if (i > -1) {
+            this._perspective.privateTags[tag].splice(i, 1);
+        }
+        /** */
+        const index = this._perspective.privateTagsByTarget[eh].indexOf(tag);
+        if (index > -1) {
+            this._perspective.privateTagsByTarget[eh].splice(index, 1);
+        }
+        /** Done */
         this.notifySubscribers();
     }
 

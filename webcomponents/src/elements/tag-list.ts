@@ -17,6 +17,15 @@ export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
     @property() hash: EntryHashB64 = '';
     @property() isPrivate: boolean = false;
 
+
+
+    /** */
+    async onTagDelete(tag: string) {
+        await this._dvm.taggingZvm.untagPrivateEntry(this.hash, tag);
+        this.requestUpdate();
+    }
+
+
     /** */
     render() {
         console.log("<tag-list>.render()", this.hash, this.isPrivate, this._dvm.taggingZvm.perspective);
@@ -28,8 +37,20 @@ export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
             tags = [];
         }
         console.log({tags})
+
+
         const tagItems = tags.map((str) => {
-            return html`<div class="tag">${str}</div>`
+            return html`
+                <div class="tag">
+                    <span>${str}</span>
+                    ${!this.isPrivate
+                        ? html`` 
+                        : html`
+                        <sl-icon-button class="hide" name="x" label="remove" style=""
+                                   @click=${async (_e) => {this.onTagDelete(str)}}>
+                        </sl-icon-button>
+                    `}            
+                </div>`
         });
         return html`${tagItems}`;
     }
@@ -41,17 +62,49 @@ export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
             sharedStyles,
             css`
               :host {
-                  margin-top: 5px;
-                  display: flex;
-                  flex-direction: row;
-                  gap: 5px;
-                  flex-wrap: wrap;
+                margin-top: 5px;
+                display: flex;
+                flex-direction: row;
+                gap: 5px;
+                flex-wrap: wrap;
               }
+
+              .tag span {
+                margin-top: 2px;
+              }
+
               .tag {
+                display: flex;
                 background: #91a3b7;
                 font-size: small;
                 padding: 3px;
                 color: white;
+              }
+
+              .tag:hover {
+                background: #e8eaea;
+                color: #3d3c3c;
+              }
+
+              .tag:hover .hide {
+                display: inline-block;
+              }
+
+
+              .public:hover {
+                color: red;
+              }
+
+              .hide {
+                display: none;
+              }
+
+              sl-icon-button {
+                font-size: 1.0rem;
+              }
+
+              sl-icon-button::part(base) {
+                padding: 4px;
               }
             `,
         ];

@@ -11,6 +11,7 @@ export const taggingFunctionNames: FunctionName[] = [
 	"query_all_PrivateTags",
 	"create_private_tag",
 	"tag_private_entry",
+	"untag_private_entry",
 	"get_private_tags",
 	"get_private_entries_with_tag",
 	"get_all_public_tags",

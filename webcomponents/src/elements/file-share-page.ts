@@ -605,7 +605,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         if (this._selectedMenuItem == SelectedType.AllFiles) {
             const privateItems = Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
                 //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
-                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: true} as FileTableItem;
+                return {ppEh, description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: true} as FileTableItem;
             });
             // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
             //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
@@ -614,7 +614,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             const publicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
                 //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
                 const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
-                return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
+                return {ppEh, description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
             });
             const allItems = privateItems.concat(publicItems/*, myPublicItems*/);
             mainArea = html`
@@ -630,7 +630,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <h2>Private Files</h2>
                 <file-table .items=${Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm,timestamp]]) => {
                                 //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
-                                return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp} as FileTableItem;
+                                return {ppEh, description: pm.description, timestamp} as FileTableItem;
                             })}
                             @download=${(e) => this.downloadFile(e.detail)}
                             @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -646,7 +646,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             const dhtPublicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
                 //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
                 const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
-                return {pp_eh: decodeHashFromBase64(ppEh), description, timestamp, author, isLocal} as FileTableItem;
+                return {ppEh, description, timestamp, author, isLocal} as FileTableItem;
             });
             //const publicItems = dhtPublicItems.concat(myPublicItems);
 

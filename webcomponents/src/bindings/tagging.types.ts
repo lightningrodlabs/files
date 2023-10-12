@@ -137,6 +137,11 @@ export interface TaggingInput {
   link_tag_to_entry: string
 }
 
+export interface UntagInput {
+  tag: string
+  target: EntryHash
+}
+
 export const TAGGING_ZOME_NAME = "tagging_integrity";
 
 export const PUBLIC_TAG_ROOT = "public_tags";

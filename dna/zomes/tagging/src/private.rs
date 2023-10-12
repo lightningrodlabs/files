@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use zome_tagging_integrity::*;
-use crate::TaggingInput;
+use crate::{TaggingInput, UntagInput};
 
 
 ///
@@ -97,6 +97,44 @@ fn tag_private_entry(input: TaggingInput) -> ExternResult<()> {
         let _ = create_link(tag_eh.clone(), input.target.clone(), TaggingLinkTypes::PrivateEntry, str2tag(&input.link_tag_to_entry.clone()))?;
         let _ = create_link( input.target.clone(), tag_eh, TaggingLinkTypes::PrivateTags, LinkTag::from(()))?;
     }
+    /// Done
+    Ok(())
+}
+
+
+///
+#[hdk_extern]
+fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
+    /// Make sure entry exist and is private
+    let _record = query_private_entry(input.target.clone())?;
+    let tag_eh = hash_entry(PrivateTag { value: input.tag})?;
+    /// Get Tag link
+    let link_tuples = get_typed_from_links::<PrivateTag>(input.target.clone(), TaggingLinkTypes::PrivateTags, None)?;
+    let link_tuple: Vec<(PrivateTag, Link)> = link_tuples.into_iter()
+        .filter(|(tag_entry, _link)| {
+            let cur_tag_eh = hash_entry(tag_entry.to_owned()).unwrap();
+            cur_tag_eh == tag_eh
+        })
+        .collect();
+    if link_tuple.len() != 1 {
+        return error("Tag not found on private entry");
+    }
+    let link = link_tuple[0].1.clone();
+
+    /// Delete Entry -> Tag Link
+    let _ = delete_link(link.create_link_hash)?;
+    /// Get reverse link
+    let tag_eh = hash_entry(link_tuple[0].0.clone())?;
+    let links = get_links(tag_eh, TaggingLinkTypes::PrivateEntry, None)?;
+    let link: Vec<Link> = links.into_iter()
+        .filter(|link| link.target.clone().into_entry_hash() == Some(input.target.clone()))
+        .collect();
+    if link.len() != 1 {
+        return error("No reverse link found for private entry tag");
+    }
+    /// Delete Tag Link -> Entry
+    let _ = delete_link(link[0].clone().create_link_hash)?;
     /// Done
     Ok(())
 }

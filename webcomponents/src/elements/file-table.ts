@@ -15,12 +15,14 @@ import {sharedStyles} from "../sharedStyles";
 
 
 export interface FileTableItem {
-    pp_eh: EntryHash,
+    ppEh: EntryHashB64,
     description: ParcelDescription,
     timestamp: number,
     author: AgentPubKeyB64,
     isPrivate: boolean,
     isLocal: boolean,
+    privateTags: string[],
+    publicTags: string[],
 }
 
 
@@ -73,6 +75,18 @@ export class FileTable extends LitElement {
                                             [],
                                     )}
                 ></vaadin-grid-column>
+                <vaadin-grid-column path="ppEh" header="Group Tags"
+                                    ${columnBodyRenderer(
+                                            ({ ppEh }) => html`<tag-list .hash=${ppEh}></tag-list>`,
+                                            [],
+                                    )}
+                ></vaadin-grid-column>
+                <vaadin-grid-column path="ppEh" header="Personal Tags"
+                                    ${columnBodyRenderer(
+                                            ({ ppEh }) => html`<tag-list .hash=${ppEh} isPrivate=${true}></tag-list>`,
+                                            [],
+                                    )}
+                ></vaadin-grid-column>
                 <vaadin-grid-column path="author" header="Author" .hidden="${!this.items[0].author}"
                                     ${columnBodyRenderer(
                                             ({ author }) => {
@@ -103,10 +117,9 @@ export class FileTable extends LitElement {
                                     )}
                 ></vaadin-grid-column>
                 <vaadin-grid-column
-                        path="pp_eh" header=""
+                        path="ppEh" header=""
                         ${columnBodyRenderer(
-                                ({pp_eh}) => {
-                                    const ppEh = encodeHashToBase64(pp_eh);
+                                ({ppEh}) => {
                                     return html`
                                         <sl-button size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
                                             this.dispatchEvent(new CustomEvent('download', {detail: ppEh, bubbles: true, composed: true}));

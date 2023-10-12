@@ -173,7 +173,14 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     .items=${this._allAgents}
                     .filteredItems=${this._filteredAgents}
                     @filter-changed=${this.filterChanged}
-                    @selected-item-changed=${(e) => {console.log("filter selected:", e.detail); this._recipient = e.detail.value.key}}
+                    @selected-item-changed=${(e) => {
+                        console.log("filter selected:", e.detail); 
+                        if (e.detail.value) {
+                            this._recipient = e.detail.value.key;
+                        } else {
+                            this._recipient = null;  
+                        }
+                    }}
                 ></vaadin-combo-box>
                 
                 <vaadin-multi-select-combo-box
@@ -187,7 +194,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                         }}"
                 ></vaadin-multi-select-combo-box>
                 <sl-input id="tag-input" placeholder="Add tag" clearable
-                          @sl-change=${this.onAddTag}}
+                          @sl-change=${this.onAddTag}
                 >
                     <sl-icon name="plus" slot="prefix"></sl-icon>
                 </sl-input>
@@ -195,7 +202,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file || !this._recipient} @click=${async (e) => {
                         this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipient: this._recipient}, bubbles: true, composed: true}));
-                        const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags);
+                        const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags.map((item) => item.value));
                         this._file = undefined;
                         this._recipient = undefined;
                         this.dialogElem.open = false;
