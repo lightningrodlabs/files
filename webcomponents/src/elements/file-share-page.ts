@@ -47,7 +47,7 @@ import {
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
 } from "../viewModels/fileShare.perspective";
 import {createAlert} from "../toast";
-import {SelectedType} from "./file-share-menu";
+import {SelectedEvent, SelectedType} from "./file-share-menu";
 
 
 /** Define my custom elements */
@@ -146,7 +146,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** AppletId -> AppletInfo */
     @state() private _appletInfos: Dictionary<AppletInfo> = {}
 
-    @state() private _selectedMenuItem: string = SelectedType.Home.toString();
+    @state() private _selectedMenuItem?: SelectedEvent;
 
 
     /** -- Getters -- */
@@ -599,118 +599,166 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
         /** Choose what to display */
         let mainArea = html``;
-        if (this._selectedMenuItem == SelectedType.Home) {
-            mainArea = this.renderHome(unrepliedInbounds);
-        }
-        if (this._selectedMenuItem == SelectedType.AllFiles) {
-            const privateItems = Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
-                //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
-                return {ppEh, description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: true} as FileTableItem;
-            });
-            // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
-            //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
-            //     return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: false} as FileTableItem;
-            // });
-            const publicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
-                //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
-                const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
-                return {ppEh, description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
-            });
-            const allItems = privateItems.concat(publicItems/*, myPublicItems*/);
-            mainArea = html`
-                <h2>All Files</h2>
-                <file-table .items=${allItems}
-                            @download=${(e) => this.downloadFile(e.detail)}
-                            @send=${(e) => this.sendDialogElem.open(e.detail)}
-                ></file-table>
-            `;
-        }
-        if (this._selectedMenuItem == SelectedType.PrivateFiles) {
-            mainArea = html`
-                <h2>Private Files</h2>
-                <file-table .items=${Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm,timestamp]]) => {
+        if (this._selectedMenuItem) {
+            console.log("_selectedMenuItem", this._selectedMenuItem)
+
+            if (this._selectedMenuItem.type == SelectedType.Home) {
+                mainArea = this.renderHome(unrepliedInbounds);
+            }
+            if (this._selectedMenuItem.type == SelectedType.AllFiles) {
+                const privateItems = Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
+                    //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
+                    return {
+                        ppEh,
+                        description: pm.description,
+                        timestamp,
+                        author: this.cell.agentPubKey,
+                        isLocal: true,
+                        isPrivate: true
+                    } as FileTableItem;
+                });
+                // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
+                //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
+                //     return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: false} as FileTableItem;
+                // });
+                const publicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
+                    //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
+                    const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
+                    return {ppEh, description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
+                });
+                const allItems = privateItems.concat(publicItems/*, myPublicItems*/);
+                mainArea = html`
+                    <h2>All Files</h2>
+                    <file-table .items=${allItems}
+                                @download=${(e) => this.downloadFile(e.detail)}
+                                @send=${(e) => this.sendDialogElem.open(e.detail)}
+                    ></file-table>
+                `;
+            }
+            if (this._selectedMenuItem.type == SelectedType.PrivateFiles) {
+                mainArea = html`
+                    <h2>Private Files</h2>
+                    <file-table
+                            .items=${Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
                                 //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
                                 return {ppEh, description: pm.description, timestamp} as FileTableItem;
                             })}
                             @download=${(e) => this.downloadFile(e.detail)}
                             @send=${(e) => this.sendDialogElem.open(e.detail)}
-                ></file-table>
-            `;
-        }
-        if (this._selectedMenuItem == SelectedType.PublicFiles) {
-            // console.log("this.deliveryPerspective.localPublicManifests", this.deliveryPerspective.localPublicManifests)
-            // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
-            //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
-            //     return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true} as FileTableItem;
-            // });
-            const dhtPublicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
-                //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
-                const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
-                return {ppEh, description, timestamp, author, isLocal} as FileTableItem;
-            });
-            //const publicItems = dhtPublicItems.concat(myPublicItems);
+                    ></file-table>
+                `;
+            }
+            if (this._selectedMenuItem.type == SelectedType.PublicFiles) {
+                // console.log("this.deliveryPerspective.localPublicManifests", this.deliveryPerspective.localPublicManifests)
+                // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
+                //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
+                //     return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true} as FileTableItem;
+                // });
+                const dhtPublicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
+                    //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
+                    const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
+                    return {ppEh, description, timestamp, author, isLocal} as FileTableItem;
+                });
+                //const publicItems = dhtPublicItems.concat(myPublicItems);
 
-            mainArea = html`        
-                <h2>Public Files</h2>
-                <file-table .items=${dhtPublicItems} 
-                            @download=${(e) => this.downloadFile(e.detail)}
-                            @send=${(e) => this.sendDialogElem.open(e.detail)}
-                ></file-table>              
-            `;
-        }
+                mainArea = html`
+                    <h2>Public Files</h2>
+                    <file-table .items=${dhtPublicItems}
+                                @download=${(e) => this.downloadFile(e.detail)}
+                                @send=${(e) => this.sendDialogElem.open(e.detail)}
+                    ></file-table>
+                `;
+            }
 
-        if (this._selectedMenuItem == SelectedType.Inbox) {
-            mainArea = html`
-                <h2>Inbound files</h2>
-                <ul>
-                    ${inboundList}
-                </ul>`;
-        }
-        if (this._selectedMenuItem == SelectedType.Sent) {
-            let distributionItems = Object.entries(this.deliveryPerspective.distributions)
-                .filter(([_distribAh, tuple]) => DistributionStateType.AllAcceptedParcelsReceived in tuple[2])
-                .map(([distribAh, [distribution, sentTs, _fullState, _stateMap]]) => {
-                    const description = distribution.delivery_summary.parcel_reference.description;
-                    const ppEh = encodeHashToBase64(distribution.delivery_summary.parcel_reference.eh);
-                    let items: DistributionTableItem[] = []
-                    for (const recipientHash of distribution.recipients) {
-                        const recipient = encodeHashToBase64(recipientHash);
-                        let receptionTs = 0;
-                        let deliveryState = DeliveryStateType.ParcelRefused;
-                        /** If recipient refused, no receptionAck should be found */
-                        if (this.deliveryPerspective.receptionAcks[distribAh] && this.deliveryPerspective.receptionAcks[distribAh][recipient]) {
-                            const [_receptionAck, receptionTs2] = this.deliveryPerspective.receptionAcks[distribAh][recipient];
-                            receptionTs = receptionTs2;
-                            deliveryState = DeliveryStateType.ParcelDelivered;
+            if (this._selectedMenuItem.type == SelectedType.Inbox) {
+                mainArea = html`
+                    <h2>Inbound files</h2>
+                    <ul>
+                        ${inboundList}
+                    </ul>`;
+            }
+            if (this._selectedMenuItem.type == SelectedType.Sent) {
+                let distributionItems = Object.entries(this.deliveryPerspective.distributions)
+                    .filter(([_distribAh, tuple]) => DistributionStateType.AllAcceptedParcelsReceived in tuple[2])
+                    .map(([distribAh, [distribution, sentTs, _fullState, _stateMap]]) => {
+                        const description = distribution.delivery_summary.parcel_reference.description;
+                        const ppEh = encodeHashToBase64(distribution.delivery_summary.parcel_reference.eh);
+                        let items: DistributionTableItem[] = []
+                        for (const recipientHash of distribution.recipients) {
+                            const recipient = encodeHashToBase64(recipientHash);
+                            let receptionTs = 0;
+                            let deliveryState = DeliveryStateType.ParcelRefused;
+                            /** If recipient refused, no receptionAck should be found */
+                            if (this.deliveryPerspective.receptionAcks[distribAh] && this.deliveryPerspective.receptionAcks[distribAh][recipient]) {
+                                const [_receptionAck, receptionTs2] = this.deliveryPerspective.receptionAcks[distribAh][recipient];
+                                receptionTs = receptionTs2;
+                                deliveryState = DeliveryStateType.ParcelDelivered;
+                            }
+                            items.push({
+                                distribAh,
+                                recipient,
+                                deliveryState,
+                                ppEh,
+                                description,
+                                sentTs,
+                                receptionTs,
+                            } as DistributionTableItem);
                         }
-                        items.push( {
-                            distribAh,
-                            recipient,
-                            deliveryState,
-                            ppEh,
-                            description,
-                            sentTs,
-                            receptionTs,
-                        } as DistributionTableItem);
-                    }
-                    return items;
+                        return items;
+                    })
+                    .flat()
+                    .sort((a, b) => b.sentTs - a.sentTs);
+                mainArea = html`
+                    <h2>Sent</h2>
+                    <distribution-table .items=${distributionItems}
+                                        @download=${(e) => this.downloadFile(e.detail)}
+                                        @send=${(e) => this.sendDialogElem.open(e.detail)}
+                    ></distribution-table>
+                `;
+            }
+            if (this._selectedMenuItem.type == SelectedType.InProgress) {
+                mainArea = html`
+                    <h2>Outbound files</h2>
+                    <ul>
+                        ${outboundTable}
+                    </ul>`;
+            }
+            if (this._selectedMenuItem.type == SelectedType.PublicTag) {
+                const taggedItems = Object.entries(this.deliveryPerspective.publicParcels)
+                    .map(([ppEh, [description, timestamp, author]]) => {
+                        const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
+                        return {ppEh, description, timestamp, author, isLocal} as FileTableItem;
+                    })
+                    .filter((item) => {
+                        const publicTags = this._dvm.taggingZvm.perspective.publicTagsByTarget[item.ppEh];
+                        return publicTags && publicTags.includes(this._selectedMenuItem.tag);
+                    });
+                mainArea = html`
+                    <h2>${this._selectedMenuItem.tag}</h2>
+                    <file-table .items=${taggedItems}
+                                @download=${(e) => this.downloadFile(e.detail)}
+                                @send=${(e) => this.sendDialogElem.open(e.detail)}
+                    ></file-table>                    
+                `;
+            }
+            if (this._selectedMenuItem.type == SelectedType.PrivateTag) {
+                const taggedItems = Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
+                    //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
+                    return {ppEh, description: pm.description, timestamp} as FileTableItem;
                 })
-                .flat()
-                .sort((a, b) => b.sentTs - a.sentTs);
-            mainArea = html`
-                <h2>Sent</h2>
-                <distribution-table .items=${distributionItems}
-                            @download=${(e) => this.downloadFile(e.detail)}
-                            @send=${(e) => this.sendDialogElem.open(e.detail)}
-                ></distribution-table>
-            `;
-        }
-        if (this._selectedMenuItem == SelectedType.InProgress) {
-            mainArea = html`
-                <h2>Outbound files</h2>
-                <ul>
-                    ${outboundTable}
-                </ul>`;
+                .filter((item) => {
+                    const tags = this._dvm.taggingZvm.perspective.privateTagsByTarget[item.ppEh];
+                    return tags && tags.includes(this._selectedMenuItem.tag);
+                });
+
+                mainArea = html`
+                    <h2>${this._selectedMenuItem.tag}</h2>
+                    <file-table .items=${taggedItems}
+                                @download=${(e) => this.downloadFile(e.detail)}
+                                @send=${(e) => this.sendDialogElem.open(e.detail)}
+                    ></file-table>
+                `;
+            }
         }
 
 

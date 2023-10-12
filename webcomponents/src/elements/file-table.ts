@@ -21,8 +21,6 @@ export interface FileTableItem {
     author: AgentPubKeyB64,
     isPrivate: boolean,
     isLocal: boolean,
-    privateTags: string[],
-    publicTags: string[],
 }
 
 

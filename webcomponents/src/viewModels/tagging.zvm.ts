@@ -176,18 +176,8 @@ export class TaggingZvm extends ZomeViewModel {
         } as UntagInput;
         await this.zomeProxy.untagPrivateEntry(input);
         /** update perspective */
-        // let i = 0;
-        // for (const [curEh, _targetInfo] of this._perspective.privateTags[tag]) {
-        //     if (eh == curEh) {
-        //         break;
-        //     }
-        //     i += 1;
-        // }
-        // if (i < this._perspective.privateTags[tag].length) {
-        //     this._perspective.privateTags[tag].splice(i, 1);
-        // }
         const isSameEh = (pair) => eh == pair[0];
-        const i = this._perspective.privateTagsByTarget[eh].findIndex(isSameEh);
+        const i = this._perspective.privateTags[tag].findIndex(isSameEh);
         if (i > -1) {
             this._perspective.privateTags[tag].splice(i, 1);
         }

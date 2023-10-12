@@ -186,6 +186,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         let message: string;
         if (type == DeliveryEntryType.ParcelManifest) {
             message = `was added privately by`;
+            //message = `has been stored locally`;
         }
         if (type == DeliveryEntryType.ReceptionAck) {
             message = `was received by`;

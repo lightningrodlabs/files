@@ -48,7 +48,7 @@ export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
     /** */
     render() {
-        console.log("<tag-list>.render()", this.hash, this.isPrivate, this.taggingPerspective);
+        console.log("<tag-list>.render()", this.hash, this.isPrivate);
 
         let tags = this.isPrivate
         ? this.taggingPerspective.privateTagsByTarget[this.hash]

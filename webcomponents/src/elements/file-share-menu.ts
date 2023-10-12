@@ -9,6 +9,7 @@ import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {sharedStyles} from "../sharedStyles";
 import {SlDrawer, SlMenu, SlMenuItem} from "@shoelace-style/shoelace";
+import {TaggingPerspective} from "../viewModels/tagging.zvm";
 
 
 /** */
@@ -20,8 +21,15 @@ export enum SelectedType {
     Inbox = 'Inbox',
     Sent = 'Sent',
     InProgress = 'In Progress',
+    PublicTag = 'PublicTag',
+    PrivateTag = 'PrivateTag',
 }
 
+
+export interface SelectedEvent {
+    type: string,
+    tag?: string;
+}
 
 /**
  * @element
@@ -32,6 +40,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     deliveryPerspective!: DeliveryPerspective;
+
+    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+    taggingPerspective!: TaggingPerspective;
+
 
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
@@ -46,20 +58,20 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
         console.log("<file-view>.dvmUpdated()");
         if (oldDvm) {
-            console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.fileShareZvm.cell.name)
-            oldDvm.fileShareZvm.unsubscribe(this);
+            console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.deliveryZvm.cell.name)
+            oldDvm.taggingZvm.unsubscribe(this);
             oldDvm.deliveryZvm.unsubscribe(this);
         }
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
-        console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name)
-        //await newDvm.fileShareZvm.probeAll();
+        newDvm.taggingZvm.subscribe(this, 'taggingPerspective');
+        console.log("\t Subscribed Zvms roleName = ", newDvm.deliveryZvm.cell.name)
         this._initialized = true;
     }
 
 
     /** */
     onSelected(e) {
-        //console.log("<file-share-menu> onSelected", e.detail);
+        console.log("<file-share-menu> onSelected", e.detail.item);
         //console.log("<file-share-menu> onSelected", e.detail.item.getTextLabel().trim());
         /** Set "selectedItem" class */
         const menu = this.shadowRoot.getElementById("lhs-menu") as SlMenu;
@@ -68,14 +80,63 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             item.classList.remove("selectedItem");
         }
         e.detail.item.classList.add("selectedItem");
+
+        const isPrivate = e.detail.item.getAttribute("isPrivate");
+        const isTag = e.detail.item.getAttribute("isTag");
+        console.log("<file-share-menu> attrs", isPrivate, isTag);
+
+
+
+        const event = isTag
+            ? {
+                type: isPrivate == "true" ? SelectedType.PrivateTag : SelectedType.PublicTag,
+                tag: e.detail.item.getTextLabel().trim()
+            } as SelectedEvent
+            : { type: e.detail.item.getTextLabel().trim() } as SelectedEvent;
+        console.log("<file-share-menu> event", event);
+
         /** Dispatch to main page */
-        this.dispatchEvent(new CustomEvent('selected', {detail: e.detail.item.getTextLabel().trim(), bubbles: true, composed: true}));
+        this.dispatchEvent(new CustomEvent<SelectedEvent>('selected', {detail: event, bubbles: true, composed: true}));
+    }
+
+
+    /** */
+    renderTags(isPrivate: boolean) {
+        if (!this._initialized) {
+            return html`
+                <sl-skeleton effect="sheen"></sl-skeleton>
+                <sl-skeleton effect="sheen"></sl-skeleton>
+                <sl-skeleton effect="sheen"></sl-skeleton>
+            `;
+        }
+
+        const tags = isPrivate
+            ? this.taggingPerspective.privateTags
+            : this.taggingPerspective.publicTags
+
+        const groupTags = Object.entries(tags).map(([tag, array]) => {
+            return html`
+            <sl-menu-item isPrivate=${isPrivate} isTag="true">
+                <sl-icon slot="prefix" name="tag"></sl-icon>
+                ${tag}
+                <sl-badge slot="suffix" variant="neutral" pill>${array.length}</sl-badge>
+            </sl-menu-item>`;
+        });
+
+        if (groupTags.length == 0) {
+            return html``;
+        }
+        return html`
+            <sl-divider></sl-divider>
+            <sl-menu-label>${isPrivate? "Personal Tags" : "Group Tags"}</sl-menu-label>
+            ${groupTags}
+        `;
     }
 
 
     /** */
     render() {
-        console.log("<file-share-menu>.render()", this._initialized);
+        console.log("<file-share-menu>.render()", this._initialized, this.taggingPerspective);
 
         //let localPublicCount = 0;
         let dhtPublicCount = 0;
@@ -133,10 +194,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     ${SelectedType.InProgress}
                     ${this._initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-divider></sl-divider>
-                <!-- <sl-skeleton effect="sheen"></sl-skeleton>
-                <sl-skeleton effect="sheen"></sl-skeleton>
-                <sl-skeleton effect="sheen"></sl-skeleton> -->
+                ${this.renderTags(false)}
+                ${this.renderTags(true)}
             </sl-menu>
         `;
     }
