@@ -5,6 +5,8 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {EntryHashB64} from "@holochain/client";
+import {DeliveryPerspective} from "@ddd-qc/delivery";
+import {TaggingPerspective} from "../viewModels/tagging.zvm";
 
 
 /**
@@ -18,21 +20,39 @@ export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
     @property() isPrivate: boolean = false;
 
 
+    /** Observed perspective from zvm */
+    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+    taggingPerspective!: TaggingPerspective;
+
+
+    /**
+     * In dvmUpdated() this._dvm is not already set!
+     * Subscribe to ZVMs
+     */
+    protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
+        console.log("<file-view>.dvmUpdated()");
+        if (oldDvm) {
+            console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.taggingZvm.cell.name)
+            oldDvm.taggingZvm.unsubscribe(this);
+        }
+        newDvm.taggingZvm.subscribe(this, 'taggingPerspective');
+        console.log("\t Subscribed Zvms roleName = ", newDvm.taggingZvm.cell.name)
+    }
+
 
     /** */
     async onTagDelete(tag: string) {
         await this._dvm.taggingZvm.untagPrivateEntry(this.hash, tag);
-        this.requestUpdate();
     }
 
 
     /** */
     render() {
-        console.log("<tag-list>.render()", this.hash, this.isPrivate, this._dvm.taggingZvm.perspective);
+        console.log("<tag-list>.render()", this.hash, this.isPrivate, this.taggingPerspective);
 
         let tags = this.isPrivate
-        ? this._dvm.taggingZvm.perspective.privateTagsByTarget[this.hash]
-        : this._dvm.taggingZvm.perspective.publicTagsByTarget[this.hash]
+        ? this.taggingPerspective.privateTagsByTarget[this.hash]
+        : this.taggingPerspective.publicTagsByTarget[this.hash]
         if (!tags) {
             tags = [];
         }

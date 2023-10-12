@@ -83,7 +83,12 @@ export class FileTable extends LitElement {
                 ></vaadin-grid-column>
                 <vaadin-grid-column path="ppEh" header="Personal Tags"
                                     ${columnBodyRenderer(
-                                            ({ ppEh }) => html`<tag-list .hash=${ppEh} isPrivate=${true}></tag-list>`,
+                                            ({ ppEh }) => html`
+                                                <div style="display:flex">
+                                                    <tag-list .hash=${ppEh} isPrivate=${true}></tag-list>
+                                                    <sl-icon-button class="add-tag" name="plus-circle-dotted" label="add"></sl-icon-button>
+                                                </div>
+                                            `,
                                             [],
                                     )}
                 ></vaadin-grid-column>
@@ -146,6 +151,11 @@ export class FileTable extends LitElement {
     static get styles() {
         return [
             sharedStyles,
+            css`
+            .add-tag {
+              font-size: 1.0rem;
+            }
+            `
         ];
     }
 }
