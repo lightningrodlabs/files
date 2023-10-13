@@ -118,28 +118,19 @@ export class FileShareDvm extends DnaViewModel {
                     /** Into Notification */
                     console.log("File delivery request sent", deliverySignal.NewLocalManifest, recipient);
                     this._perspective.notificationLogs.push([now, FileShareNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipient}]);
+                    if (this._mustAddTags && this._mustAddTags.isPrivate) {
+                        /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
+                        this._mustAddTags = undefined;
+                    }
                     this.notifySubscribers();
                 });
                 this._mustSendTo = undefined;
             }
-
-            if (this._mustAddTags) {
-                if (this._mustAddTags.isPrivate) {
-                    /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
-                } else {
-                    /*await*/ this.taggingZvm.tagPublicEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
-                }
+            /** Add Public tags if any */
+            if (this._mustAddTags && !this._mustAddTags.isPrivate) {
+                /*await*/ this.taggingZvm.tagPublicEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
                 this._mustAddTags = undefined;
             }
-
-            // /** Into Notification */
-            // console.log("dvm signal NewLocalManifest", deliverySignal.NewLocalManifest);
-            // const isPrivate = "Private" in manifest.description.visibility;
-            // const hasNotice = this.deliveryZvm.perspective.noticeByParcel[manifestEh];
-            // if (isPrivate && !hasNotice) {
-            //     this._perspective.notificationLogs.push([now, FileShareNotificationType.PrivateCommitComplete, {manifestEh}]);
-            // }
-
             /** Done */
             this._perspective.uploadState = undefined;
             this.notifySubscribers();
