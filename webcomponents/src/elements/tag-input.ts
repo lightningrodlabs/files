@@ -46,7 +46,7 @@ export class TagInput extends LitElement {
                 .filter((tag) => tag.includes(filter))
             if (filteredTags.length) {
                 tagResults = html`
-                    <tag-list .tags=${filteredTags} clickable
+                    <tag-list .tags=${filteredTags} selectable
                               @selected=${(e) => {
                                   console.log("selected tag", e.detail);
                                   this._selectedTags.push(e.detail);

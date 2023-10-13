@@ -1,8 +1,7 @@
 import {css, html, LitElement} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {
-    AgentPubKeyB64, encodeHashToBase64,
-    EntryHash,
+    AgentPubKeyB64,
     EntryHashB64,
 } from "@holochain/client";
 import {prettyFileSize, prettyFiletype, prettyTimestamp} from "../utils";
@@ -12,6 +11,9 @@ import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {sharedStyles} from "../sharedStyles";
+import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
+import {TaggingPerspective, TaggingZvm} from "../viewModels/tagging.zvm";
+import {TagList} from "./tag-list";
 
 
 export interface FileTableItem {
@@ -28,7 +30,12 @@ export interface FileTableItem {
  * @element
  */
 @customElement("file-table")
-export class FileTable extends LitElement {
+export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
+
+    /** */
+    constructor() {
+        super(TaggingZvm.DEFAULT_ZOME_NAME)
+    }
 
     /** -- State variables -- */
 
@@ -37,6 +44,10 @@ export class FileTable extends LitElement {
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
 
+
+    get gridElem(): LitElement {
+        return this.shadowRoot!.getElementById("grid") as LitElement;
+    }
 
     /** */
     render() {
@@ -52,7 +63,7 @@ export class FileTable extends LitElement {
 
         /** render all */
         return html`
-            <vaadin-grid .items="${this.items}">
+            <vaadin-grid id="grid" .items="${this.items}">
                 <vaadin-grid-selection-column></vaadin-grid-selection-column>
                 <vaadin-grid-column path="description" header="Filename"
                                     ${columnBodyRenderer(
@@ -75,7 +86,7 @@ export class FileTable extends LitElement {
                 ></vaadin-grid-column>
                 <vaadin-grid-column path="ppEh" header="Group Tags"
                                     ${columnBodyRenderer(
-                                            ({ ppEh }) => html`<tag-list .hash=${ppEh}></tag-list>`,
+                                            ({ ppEh }) => html`<tag-list .tags=${this._zvm.getTargetPublicTags(ppEh)}></tag-list>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
@@ -83,7 +94,14 @@ export class FileTable extends LitElement {
                                     ${columnBodyRenderer(
                                             ({ ppEh }) => html`
                                                 <div style="display:flex">
-                                                    <tag-list .hash=${ppEh} private clickable></tag-list>
+                                                    <tag-list id="priv-tags-${ppEh}" selectable deletable
+                                                              .tags=${this._zvm.getTargetPrivateTags(ppEh)}
+                                                              @deleted=${async (e) => {
+                                                                  await this._zvm.untagPrivateEntry(ppEh, e.detail);
+                                                                  const tagList = this.shadowRoot.getElementById(`priv-tags-${ppEh}`) as TagList;
+                                                                  tagList.requestUpdate();
+                                                              }}
+                                                    ></tag-list>
                                                     <sl-icon-button class="add-tag" name="plus-circle-dotted" label="add"></sl-icon-button>
                                                 </div>
                                             `,

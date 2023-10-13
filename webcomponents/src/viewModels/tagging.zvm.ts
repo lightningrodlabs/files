@@ -124,10 +124,21 @@ export class TaggingZvm extends ZomeViewModel {
 
 
     /** */
-    async getTargetPrivateTags(eh: EntryHashB64): Promise<string[]> {
+    getTargetPrivateTags(eh: EntryHashB64): string[] {
+        if (!this._perspective.privateTagsByTarget[eh]) {
+            return [];
+        }
         return this._perspective.privateTagsByTarget[eh];
     }
 
+
+    /** */
+    getTargetPublicTags(eh: EntryHashB64): string[] {
+        if (!this._perspective.publicTagsByTarget[eh]) {
+            return [];
+        }
+        return this._perspective.publicTagsByTarget[eh];
+    }
 
     /** */
     async probeTargetPublicTags(eh: EntryHashB64): Promise<string[]> {

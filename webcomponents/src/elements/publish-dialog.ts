@@ -94,7 +94,7 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
                     tags: ${this._selectedTags.length == 0
                         ? html`none`
                         : html`
-                            <tag-list id="selected-tag-list" private clickable
+                            <tag-list id="selected-tag-list" selectable deletable
                                       .tags=${this._selectedTags}
                                       @deleted=${(e) => {
                                         console.log("deleted tag", e.detail);

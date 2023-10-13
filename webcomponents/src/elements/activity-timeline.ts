@@ -27,6 +27,9 @@ import {sharedStyles} from "../sharedStyles";
 @customElement("activity-timeline")
 export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
+
+    @state() private _initialized = false;
+
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     deliveryPerspective!: DeliveryPerspective;
@@ -49,11 +52,11 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         console.log("<activity-timeline>.dvmUpdated()");
         if (oldDvm) {
             //console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.fileShareZvm.cell.name)
-            oldDvm.fileShareZvm.unsubscribe(this);
             oldDvm.deliveryZvm.unsubscribe(this);
         }
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
         //console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name)
+        this._initialized = true;
     }
 
 
@@ -230,7 +233,16 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
     /** */
     render() {
-        console.log("<activity-timeline>.render()");
+        console.log("<activity-timeline>.render()", this._initialized);
+
+        if (!this._initialized) {
+            return html`
+                <sl-skeleton effect="sheen"></sl-skeleton>
+                <sl-skeleton effect="sheen"></sl-skeleton>
+                <sl-skeleton effect="sheen"></sl-skeleton>
+            `;
+        }
+
         const history = this.determineHistory();
 
 

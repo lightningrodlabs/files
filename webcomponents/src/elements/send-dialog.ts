@@ -142,6 +142,14 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     }
 
 
+    /** */
+    async onAddNewPrivateTag(e) {
+        console.log("onAddNewPrivateTag", e);
+        await this._dvm.taggingZvm.addPrivateTag(e.detail);
+        this._selectedTags.push(e.detail);
+        if (this.tagListElem) this.tagListElem.requestUpdate();
+        this.requestUpdate();
+    }
 
 
     /** */
@@ -150,8 +158,8 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 
         // ${comboBoxRenderer(this.agentRenderer, [])}
 
-        const allTags = this._dvm.taggingZvm.allPrivateTags.map((tag) => { return {value: tag};})
-
+        const allTags = this._dvm.taggingZvm.allPrivateTags
+            .filter((tag) => this._selectedTags.indexOf(tag) < 0)
 
         /** render all */
         return html`
@@ -183,24 +191,11 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     }}
                 ></vaadin-combo-box>
                 
-                <!--
-                <vaadin-multi-select-combo-box
-                        label="Tags"
-                        item-label-path="value"
-                        item-id-path="value"
-                        .items="${allTags}"
-                        .selectedItems="${this._selectedTags}"
-                        @selected-items-changed="${(e: MultiSelectComboBoxSelectedItemsChangedEvent<string>) => {
-                            this._selectedTags = e.detail.value;
-                        }}"
-                ></vaadin-multi-select-combo-box>
-                -->
-                
                 <div style="margin-bottom: 5px; display:flex;">
                 tags: ${this._selectedTags.length == 0
                     ? html`none`
                     : html`
-                            <tag-list id="selected-tag-list" private clickable
+                            <tag-list id="selected-tag-list" selectable deletable
                                       .tags=${this._selectedTags}
                                       @deleted=${(e) => {
                                           console.log("deleted tag", e.detail);
@@ -217,7 +212,8 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     `}
                 </div>
                 <tag-input .tags=${allTags}
-                           @new-tag=${(e) => {}}
+                           @new-tag=${(e) => {console.log("e", e); this.onAddNewPrivateTag(e)}}
+                           @selected=${(e) => {this._selectedTags.push(e.detail); this.requestUpdate(); if (this.tagListElem) this.tagListElem.requestUpdate();}}
                 ></tag-input>
 
 
@@ -227,6 +223,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                         //const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags.map((item) => item.value));
                         const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags);
                         this._file = undefined;
+                        this._selectedTags = [];
                         this._recipient = undefined;
                         this.dialogElem.open = false;
                     }}>

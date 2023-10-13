@@ -147,7 +147,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     /** AppletId -> AppletInfo */
     @state() private _appletInfos: Dictionary<AppletInfo> = {}
 
-    @state() private _selectedMenuItem?: SelectedEvent;
+    @state() private _selectedMenuItem?: SelectedEvent = {type: SelectedType.Home}
 
 
     /** -- Getters -- */

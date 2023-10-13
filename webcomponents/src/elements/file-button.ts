@@ -8,6 +8,7 @@ import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {mime2icon, prettyFiletype} from "../utils";
 import {sharedStyles} from "../sharedStyles";
 import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
+import {TaggingPerspective} from "../viewModels/tagging.zvm";
 
 
 /**
@@ -26,11 +27,31 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
 
     /** -- State variables -- */
 
-    @state() private _loading = true;
-    @state() private _manifest?;
+    // @state() private _loading = true;
+    // @state() private _manifest?;
 
 
     /** -- Methods -- */
+
+
+    /** Observed perspective from zvm */
+    @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+    taggingPerspective!: TaggingPerspective;
+
+
+    /**
+     * In dvmUpdated() this._dvm is not already set!
+     * Subscribe to ZVMs
+     */
+    protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
+        console.log("<file-button>.dvmUpdated()");
+        if (oldDvm) {
+            console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.taggingZvm.cell.name)
+            oldDvm.taggingZvm.unsubscribe(this);
+        }
+        newDvm.taggingZvm.subscribe(this, 'taggingPerspective');
+        console.log("\t Subscribed Zvms roleName = ", newDvm.taggingZvm.cell.name)
+    }
 
 
     /** */
@@ -61,6 +82,17 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
             }
         }
 
+        let tagList;
+        if (isPrivate) {
+            // @deleted=${async (e) => {await this._dvm.taggingZvm.untagPrivateEntry(this.hash, e.detail); this.requestUpdate()}}
+            const tags = this._dvm.taggingZvm.getTargetPrivateTags(this.hash);
+            tagList = html`<tag-list class="hide" .tags=${tags} selectable></tag-list>`;
+        } else {
+            const tags = this._dvm.taggingZvm.getTargetPublicTags(this.hash);
+            tagList = html`<tag-list class="hide" .tags=${tags} selectable></tag-list>`;
+        }
+
+
 
         /** render all */
         return html`
@@ -77,7 +109,7 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     }}>
                     <sl-icon name="send"></sl-icon>
                 </sl-button>
-                <tag-list class="hide" .hash=${this.hash} ${isPrivate? html`private` : html``}></tag-list>
+                ${tagList}
             </div>
         `;
     }
