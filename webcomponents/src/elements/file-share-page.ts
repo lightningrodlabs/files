@@ -61,6 +61,7 @@ import "./publish-dialog";
 import "./send-dialog";
 import "./edit-profile";
 import "./inbound-stack";
+import "./tag-input";
 import "./tag-list";
 
 import {

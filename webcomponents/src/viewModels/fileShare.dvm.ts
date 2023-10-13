@@ -116,7 +116,7 @@ export class FileShareDvm extends DnaViewModel {
                 console.log("sendFile follow up", manifestEh, this._mustSendTo);
                 this.fileShareZvm.sendFile(manifestEh, this._mustSendTo).then((distribAh) => {
                     /** Into Notification */
-                    console.log("File delivery request sent", deliverySignal.NewLocalManifest, recipient);
+                    console.log("File delivery request sent", deliverySignal.NewLocalManifest, recipient, this._mustAddTags);
                     this._perspective.notificationLogs.push([now, FileShareNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipient}]);
                     if (this._mustAddTags && this._mustAddTags.isPrivate) {
                         /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);

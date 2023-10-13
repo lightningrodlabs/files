@@ -8,6 +8,7 @@ import {SlDialog, SlInput} from "@shoelace-style/shoelace";
 import {prettyFileSize, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
 import {MultiSelectComboBoxSelectedItemsChangedEvent} from "@vaadin/multi-select-combo-box";
+import {TagList} from "./tag-list";
 
 
 
@@ -18,14 +19,25 @@ import {MultiSelectComboBoxSelectedItemsChangedEvent} from "@vaadin/multi-select
 export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
     @state() private _file?: File;
+    @state() private _selectedTags = [];
+
     private _splitObj?: SplitObject;
 
     /** -- Getters -- */
+
+
+    get inputElem() : SlInput {
+        return this.shadowRoot.getElementById("tag-input") as SlInput;
+    }
 
     get dialogElem() : SlDialog {
         return this.shadowRoot.getElementById("publish-dialog-inner") as SlDialog;
     }
 
+
+    get tagListElem() : TagList {
+        return this.shadowRoot.getElementById("selected-tag-list") as TagList;
+    }
 
     /** -- Methods -- */
 
@@ -46,26 +58,25 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
     }
 
 
-    @state() private _selectedTags = [];
-
-    get inputElem() : SlInput {
-        return this.shadowRoot.getElementById("tag-input") as SlInput;
-    }
 
 
-    async onAddTag(e) {
-        console.log("tag sl-change", this.inputElem.value);
-        await this._dvm.taggingZvm.addPublicTag(this.inputElem.value);
-        this.inputElem.value = "";
+
+    /** */
+    async onAddNewPublicTag(e) {
+        console.log("onAddNewPublicTag", e);
+        await this._dvm.taggingZvm.addPublicTag(e.detail);
+        this._selectedTags.push(e.detail);
+        if (this.tagListElem) this.tagListElem.requestUpdate();
         this.requestUpdate();
     }
+
 
     /** */
     render() {
         console.log("<publish-dialog>.render()", this._file);
 
-        const allTags = this._dvm.taggingZvm.allPublicTags.map((tag) => { return {value: tag};})
-        console.log("allTags", allTags);
+        const allTags = this._dvm.taggingZvm.allPublicTags
+            .filter((tag) => this._selectedTags.indexOf(tag) < 0)
 
         /** render all */
         return html`
@@ -78,26 +89,36 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
                     <div>Type: ${this._file? this._file.type : ""}</div>
                     <div>Hash: ${!this._file || !this._splitObj? "" : this._splitObj.dataHash}</div>
                 </div>
-                <vaadin-multi-select-combo-box
-                        label="Tags"
-                        item-label-path="value"
-                        item-id-path="value"
-                        .items="${allTags}"
-                        .selectedItems="${this._selectedTags}"
-                        @selected-items-changed="${(e: MultiSelectComboBoxSelectedItemsChangedEvent<string>) => {
-                            this._selectedTags = e.detail.value;
-                        }}"
-                ></vaadin-multi-select-combo-box>
-                <sl-input id="tag-input" placeholder="Add tag" clearable
-                          @sl-change=${this.onAddTag}
-                          >
-                    <sl-icon name="plus" slot="prefix"></sl-icon>
-                </sl-input>
+                
+                <div style="margin-bottom: 5px; display:flex;">
+                    tags: ${this._selectedTags.length == 0
+                        ? html`none`
+                        : html`
+                            <tag-list id="selected-tag-list" private clickable
+                                      .tags=${this._selectedTags}
+                                      @deleted=${(e) => {
+                                        console.log("deleted tag", e.detail);
+                                        const index = this._selectedTags.indexOf(e.detail);
+                                        if (index > -1) {
+                                            this._selectedTags.splice(index, 1);
+                                        }
+                                        this.requestUpdate();
+                                        if(this.tagListElem) this.tagListElem.requestUpdate();
+                                    }}
+                            >
+                            </tag-list>
+                    `}
+                </div>
+                <tag-input .tags=${allTags}
+                           @new-tag=${(e) => {console.log("e", e); this.onAddNewPublicTag(e)}}
+                           @selected=${(e) => {this._selectedTags.push(e.detail); this.requestUpdate(); if (this.tagListElem) this.tagListElem.requestUpdate();}}
+                ></tag-input>
                 
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file} @click=${async (e) => {
-                        const _splitObj = await this._dvm.startPublishFile(this._file, this._selectedTags.map((item) => item.value));
-                        this._file = undefined;                    
+                        const _splitObj = await this._dvm.startPublishFile(this._file, this._selectedTags);
+                        this._file = undefined;         
+                        this._selectedTags = [];
                         this.dialogElem.open = false;
                         this.dispatchEvent(new CustomEvent('publish-started', {detail: this._splitObj, bubbles: true, composed: true}));
                     }}>

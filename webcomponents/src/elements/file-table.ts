@@ -83,7 +83,7 @@ export class FileTable extends LitElement {
                                     ${columnBodyRenderer(
                                             ({ ppEh }) => html`
                                                 <div style="display:flex">
-                                                    <tag-list .hash=${ppEh} isPrivate=${true}></tag-list>
+                                                    <tag-list .hash=${ppEh} private clickable></tag-list>
                                                     <sl-icon-button class="add-tag" name="plus-circle-dotted" label="add"></sl-icon-button>
                                                 </div>
                                             `,

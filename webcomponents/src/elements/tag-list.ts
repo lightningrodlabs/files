@@ -16,8 +16,10 @@ import {TaggingPerspective} from "../viewModels/tagging.zvm";
 export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
     /** */
-    @property() hash: EntryHashB64 = '';
-    @property() isPrivate: boolean = false;
+    @property() hash?: EntryHashB64;
+    @property() private?: string;
+    @property() tags?: string[];
+    @property() clickable?: string;
 
 
     /** Observed perspective from zvm */
@@ -42,34 +44,43 @@ export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
     /** */
     async onTagDelete(tag: string) {
+        this.dispatchEvent(new CustomEvent('deleted', {detail: tag, bubbles: true, composed: true}))
         await this._dvm.taggingZvm.untagPrivateEntry(this.hash, tag);
     }
 
 
     /** */
     render() {
-        console.log("<tag-list>.render()", this.hash, this.isPrivate);
+        console.log("<tag-list>.render()", this.hash, this.private, this.clickable, this.tags, this.taggingPerspective);
 
-        let tags = this.isPrivate
-        ? this.taggingPerspective.privateTagsByTarget[this.hash]
-        : this.taggingPerspective.publicTagsByTarget[this.hash]
-        if (!tags) {
-            tags = [];
+        let tags = this.tags
+
+        if (this.hash) {
+            tags = this.private == ""
+                ? this.taggingPerspective.privateTagsByTarget[this.hash]
+                : this.taggingPerspective.publicTagsByTarget[this.hash]
+            if (!tags) {
+                tags = [];
+            }
         }
         console.log({tags})
 
 
         const tagItems = tags.map((str) => {
             return html`
-                <div class="tag">
+                <div class="tag ${this.clickable == ""? "clickable" : ""}" @click=${(e) => {
+                if (this.clickable == "") {
+                    this.dispatchEvent(new CustomEvent('selected', {detail: str, bubbles: true, composed: true}))
+                }
+                }}>
                     <span>${str}</span>
-                    ${!this.isPrivate
-                        ? html`` 
-                        : html`
+                    ${this.hash && this.private == ""
+                        ? html`
                         <sl-icon-button class="hide" name="x" label="remove" style=""
                                    @click=${async (_e) => {this.onTagDelete(str)}}>
-                        </sl-icon-button>
-                    `}            
+                        </sl-icon-button>`
+                        : html``
+                    }            
                 </div>`
         });
         return html`${tagItems}`;
@@ -95,24 +106,21 @@ export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
               .tag {
                 display: flex;
-                background: #91a3b7;
+                background: #bbc5ce;
                 font-size: small;
                 padding: 3px;
+                color: #232121;
+                /*border-radius: 15px;*/
+              }
+
+              .clickable:hover {
+                background: #303131;
                 color: white;
+                cursor: pointer;
               }
 
-              .tag:hover {
-                background: #e8eaea;
-                color: #3d3c3c;
-              }
-
-              .tag:hover .hide {
+              .clickable:hover .hide {
                 display: inline-block;
-              }
-
-
-              .public:hover {
-                color: red;
               }
 
               .hide {
@@ -121,6 +129,7 @@ export class TagList extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
               sl-icon-button {
                 font-size: 1.0rem;
+                color: white;
               }
 
               sl-icon-button::part(base) {

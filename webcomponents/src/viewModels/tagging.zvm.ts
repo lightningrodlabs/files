@@ -193,6 +193,7 @@ export class TaggingZvm extends ZomeViewModel {
 
     /** */
     async tagPrivateEntry(eh: EntryHashB64, tags: string[], targetInfo: string) {
+        console.log("tagPrivateEntry", eh, tags)
         const input = {
             target: decodeHashFromBase64(eh),
             tags,

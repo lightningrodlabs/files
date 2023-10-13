@@ -77,7 +77,7 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     }}>
                     <sl-icon name="send"></sl-icon>
                 </sl-button>
-                <tag-list class="hide" .hash=${this.hash} .isPrivate=${isPrivate}></tag-list>
+                <tag-list class="hide" .hash=${this.hash} ${isPrivate? html`private` : html``}></tag-list>
             </div>
         `;
     }

@@ -15,6 +15,7 @@ import {DeliveryPerspective, ParcelDescription} from "@ddd-qc/delivery";
 import {ComboBoxFilterChangedEvent} from "@vaadin/combo-box";
 import {ComboBoxLitRenderer, comboBoxRenderer} from "@vaadin/combo-box/lit";
 import {MultiSelectComboBoxSelectedItemsChangedEvent} from "@vaadin/multi-select-combo-box";
+import {TagList} from "./tag-list";
 
 
 interface AgentItem {
@@ -130,28 +131,27 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     `;
 
 
-    @state() private _selectedTags = [];
+    @state() private _selectedTags: string[] = [];
 
     get inputElem() : SlInput {
         return this.shadowRoot.getElementById("tag-input") as SlInput;
     }
 
-
-    async onAddTag(e) {
-        console.log("tag sl-change", this.inputElem.value);
-        await this._dvm.taggingZvm.addPrivateTag(this.inputElem.value);
-        this.inputElem.value = "";
-        this.requestUpdate();
+    get tagListElem() : TagList {
+        return this.shadowRoot.getElementById("selected-tag-list") as TagList;
     }
+
+
 
 
     /** */
     render() {
-        console.log("<send-dialog>.render()", this._file, this._recipient, this._allAgents);
+        console.log("<send-dialog>.render()", this._file, this._recipient, this._allAgents, this._selectedTags);
 
         // ${comboBoxRenderer(this.agentRenderer, [])}
 
         const allTags = this._dvm.taggingZvm.allPrivateTags.map((tag) => { return {value: tag};})
+
 
         /** render all */
         return html`
@@ -183,6 +183,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                     }}
                 ></vaadin-combo-box>
                 
+                <!--
                 <vaadin-multi-select-combo-box
                         label="Tags"
                         item-label-path="value"
@@ -193,16 +194,38 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                             this._selectedTags = e.detail.value;
                         }}"
                 ></vaadin-multi-select-combo-box>
-                <sl-input id="tag-input" placeholder="Add tag" clearable
-                          @sl-change=${this.onAddTag}
-                >
-                    <sl-icon name="plus" slot="prefix"></sl-icon>
-                </sl-input>
+                -->
                 
+                <div style="margin-bottom: 5px; display:flex;">
+                tags: ${this._selectedTags.length == 0
+                    ? html`none`
+                    : html`
+                            <tag-list id="selected-tag-list" private clickable
+                                      .tags=${this._selectedTags}
+                                      @deleted=${(e) => {
+                                          console.log("deleted tag", e.detail);
+                                          const index = this._selectedTags.indexOf(e.detail);
+                                          if (index > -1) {
+                                              this._selectedTags.splice(index, 1);
+                                          }
+                                          this.requestUpdate();
+                                          if(this.tagListElem) this.tagListElem.requestUpdate();
+                                      }}
+                            >
+                                
+                            </tag-list>
+                    `}
+                </div>
+                <tag-input .tags=${allTags}
+                           @new-tag=${(e) => {}}
+                ></tag-input>
+
+
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file || !this._recipient} @click=${async (e) => {
                         this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipient: this._recipient}, bubbles: true, composed: true}));
-                        const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags.map((item) => item.value));
+                        //const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags.map((item) => item.value));
+                        const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags);
                         this._file = undefined;
                         this._recipient = undefined;
                         this.dialogElem.open = false;
