@@ -4,7 +4,7 @@ name: dFileShare
 integrity:
   origin_time: 2022-09-25T13:55:49.200Z
   properties:
-    maxChunkSize: 204800
+    maxChunkSize: 524288
     maxParcelSize: 104857600
     maxParcelNameLength: 256
     minParcelNameLength: 1

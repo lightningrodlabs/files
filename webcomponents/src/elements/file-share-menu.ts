@@ -144,13 +144,17 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         let unrepliedCount = 0;
         let distribCount = 0;
         let outboundCount = 0;
+        let incompleteCount = 0;
+        let orphans = 0;
         if (this._initialized) {
             dhtPublicCount = Object.entries(this.deliveryPerspective.publicParcels).length;
             //localPublicCount = Object.entries(this.deliveryPerspective.localPublicManifests).length;
             privateCount = Object.entries(this.deliveryPerspective.privateManifests).length;
             unrepliedCount = Object.entries(this._dvm.deliveryZvm.inbounds()).length;
-            distribCount = Object.entries(this._dvm.deliveryZvm.perspective.distributions).length;
+            distribCount = Object.entries(this.deliveryPerspective.distributions).length;
             outboundCount = Object.entries(this._dvm.deliveryZvm.outbounds()).length;
+            incompleteCount = this.deliveryPerspective.incompleteManifests.length;
+            orphans = this.deliveryPerspective.orphanPrivateChunks.length + this.deliveryPerspective.orphanPrivateChunks.length;
         }
 
         /** render all */
@@ -192,11 +196,16 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <sl-menu-item>
                     <sl-icon slot="prefix" name="arrow-left-right"></sl-icon>
                     ${SelectedType.InProgress}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${this._initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount + incompleteCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 ${this.renderTags(false)}
                 ${this.renderTags(true)}
             </sl-menu>
+            <br />
+            ${orphans? html`
+                <sl-divider></sl-divider>
+                <div style="color: darkred">Orphan chunks: ${orphans}</div>
+            `:html``}
         `;
     }
 

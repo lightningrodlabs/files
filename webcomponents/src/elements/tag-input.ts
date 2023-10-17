@@ -35,7 +35,7 @@ export class TagInput extends LitElement {
 
     /** */
     render() {
-        console.log("<tag-input>.render()", this.tags, this._selectedTags);
+        //console.log("<tag-input>.render()", this.tags, this._selectedTags);
 
         let tagResults = undefined;
         /** Search results */

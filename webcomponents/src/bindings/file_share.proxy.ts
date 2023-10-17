@@ -194,11 +194,11 @@ export class FileShareProxy extends ZomeProxy {
     return this.call('send_file', input);
   }
 
-  async writePrivateFileChunk(chunk: ParcelChunk): Promise<EntryHash> {
-    return this.call('write_private_file_chunk', chunk);
+  async writePrivateFileChunks(chunks: ParcelChunk[]): Promise<EntryHash[]> {
+    return this.call('write_private_file_chunks', chunks);
   }
 
-  async writePublicFileChunk(chunk: ParcelChunk): Promise<EntryHash> {
-    return this.call('write_public_file_chunk', chunk);
+  async writePublicFileChunks(chunks: ParcelChunk[]): Promise<EntryHash[]> {
+    return this.call('write_public_file_chunks', chunks);
   }
 }

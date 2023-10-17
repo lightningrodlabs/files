@@ -129,6 +129,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     @property() devmode: boolean = false;
 
+    @property() offlineloaded: boolean = false;
+
+
+
     private _notifCount = 0;
 
     /** Observed perspective from zvm */
@@ -180,7 +184,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             oldDvm.deliveryZvm.unsubscribe(this);
         }
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
-        console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name)
+        console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name);
+        this._initialized = true;
     }
 
 
@@ -421,8 +426,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     render() {
-        console.log("<file-share-page>.render()", this._initialized, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
-
+        console.log("<file-share-page>.render()", this._initialized, this.offlineloaded, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
 
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
@@ -553,6 +557,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 return outboundItems;
             })
             .flat();
+
         let outboundTable = html`
                     <vaadin-grid .items="${outboundList}">
                         <vaadin-grid-column path="distribution" header="Filename"
@@ -598,9 +603,69 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     </vaadin-grid>
                 `;
 
+        /** Incomplete manifests (inbound pending) */
+        let incompleteList = this.deliveryPerspective.incompleteManifests
+            .map((manifestEh) => {
+                const pair = this.deliveryPerspective.privateManifests[manifestEh];
+                if (!pair) {
+                    console.warn("Manifest not found for incomplete manifest:", manifestEh)
+                    return {};
+                };
+                let noticeTuple;
+                for (const tuple of Object.values(this.deliveryPerspective.notices)) {
+                    if (encodeHashToBase64(tuple[0].summary.parcel_reference.eh) == manifestEh) {
+                        noticeTuple = tuple;
+                        break;
+                    }
+                }
+                if (!noticeTuple) {
+                    console.warn("Notice not found for incomplete manifest:", manifestEh)
+                    return {};
+                };
+                return {
+                    notice: noticeTuple[0],
+                    timestamp: noticeTuple[1],
+                    pct: noticeTuple[3],
+                }
+            });
+        let incompleteTable = html`
+                    <vaadin-grid .items="${incompleteList}">
+                        <vaadin-grid-column path="notice" header="Filename"
+                                            ${columnBodyRenderer(
+            ({ notice }) => html`<span>${notice.summary.parcel_reference.description.name}</span>`,
+            [],
+        )}>
+                        </vaadin-grid-column>                        
+                        <vaadin-grid-column path="notice" header="Sender"
+                                            ${columnBodyRenderer(
+            ({ notice }) => {
+                const sender = encodeHashToBase64(notice.sender);
+                const maybeProfile = this._profilesZvm.perspective.profiles[sender];
+                return maybeProfile
+                    ? html`<span>${maybeProfile.nickname}</span>`
+                    : html`<sl-skeleton effect="sheen"></sl-skeleton>`
+            },
+            [],
+        )}
+                        ></vaadin-grid-column>                        
+                        <vaadin-grid-column path="pct" header="State"
+                            ${columnBodyRenderer(({ pct }) => {return html`<sl-progress-bar value=${pct}></sl-progress-bar>`},
+                [],
+                        )}>
+                        </vaadin-grid-column>
+                        <vaadin-grid-column path="timestamp" header="Sent Date"
+                                            ${columnBodyRenderer(
+            ({ timestamp }) => html`<span>${prettyTimestamp(timestamp)}</span>`,
+            [],
+        )}
+                        ></vaadin-grid-column>                        
+                    </vaadin-grid>
+                `;
+
+
         /** Choose what to display */
-        let mainArea = html``;
-        if (this._selectedMenuItem) {
+        let mainArea = html`<sl-spinner></sl-spinner>`;
+        if (this._selectedMenuItem && this.deliveryPerspective.probeDhtCount) {
             console.log("_selectedMenuItem", this._selectedMenuItem)
 
             if (this._selectedMenuItem.type == SelectedType.Home) {
@@ -722,7 +787,13 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <h2>Outbound files</h2>
                     <ul>
                         ${outboundTable}
-                    </ul>`;
+                    </ul>
+                    <h2>Inbound files</h2>
+                    <ul>
+                        ${incompleteTable}
+                    </ul>\`;                    
+                `;
+
             }
             if (this._selectedMenuItem.type == SelectedType.PublicTag) {
                 const taggedItems = Object.entries(this.deliveryPerspective.publicParcels)

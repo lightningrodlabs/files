@@ -45,17 +45,15 @@ export class FileShareZvm extends ZomeViewModel {
 
 
     /** */
-    async initializePerspectiveOnline(): Promise<void> {
-        // N/A
-    }
-
-
-    /** */
     async initializePerspectiveOffline(): Promise<void> {
         // N/A
     }
 
 
+    /** */
+    async initializePerspectiveOnline(): Promise<void> {
+        // N/A
+    }
 
 
     // /** -- Signals -- */

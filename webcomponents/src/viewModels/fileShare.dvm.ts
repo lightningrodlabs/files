@@ -1,7 +1,7 @@
 import {AppProxy, delay, DnaViewModel, HCL, ZvmDef} from "@ddd-qc/lit-happ";
 import {
     DeliveryProperties,
-    DeliveryZvm, ParcelDescription, ParcelKindVariantManifest,
+    DeliveryZvm, ParcelChunk, ParcelDescription, ParcelKindVariantManifest,
     ParcelManifest, ParcelReference,
     SignalProtocol,
     SignalProtocolType
@@ -152,11 +152,9 @@ export class FileShareDvm extends DnaViewModel {
                         this.fileShareZvm.publishFileManifest(this._perspective.uploadState.file, this._perspective.uploadState.splitObj.dataHash, this._perspective.uploadState.chunks);
                     }
                 } else {
-                    /** Otherwise commit next one */
-                    if (this._perspective.uploadState.isPrivate) {
-                        this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: this._perspective.uploadState.splitObj.dataHash, data: this._perspective.uploadState.splitObj.chunks[index]});
-                    } else {
-                        this.fileShareZvm.zomeProxy.writePublicFileChunk({data_hash: this._perspective.uploadState.splitObj.dataHash, data: this._perspective.uploadState.splitObj.chunks[index]});
+                    /** Otherwise commit next batch */
+                    if (this._perspective.uploadState.chunks.length == this._perspective.uploadState.written_chunks) {
+                        this.writeChunks();
                     }
                 }
                 this.notifySubscribers();
@@ -185,6 +183,7 @@ export class FileShareDvm extends DnaViewModel {
                 //this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh)).then((manifest) => this._perspective.publicFiles[manifest.data_hash] = ppEh);
                 //this.probePublicFiles();
                 //this._latestPublic.push(ppEh);
+                /** Have DeliveryZvm perform probePublicParcels */
                 this.probeAll();
             } else {
                 /** Notify UI that we finished publishing something */
@@ -321,11 +320,13 @@ export class FileShareDvm extends DnaViewModel {
             file,
             isPrivate: true,
             chunks: [],
+            index: 0,
+            written_chunks: 0,
         };
         this.notifySubscribers();
 
         /** Initial write chunk loop */
-        /* await */ this.fileShareZvm.zomeProxy.writePrivateFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
+        /* await */ this.writeChunks();
         this._mustAddTags = {isPrivate: true, tags};
 
         /* Done */
@@ -350,15 +351,42 @@ export class FileShareDvm extends DnaViewModel {
             file,
             isPrivate: false,
             chunks: [],
+            index: 0,
+            written_chunks: 0
         };
         this.notifySubscribers();
 
         /** Initial write chunk loop */
-         /*await */ this.fileShareZvm.zomeProxy.writePublicFileChunk({data_hash: splitObj.dataHash, data: splitObj.chunks[0]});
-         this._mustAddTags = {isPrivate: false, tags};
+        /*await */ this.writeChunks();
+        // this.fileShareZvm.zomeProxy.writePublicFileChunks([{data_hash: splitObj.dataHash, data: splitObj.chunks[0]}]);
+        this._mustAddTags = {isPrivate: false, tags};
         /** Done */
         return splitObj;
     }
+
+
+    /** */
+    async writeChunks(): Promise<void> {
+        const MAX_WEBSOCKET_PAYLOAD = 8 * 1024 * 1024;
+        const num_chunks = Math.floor(MAX_WEBSOCKET_PAYLOAD / this.dnaProperties.maxChunkSize);
+        const splitObj = this._perspective.uploadState.splitObj;
+        const index = this._perspective.uploadState.index;
+        /** Form chunks from splitObj */
+        const chunks = [];
+        for (let i = index; i < index + num_chunks && i < splitObj.numChunks; i += 1) {
+            chunks.push({data_hash: splitObj.dataHash, data: splitObj.chunks[i]} as ParcelChunk)
+        }
+        this._perspective.uploadState.written_chunks += chunks.length;
+        this._perspective.uploadState.index += chunks.length;
+        console.log("writeChunks()", chunks.length, this._perspective.uploadState.written_chunks)
+        /** Write */
+        if (this._perspective.uploadState.isPrivate) {
+            await this.fileShareZvm.zomeProxy.writePrivateFileChunks(chunks);
+        }
+        await this.fileShareZvm.zomeProxy.writePublicFileChunks(chunks);
+
+    }
+
 
 
     // /** */

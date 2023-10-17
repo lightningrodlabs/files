@@ -1,6 +1,7 @@
 import {ActionHashB64, AgentPubKeyB64, Entry, EntryHash, EntryHashB64, Timestamp} from "@holochain/client";
 import {ParcelDescription, SignalProtocol, SignalProtocolType} from "@ddd-qc/delivery";
 import {SplitObject} from "../utils";
+import {Dictionary} from "@ddd-qc/cell-proxy";
 
 
 /** */
@@ -9,11 +10,14 @@ interface UploadState {
     file: File,
     splitObj: SplitObject,
     chunks: EntryHash[],
+    index: number,
+    written_chunks: number,
 }
 
 
 /** */
 export interface FileShareDvmPerspective {
+    /** */
     uploadState?: UploadState;
     /** Notifications */
     notificationLogs: [Timestamp, FileShareNotificationType, FileShareNotification][];

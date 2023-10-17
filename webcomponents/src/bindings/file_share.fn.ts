@@ -21,8 +21,8 @@ export const fileShareFunctionNames: FunctionName[] = [
 	"refuse_file_share",
 	"accept_file_share",
 	"send_file",
-	"write_private_file_chunk",
-	"write_public_file_chunk",];
+	"write_private_file_chunks",
+	"write_public_file_chunks",];
 
 
 /** Generate tuple array of function names with given zomeName */

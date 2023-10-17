@@ -23,7 +23,7 @@ export class TagList extends LitElement {
 
     /** */
     render() {
-        console.log("<tag-list>.render()", this.tags, this.selectable, this.deletable);
+        //console.log("<tag-list>.render()", this.tags, this.selectable, this.deletable);
         const tagItems = this.tags.map((str) => {
             return html`
                 <div class="tag ${this.selectable == ""? "selectable" : ""}" @click=${(e) => {
