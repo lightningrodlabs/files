@@ -102,7 +102,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
         const sortedPrivateParcels: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.privateManifests)
             .filter(([eh, [rp, ts]]) => !receivedManifestEhs.includes(eh))
-            .map(([eh, [rp, ts]]) => [ts, eh, DeliveryEntryType.ParcelManifest])
+            .map(([eh, [rp, ts]]) => [ts, eh, DeliveryEntryType.PrivateManifest])
         //console.log("sortedPrivateParcels", sortedPrivateParcels);
 
         const sortedPublicParcels: [Timestamp, EntryHashB64, DeliveryEntryType][] = Object.entries(this.deliveryPerspective.publicParcels)
@@ -129,7 +129,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
         /** Determine File */
         //let fileDescription: ParcelDescription;
         let manifestEh: EntryHashB64;
-        if (type == DeliveryEntryType.ParcelManifest) {
+        if (type == DeliveryEntryType.PrivateManifest) {
             const manifest = this.deliveryPerspective.privateManifests[hash][0];
             if (!manifest) {
                 return html`<sl-skeleton effect="sheen"></sl-skeleton>`
@@ -155,7 +155,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
         /** Determine author */
         let author: AgentPubKeyB64;
-        if (type == DeliveryEntryType.ParcelManifest) {
+        if (type == DeliveryEntryType.PrivateManifest) {
             author = this.cell.agentPubKey;
         }
         if (type == DeliveryEntryType.ReceptionAck) {
@@ -187,7 +187,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
 
         /** Format phrase */
         let message: string;
-        if (type == DeliveryEntryType.ParcelManifest) {
+        if (type == DeliveryEntryType.PrivateManifest) {
             message = `was added privately by`;
             //message = `has been stored locally`;
         }

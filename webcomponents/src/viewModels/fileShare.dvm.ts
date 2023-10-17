@@ -382,9 +382,18 @@ export class FileShareDvm extends DnaViewModel {
         /** Write */
         if (this._perspective.uploadState.isPrivate) {
             await this.fileShareZvm.zomeProxy.writePrivateFileChunks(chunks);
+        } else {
+            await this.fileShareZvm.zomeProxy.writePublicFileChunks(chunks);
         }
-        await this.fileShareZvm.zomeProxy.writePublicFileChunks(chunks);
+    }
 
+
+    /** */
+    async resumeInbounds() {
+        const inbounds = this.deliveryZvm.inbounds();
+        for (const [_notice_eh, [notice, _ts, pct]] of Object.entries(inbounds)) {
+            await this.deliveryZvm.zomeProxy.fetchMissingChunks(notice.summary.parcel_reference.eh);
+        }
     }
 
 

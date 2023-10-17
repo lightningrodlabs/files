@@ -181,9 +181,7 @@ export class FileShareApp extends HappElement {
   /** */
   async perspectiveInitializedOnline(): Promise<void> {
     console.log("<fileshare-app>.perspectiveInitializedOnline()");
-
     await this.hvm.probeAll();
-
     /** Done */
     //this._loaded = true;
   }

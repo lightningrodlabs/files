@@ -136,7 +136,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     render() {
-        console.log("<file-share-menu>.render()", this._initialized, this.taggingPerspective);
+        console.log("<file-share-menu>.render()", this._initialized, this.deliveryPerspective.probeDhtCount, this.taggingPerspective);
+
+        const initialized = !!(this._initialized && this.deliveryPerspective.probeDhtCount);
 
         //let localPublicCount = 0;
         let dhtPublicCount = 0;
@@ -145,7 +147,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         let distribCount = 0;
         let outboundCount = 0;
         let incompleteCount = 0;
-        let orphans = 0;
+        let privOrphans = 0;
+        let pubOrphans = 0;
         if (this._initialized) {
             dhtPublicCount = Object.entries(this.deliveryPerspective.publicParcels).length;
             //localPublicCount = Object.entries(this.deliveryPerspective.localPublicManifests).length;
@@ -154,7 +157,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             distribCount = Object.entries(this.deliveryPerspective.distributions).length;
             outboundCount = Object.entries(this._dvm.deliveryZvm.outbounds()).length;
             incompleteCount = this.deliveryPerspective.incompleteManifests.length;
-            orphans = this.deliveryPerspective.orphanPrivateChunks.length + this.deliveryPerspective.orphanPrivateChunks.length;
+            privOrphans = this.deliveryPerspective.orphanPrivateChunks.length
+            pubOrphans = this.deliveryPerspective.orphanPublicChunks.length;
         }
 
         /** render all */
@@ -168,44 +172,48 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <sl-icon slot="prefix" name="house"></sl-icon>
                     ${SelectedType.Home}
                 </sl-menu-item>
-                <sl-menu-item>                    
+                <sl-menu-item ?disabled=${!initialized}>                    
                     <sl-icon slot="prefix" name="files"></sl-icon>
                     ${SelectedType.AllFiles}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${dhtPublicCount + privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${dhtPublicCount + privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item>
+                <sl-menu-item ?disabled=${!initialized}>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
                     ${SelectedType.PrivateFiles}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item>
+                <sl-menu-item ?disabled=${!initialized}>
                     <sl-icon slot="prefix" name="people"></sl-icon>
                     ${SelectedType.PublicFiles}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${dhtPublicCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${dhtPublicCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item>
+                <sl-menu-item ?disabled=${!initialized}>
                     <sl-icon slot="prefix" name="download"></sl-icon>
                     ${SelectedType.Inbox}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant=${unrepliedCount > 0? "primary" : "neutral"} pill>${unrepliedCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${initialized? html`<sl-badge slot="suffix" variant=${unrepliedCount > 0? "primary" : "neutral"} pill>${unrepliedCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item>
+                <sl-menu-item ?disabled=${!initialized}>
                     <sl-icon slot="prefix" name="send"></sl-icon>
                     ${SelectedType.Sent}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${distribCount - outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${distribCount - outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item>
+                <sl-menu-item ?disabled=${!initialized}>
                     <sl-icon slot="prefix" name="arrow-left-right"></sl-icon>
                     ${SelectedType.InProgress}
-                    ${this._initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount + incompleteCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount + incompleteCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 ${this.renderTags(false)}
                 ${this.renderTags(true)}
             </sl-menu>
             <br />
-            ${orphans? html`
+            ${pubOrphans? html`
                 <sl-divider></sl-divider>
-                <div style="color: darkred">Orphan chunks: ${orphans}</div>
+                <div style="color: darkred">Public orphan chunks: ${pubOrphans}</div>
             `:html``}
+            ${privOrphans? html`
+                <sl-divider></sl-divider>
+                <div style="color: darkred">Private Orphan chunks: ${privOrphans}</div>
+            `:html``}            
         `;
     }
 

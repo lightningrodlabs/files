@@ -10,7 +10,7 @@ use zome_delivery_api::*;
 pub fn write_private_file_chunks(chunks: Vec<ParcelChunk>) -> ExternResult<Vec<EntryHash>> {
     //debug!(" write_file_chunk() size: {}", chunks.len());
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let response = call_delivery_zome("commit_parcel_chunks", chunks)?;
+    let response = call_delivery_zome("commit_private_chunks", chunks)?;
     let ehs: Vec<EntryHash> = decode_response(response)?;
     Ok(ehs)
 }

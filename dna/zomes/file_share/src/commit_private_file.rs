@@ -35,7 +35,7 @@ pub fn commit_private_file(input: WriteManifestInput) -> ExternResult<(EntryHash
         chunks: input.chunks,
         description: description.clone(),
     };
-    let response = call_delivery_zome("commit_parcel_manifest", manifest)?;
+    let response = call_delivery_zome("commit_private_manifest", manifest)?;
     let eh: EntryHash = decode_response(response)?;
     /// Done
     return Ok((eh, description));

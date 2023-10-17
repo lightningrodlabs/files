@@ -258,7 +258,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     async refresh() {
-        this._dvm.probeAll();
+        await this._dvm.probeAll();
         await this._dvm.fileShareZvm.zomeProxy.getPrivateFiles();
         await this._dvm.deliveryZvm.queryAll();
         this.requestUpdate();
@@ -536,8 +536,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                         <span class="nickname">${sender}</span>
                         wants to send you
                         <span style="font-weight: bold">${notice.summary.parcel_reference.description.name}</span>
-                            (${prettyFileSize(notice.summary.parcel_reference.description.size)})
-                        <sl-progress-bar .value=${pct}>${pct}%</sl-progress-bar>
+                        (${prettyFileSize(notice.summary.parcel_reference.description.size)})
+                        <button type="button" @click=${() => {this._dvm.deliveryZvm.zomeProxy.fetchMissingChunks(notice.summary.parcel_reference.eh)}}>resume</button>
+                        <sl-progress-bar .value=${pct} style="margin-top:5px; width: 50%">${pct}%</sl-progress-bar>
                     </li>`;
                 }
             });
@@ -664,7 +665,12 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
         /** Choose what to display */
-        let mainArea = html`<sl-spinner></sl-spinner>`;
+        let mainArea = html`
+            <h2>Recent Activity</h2>
+            <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
+            <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
+            <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
+            `;
         if (this._selectedMenuItem && this.deliveryPerspective.probeDhtCount) {
             console.log("_selectedMenuItem", this._selectedMenuItem)
 
@@ -788,7 +794,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <ul>
                         ${outboundTable}
                     </ul>
-                    <h2>Inbound files</h2>
+                    <h2>Incomplete files</h2>
                     <ul>
                         ${incompleteTable}
                     </ul>\`;                    

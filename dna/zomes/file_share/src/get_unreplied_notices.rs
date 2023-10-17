@@ -12,6 +12,7 @@ pub fn get_unreplied_notices(_:()) -> ExternResult<Vec<(AgentPubKey, EntryHash, 
     let mut res = Vec::new();
     let response = call_delivery_zome("query_all_DeliveryNotice", ())?;
     let all_notices: Vec<(EntryHash, Timestamp, DeliveryNotice)> = decode_response(response)?;
+    debug!("all_notices.len = {}", all_notices.len());
     for (notice_eh, _ts, notice) in all_notices {
         let ParcelKind::Manifest(data_type) = notice.summary.parcel_reference.description.kind_info
             else { continue };
@@ -19,7 +20,7 @@ pub fn get_unreplied_notices(_:()) -> ExternResult<Vec<(AgentPubKey, EntryHash, 
             continue;
         }
         let response = call_delivery_zome("get_notice_state", notice_eh.clone())?;
-        let state: NoticeState = decode_response(response)?;
+        let (state, _pct): (NoticeState, usize) = decode_response(response)?;
         if state != NoticeState::Unreplied {
             continue;
         }
