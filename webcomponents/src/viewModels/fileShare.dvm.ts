@@ -281,12 +281,12 @@ export class FileShareDvm extends DnaViewModel {
             return [];
         }
         const pps = Object.entries(this.deliveryZvm.perspective.publicParcels)
-            .filter(([_ppEh, [description, _ts, _agent]]) => description.name.includes(filter))
+            .filter(([_ppEh, [description, _ts, _agent]]) => description.name.toLowerCase().includes(filter))
             .map(([ppEh, _tuple]) => ppEh);
 
 
         const pms = Object.entries(this.deliveryZvm.perspective.privateManifests)
-            .filter(([ppEh, [manifest, _ts]]) => manifest.description.name.includes(filter))
+            .filter(([ppEh, [manifest, _ts]]) => manifest.description.name.toLowerCase().includes(filter))
             .map(([ppEh, _tuple]) => ppEh);
 
         return pps.concat(pms);

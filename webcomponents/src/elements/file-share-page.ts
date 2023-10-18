@@ -494,7 +494,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         let searchResultItems = [];
         /** Search results */
         if (this.searchInputElem) {
-            const filter = this.searchInputElem.value;
+            const filter = this.searchInputElem.value.toLowerCase();
             const results = this._dvm.searchParcel(filter);
             console.log("searchInputElem", filter, results);
             searchResultItems = results.map((ppEh) => html`
