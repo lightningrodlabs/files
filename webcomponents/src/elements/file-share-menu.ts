@@ -35,7 +35,7 @@ export interface SelectedEvent {
  * @element
  */
 @customElement("file-share-menu")
-export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
+export class FileShareMenu extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -50,6 +50,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     @state() private _initialized = false;
+
 
     /**
      * In dvmUpdated() this._dvm is not already set!
@@ -70,16 +71,48 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     /** */
-    onSelected(e) {
-        console.log("<file-share-menu> onSelected", e.detail.item);
-        //console.log("<file-share-menu> onSelected", e.detail.item.getTextLabel().trim());
-        /** Set "selectedItem" class */
+    updated() {
+        //const menu = this.shadowRoot.querySelector("sl-menu") as SlMenu;
+        //console.log("SlMenu", menu);
+    }
+
+
+    // /** Set "selectedItem" class */
+    // setSelected(selectedItem) {
+    //     const menu = this.shadowRoot.getElementById("lhs-menu") as SlMenu;
+    //     const items = menu.getAllItems();
+    //     for (const item  of items) {
+    //         item.classList.remove("selectedItem");
+    //         console.log("SlMenuItem", item.innerText, item);
+    //     }
+    //     selectedItem.classList.add("selectedItem");
+    // }
+
+
+    setSelected(text: string) {
+        console.log("SlMenuItem setSelected()", text)
         const menu = this.shadowRoot.getElementById("lhs-menu") as SlMenu;
         const items = menu.getAllItems();
         for (const item  of items) {
+            //console.log("SlMenuItem", item.innerText, item);
+            const curText = item.innerText.split('\n')[0];
+            //console.log("SlMenuItem split", curText);
+            if (curText == text) {
+                item.classList.add("selectedItem");
+                continue;
+            }
             item.classList.remove("selectedItem");
         }
-        e.detail.item.classList.add("selectedItem");
+    }
+
+
+    /** */
+    onSelected(e) {
+        console.log("<file-share-menu> onSelected", e.detail.item);
+        //console.log("<file-share-menu> onSelected", e.detail.item.getTextLabel().trim());
+
+        /** Set "selectedItem" class */
+        this.setSelected(e.detail.item.innerText.split('\n')[0]);
 
         const isPrivate = e.detail.item.getAttribute("isPrivate");
         const isTag = e.detail.item.getAttribute("isTag");

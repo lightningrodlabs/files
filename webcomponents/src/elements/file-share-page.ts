@@ -47,7 +47,7 @@ import {
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
 } from "../viewModels/fileShare.perspective";
 import {createAlert} from "../toast";
-import {SelectedEvent, SelectedType} from "./file-share-menu";
+import {FileShareMenu, SelectedEvent, SelectedType} from "./file-share-menu";
 
 
 /** Define my custom elements */
@@ -171,6 +171,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         return this.shadowRoot.getElementById("search-input") as SlInput;
     }
 
+    get menuElem() : FileShareMenu {
+        return this.shadowRoot.querySelector("file-share-menu") as FileShareMenu;
+    }
 
     /**
      * In dvmUpdated() this._dvm is not already set!
@@ -413,8 +416,43 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     /** */
+    onCardClick(e) {
+        console.log("onCardClick()", this.menuElem, e);
+        this.menuElem.setSelected(SelectedType.AllFiles);
+        this._selectedMenuItem = {type: SelectedType.AllFiles};
+    }
+
+
+    /** */
     renderHome(unrepliedInbounds) {
         return html`
+            <div id="card-row">
+                <div class="card" @click=${this.onCardClick}>
+                    <sl-icon name="file-earmark-text"></sl-icon>
+                    <div>Documents</div>
+                    <div class="subtext">42 Files</div>
+                </div>                
+                <div class="card" @click=${this.onCardClick}>
+                    <sl-icon name="image"></sl-icon>
+                    <div>Images</div>
+                    <div class="subtext">42 Files</div>
+                </div>
+                <div class="card" @click=${this.onCardClick}>
+                    <sl-icon name="film"></sl-icon>
+                    <div>Video</div>
+                    <div class="subtext">42 Files</div>
+                </div>
+                <div class="card" @click=${this.onCardClick}>
+                    <sl-icon name="volume-up"></sl-icon>
+                    <div>Audio</div>
+                    <div class="subtext">42 Files</div>
+                </div>
+                <div class="card" @click=${this.onCardClick}>
+                    <sl-icon name="file-earmark-zip"></sl-icon>
+                    <div>Zip Files</div>
+                    <div class="subtext">42 Files</div>
+                </div>                
+            </div>
         ${unrepliedInbounds.length? html`
             <h2>Incoming file requests</h2>
             <ul>${unrepliedInbounds}</ul>
@@ -853,7 +891,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                                 image=${avatarUrl} 
                                 @click=${() => this.profileDialogElem.open = true}></sl-avatar>
                     </sl-tooltip>
-                    <sl-button variant="default" size="medium" href=${REPORT_BUG_URL}>
+                    <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
+                        <sl-icon name="bell" label="notifications"></sl-icon>
+                    </sl-button>                    
+                    <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
                     ${this.devmode? html`
@@ -939,6 +980,37 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 display: flex;
                 flex-direction: row-reverse; 
                 gap: 5px;
+              }
+              .top-btn::part(base) {
+                background: #E9F0F3;
+                font-size: 20px;
+                width: 40px;
+              }
+              #card-row {
+                margin-top: 20px;
+                display: flex;
+                gap: 15px;
+              }
+              .card {
+                cursor: pointer;
+                color: white;
+                padding: 15px 5px 5px 15px;
+                width: 100px;
+                height: 100px;
+                background: #21374A;
+                border-top: 2px #4B95D6 solid;
+                border-left: 1px #4B95D6 solid;
+                border-radius: 6px;
+                box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+
+              }
+              .card sl-icon {
+                margin-bottom: 15px;
+                font-size: 42px;
+              }
+              .card .subtext {
+                color: #aca4a4;
+                font-size: small;
               }
               #fab-publish {
                 position: absolute;

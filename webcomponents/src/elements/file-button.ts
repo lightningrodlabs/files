@@ -122,12 +122,13 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
             css`
               .fileButton {
                 border-radius: 6px;
-                border-width: 2px;
-                border-style: dotted;
+                border-width: 1px;
+                border-style: dashed;
+                border-color: rgb(179, 179, 179);
                 font-size: 0.875rem;
                 font-weight: bold;
                 color: #2488e0;
-                background: #FFFFFF;
+                background: #FAFAFA;
                 padding: 5px;
               }
 
@@ -140,22 +141,26 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
               sl-icon {
                 font-weight: bold;
               }
-              
+
               .fileButton:hover {
-                color: #09c8f3;
+                /*color: #09c8f3;*/
+                box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+                background: white;
+                border: none;
               }
 
               .fileButton:hover sl-button.hide {
                 display: inline-block;
               }
+
               .fileButton:hover tag-list.hide {
                 display: flex;
               }
-              
+
               .hide {
                 display: none;
               }
-             
+
             `
         ];
     }
