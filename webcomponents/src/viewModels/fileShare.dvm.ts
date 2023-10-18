@@ -392,7 +392,7 @@ export class FileShareDvm extends DnaViewModel {
     async resumeInbounds() {
         const inbounds = this.deliveryZvm.inbounds();
         for (const [_notice_eh, [notice, _ts, pct]] of Object.entries(inbounds)) {
-            await this.deliveryZvm.zomeProxy.fetchMissingChunks(notice.summary.parcel_reference.eh);
+            await this.deliveryZvm.zomeProxy.requestMissingChunks(notice.summary.parcel_reference.eh);
         }
     }
 

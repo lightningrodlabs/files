@@ -537,7 +537,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                         wants to send you
                         <span style="font-weight: bold">${notice.summary.parcel_reference.description.name}</span>
                         (${prettyFileSize(notice.summary.parcel_reference.description.size)})
-                        <button type="button" @click=${() => {this._dvm.deliveryZvm.zomeProxy.fetchMissingChunks(notice.summary.parcel_reference.eh)}}>resume</button>
+                        <button type="button" @click=${() => {this._dvm.deliveryZvm.zomeProxy.requestMissingChunks(notice.summary.parcel_reference.eh)}}>resume</button>
                         <sl-progress-bar .value=${pct} style="margin-top:5px; width: 50%">${pct}%</sl-progress-bar>
                     </li>`;
                 }
