@@ -57,6 +57,7 @@ import "./distribution-table";
 import "./file-view";
 import "./file-button";
 import "./file-share-menu";
+import "./action-overlay"
 import "./publish-dialog";
 import "./send-dialog";
 import "./edit-profile";
@@ -106,6 +107,7 @@ import {PublishDialog} from "./publish-dialog";
 import {SendDialog} from "./send-dialog";
 import {DistributionTableItem} from "./distribution-table";
 import {columnBodyRenderer} from "@vaadin/grid/lit";
+import {ActionOverlay} from "./action-overlay";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
@@ -158,6 +160,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     get profileDialogElem(): SlDialog {
         return this.shadowRoot!.getElementById("profile-dialog") as SlDialog;
+    }
+
+    get actionOverlayElem() : ActionOverlay {
+        return this.shadowRoot.querySelector("action-overlay") as ActionOverlay;
     }
 
     get publishDialogElem() : PublishDialog {
@@ -925,6 +931,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail.profile)}
             ></edit-profile>
         </sl-dialog>
+        <action-overlay></action-overlay>
         <publish-dialog id="publish-dialog"></publish-dialog>
         <send-dialog id="send-dialog"></send-dialog>
         <!-- commit widget -->
@@ -942,7 +949,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </sl-button>
             </sl-tooltip>
             <sl-tooltip placement="left" content="Publish file" style="--show-delay: 200;">
-                <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.publishDialogElem.open()}>
+                <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.actionOverlayElem.open()}>
                     <sl-icon name="plus-lg" label="Add"></sl-icon>
                 </sl-button>
             </sl-tooltip>
