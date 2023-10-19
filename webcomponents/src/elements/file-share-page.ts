@@ -43,7 +43,7 @@ import "./inbound-stack";
 import "./tag-input";
 import "./tag-list";
 
-import {SlAlert, SlDialog, SlInput} from "@shoelace-style/shoelace";
+import {SlAlert, SlBadge, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
@@ -155,6 +155,14 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     get menuElem() : FileShareMenu {
         return this.shadowRoot.querySelector("file-share-menu") as FileShareMenu;
     }
+
+
+    get fabElem() : SlButton {
+        return this.shadowRoot.getElementById("fab-publish") as SlButton;
+    }
+
+
+    /** -- Methods -- */
 
     /**
      * In dvmUpdated() this._dvm is not already set!
@@ -938,7 +946,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail.profile)}
             ></edit-profile>
         </sl-dialog>
-        <action-overlay @selected=${(e) => {
+        <action-overlay 
+                @sl-hide=${(e) => {this.fabElem.style.display = "block"}}
+                @selected=${(e) => {
             if (e.detail == "send") {
                 this.sendDialogElem.open();
             }
@@ -948,8 +958,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         }}></action-overlay>
         <publish-dialog></publish-dialog>
         <send-dialog></send-dialog>
-        <!-- commit widget -->
+        <!-- stack -->
         <inbound-stack></inbound-stack>
+        <!-- commit button & panel -->
         ${this.perspective.uploadState? html`
             <div id="uploadingView">
                 <span style="font-weight: bold; overflow:clip; width:inherit; margin-right:3px;">${this.perspective.uploadState.file.name}</span>
@@ -957,15 +968,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <sl-progress-bar .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
             </div>
             ` : html`
-            <!--
-            <sl-tooltip placement="left" content="Send file" style="--show-delay: 200;">
-                <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.sendDialogElem.open()}>
-                    <sl-icon name="send" label="Send"></sl-icon>
-                </sl-button>
-            </sl-tooltip>
-            -->            
-            <sl-tooltip placement="left" content="Publish file" style="--show-delay: 200;">
-                <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.actionOverlayElem.open()}>
+            <sl-tooltip placement="left" content="Send/Share file" style="--show-delay: 200;">
+                <sl-button id="fab-publish" size="large" variant="primary" circle
+                           ?disabled=${this.perspective.uploadState}  
+                           @click=${(_e) => {this.actionOverlayElem.open(); this.fabElem.style.display = "none"}}>
                     <sl-icon name="plus-lg" label="Add"></sl-icon>
                 </sl-button>
             </sl-tooltip>
@@ -1020,7 +1026,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 gap: 15px;
               }
               .card {
-                cursor: pointer;
+                /*cursor: pointer;*/
                 color: white;
                 padding: 15px 5px 5px 15px;
                 width: 100px;
@@ -1030,7 +1036,12 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 border-left: 1px #4B95D6 solid;
                 border-radius: 6px;
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+              }
 
+              .card:hover {
+                cursor: pointer;
+                background: aliceblue;
+                color: #21374A;
               }
               .card sl-icon {
                 margin-bottom: 15px;
@@ -1044,12 +1055,12 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 position: absolute;
                 bottom: 30px;
                 right: 30px;
-                /*box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;*/
               }
-              #fab-send {
-                position: absolute;
-                bottom: 90px;
-                right: 30px;
+              #fab-publish::part(base) {
+                font-weight: bold;
+                font-size: 32px;
+                box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+                /*--sl-input-height-medium: 48px;*/
               }
               #uploadingView {
                 position: absolute;

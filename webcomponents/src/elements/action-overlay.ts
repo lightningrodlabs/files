@@ -25,6 +25,9 @@ export class ActionOverlay extends LitElement {
         this.dialogElem.open = true;
     }
 
+    isOpen(): boolean {
+      return this.dialogElem && this.dialogElem.open;
+    }
 
     /** */
     onClick(action: string) {
@@ -64,9 +67,10 @@ export class ActionOverlay extends LitElement {
                 flex-direction: column;
                 --width: 500px;
               }
-              sl-dialog::part(base) {
-                z-index:auto;
 
+              sl-dialog::part(base) {
+                z-index: auto;
+                background: #02070f80;
               }
 
               sl-dialog::part(header) {
@@ -77,17 +81,17 @@ export class ActionOverlay extends LitElement {
                 background: transparent;
                 display: flex;
                 flex-direction: column;
-                gap: 40px;                
+                gap: 40px;
               }
-              
+
               sl-dialog::part(panel) {
                 background: transparent;
                 box-shadow: none;
               }
-              
-              
+
+
               /** BUTTONS */
-              
+
               sl-button {
                 background: transparent;
               }
@@ -97,9 +101,14 @@ export class ActionOverlay extends LitElement {
                 font-size: 18px;
                 height: 100px;
                 /*--sl-input-height-medium: 48px;*/
-                background: #02081e82;
+                background: rgba(14, 9, 36, 0.85);
                 border: 2px white dashed;
                 border-radius: 10px
+              }
+
+              sl-button::part(base):hover {
+                background: rgba(255, 255, 255, 0.84);
+                color: #0b0934;
               }
 
               sl-button::part(label) {
