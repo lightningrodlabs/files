@@ -30,7 +30,9 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 
     @state() private _allAgents: AgentItem[] = [];
     @state() private _filteredAgents: AgentItem[] = [];
-    @state() private _recipient?: AgentPubKeyB64;
+    //@state() private _recipient?: AgentPubKeyB64;
+    @state() private _recipients: AgentPubKeyB64[] = [];
+
 
     @state() private _file?: File;
     private _splitObj?: SplitObject;
@@ -153,7 +155,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 
     /** */
     render() {
-        console.log("<send-dialog>.render()", this._file, this._recipient, this._allAgents, this._selectedTags);
+        console.log("<send-dialog>.render()", this._recipients.length, this._file, this._allAgents, this._selectedTags);
 
         let content = html`<sl-spinner></sl-spinner>`;
         if (this._file) {
@@ -173,24 +175,28 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                         div>Type: ${this._file.type}</div> 
                     <div>Hash: ${!this._splitObj? "" : this._splitObj.dataHash}</div>
                 </div> -->
-                To:       
-                <vaadin-combo-box
-                    id="recipientSelector"
-                    placeHolder="Add Recipients"
-                    item-label-path="name"
-                    item-value-path="key"
-                    .items=${this._allAgents}
-                    .filteredItems=${this._filteredAgents}
-                    @filter-changed=${this.filterChanged}
-                    @selected-item-changed=${(e) => {
-                console.log("filter selected:", e.detail);
-                if (e.detail.value) {
-                    this._recipient = e.detail.value.key;
-                } else {
-                    this._recipient = null;
-                }
-            }}
-                ></vaadin-combo-box>
+                To:
+                <profile-input
+                        @selected=${(e) => {
+                            console.log("profile selected:", e.detail);
+                            if (e.detail) {
+                                this._recipients.push(e.detail);
+                                this.requestUpdate();
+                            }
+                        }}
+                        @cleared=${(e) => {
+                            console.log("profile cleared:", e.detail);
+                            if (e.detail) {
+                                const index = this._recipients.indexOf(e.detail);
+                                if (index > -1) {
+                                    this._recipients.splice(index, 1);
+                                    this.requestUpdate();
+                                }
+                            }
+                        }}                        
+                ></profile-input>
+                
+                <sl-divider></sl-divider>
                 
                 <div style="margin-bottom: 5px; display:flex;">
                     <span style="margin-top: 10px;margin-right: 10px;">Tags:</span>
@@ -219,13 +225,13 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 
 
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
-                <sl-button slot="footer" variant="primary" ?disabled=${!this._recipient} @click=${async (e) => {
-                this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipient: this._recipient}, bubbles: true, composed: true}));
+                <sl-button slot="footer" variant="primary" ?disabled=${this._recipients.length <= 0} @click=${async (e) => {
+                this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipient: this._recipients[0]}, bubbles: true, composed: true}));
                 //const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags.map((item) => item.value));
-                const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags);
+                const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipients[0], this._selectedTags);
                 this._file = undefined;
                 this._selectedTags = [];
-                this._recipient = undefined;
+                this._recipients = [];
                 this.dialogElem.open = false;
             }}>
                     Send
@@ -264,7 +270,13 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 font-size: 20px;
               }
 
-
+              sl-divider {
+                margin: 0px;
+                margin-top: 0px;
+                margin-top: 10px;
+                border-color: #6f6f6f;                
+              }
+              
               #filename {
                 background: white;
                 color: #0089FF;

@@ -80,11 +80,7 @@ export class TagList extends LitElement {
               .selectable:hover .hide {
                 display: inline-block;
               }
-
-              .hide {
-                display: none;
-              }
-
+              
               sl-icon-button {
                 font-size: 1.0rem;
                 color: white;

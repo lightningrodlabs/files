@@ -39,6 +39,8 @@ import "./action-overlay"
 import "./publish-dialog";
 import "./send-dialog";
 import "./edit-profile";
+import "./profile-item";
+import "./profile-input";
 import "./inbound-stack";
 import "./tag-input";
 import "./tag-list";

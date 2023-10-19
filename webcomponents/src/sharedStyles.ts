@@ -1,6 +1,11 @@
 import { css } from 'lit';
 
 export const sharedStyles = css`
+
+  .hide {
+    display: none;
+  }
+  
   .missing-profiles {
     font-size: 3rem;
     --indicator-color: deeppink;

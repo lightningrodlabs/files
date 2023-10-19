@@ -198,7 +198,7 @@ export class FileShareMenu extends DnaElement<FileShareDvmPerspective, FileShare
         return html`
             <div>
                 <img src="assets/icon.png" width="32" height="32" alt="favicon" style="padding-left: 5px;padding-top: 5px;"/>
-                <span id="title"">Whatever</span>
+                <span id="title"">Files</span>
             </div>
             <sl-menu id="lhs-menu" @sl-select=${this.onSelected}>
                 <sl-menu-item class="selectedItem">
