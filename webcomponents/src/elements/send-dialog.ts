@@ -193,8 +193,9 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 ></vaadin-combo-box>
                 
                 <div style="margin-bottom: 5px; display:flex;">
-                tags: ${this._selectedTags.length == 0
-                ? html`none`
+                    <span style="margin-top: 10px;margin-right: 10px;">Tags:</span>
+                    ${this._selectedTags.length == 0
+                ? html``
                 : html`
                             <tag-list id="selected-tag-list" selectable deletable
                                       .tags=${this._selectedTags}
@@ -238,8 +239,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
         /** render all */
         return html`
             <sl-dialog class="action-dialog"
-                       @sl-request-close=${e => this._file = undefined}
-            >
+                       @sl-request-close=${e => this._file = undefined}>
                 <div slot="label">
                     <sl-icon class="prefixIcon" name="send"></sl-icon>   
                     Sending
@@ -255,16 +255,16 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
     static get styles() {
         return [
             sharedStyles,
-            css`
+            css`              
               sl-dialog {
                 --width: 400px;
-              }
+              } 
               sl-dialog::part(close-button) {
                 color:white;
                 font-size: 20px;
               }
-              
-              
+
+
               #filename {
                 background: white;
                 color: #0089FF;
@@ -272,6 +272,7 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 padding: 10px;
                 font-weight: bold;
               }
+
             `
         ];
     }
