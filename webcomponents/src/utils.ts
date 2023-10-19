@@ -126,19 +126,6 @@ export async function splitData(full_data_string: string, chunkMaxSize: number):
 }
 
 
-/** */
-export function prettyFiletype(kindInfo: ParcelKind): string {
-    let filetype = (kindInfo as ParcelKindVariantManifest).Manifest;
-    //console.log("prettyFiletype()", filetype);
-    const fields = filetype.split('::');
-    if (fields.length > 1) {
-        filetype = fields[1];
-    }
-    //console.log("prettyFiletype() res ", filetype);
-    return filetype;
-}
-
-
 /** Make a pretty data string from a holochain timestamp */
 export function prettyTimestamp(ts: number): string {
     if (ts <= 0) {
@@ -147,37 +134,4 @@ export function prettyTimestamp(ts: number): string {
     const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
     return date_str;
-}
-
-export function mime2icon(mime: string): string {
-    //console.log("mime2icon()", mime);
-    const fields = mime.split('/');
-    if (fields.length < 2) {
-        return "file-earmark";
-    }
-    if (fields[0] == "image") {
-        return "image";
-    };
-    if (fields[0] == "video") {
-        return "film";
-    };
-    if (fields[0] == "audio") {
-        return "volume-up";
-    };
-    if (fields[0] == "text") {
-        return "file-earmark-text";
-    }
-    if (fields[0] == "font") {
-        return "file-earmark-font";
-    }
-    if (fields[0] == "application") {
-        if (fields[1] == "pdf") {
-            return "file-earmark-pdf";
-        }
-        if (fields[1] == "x-zip-compressed") {
-            return "file-earmark-zip";
-        }
-        return "file-earmark-binary";
-    }
-    return "file-earmark";
 }

@@ -27,18 +27,25 @@ export class ActionOverlay extends LitElement {
 
 
     /** */
+    onClick(action: string) {
+        this.dispatchEvent(new CustomEvent('selected', {detail: action, bubbles: true, composed: true}));
+        this.dialogElem.open = false;
+    }
+
+
+    /** */
     render() {
         return html`
             <sl-dialog id="action-dialog" noHeader>
-                <sl-button variant="neutral">
+                <sl-button variant="neutral" @click=${(e) => {this.onClick("send")}}>
                     <sl-icon slot="prefix" name="send"></sl-icon>
                     Send
                 </sl-button>
-                <sl-button variant="neutral">
+                <sl-button variant="neutral" @click=${(e) => {this.onClick("publish")}}>
                     <sl-icon slot="prefix" name="people"></sl-icon>
                     Share with the group
                 </sl-button>
-                <sl-button variant="neutral">
+                <sl-button variant="neutral" @click=${(e) => {this.onClick("add")}}>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
                     Add to my private files
                 </sl-button>
@@ -79,6 +86,7 @@ export class ActionOverlay extends LitElement {
               }
               
               
+              /** BUTTONS */
               
               sl-button {
                 background: transparent;

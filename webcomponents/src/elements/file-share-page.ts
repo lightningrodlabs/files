@@ -1,50 +1,28 @@
-import {css, html, PropertyValues, TemplateResult} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
-import {delay, DnaElement} from "@ddd-qc/lit-happ";
+import {css, html, TemplateResult} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
+import {DnaElement} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
-import {
-    ActionHashB64, AgentPubKeyB64,
-    decodeHashFromBase64,
-    DnaHashB64,
-    encodeHashToBase64,
-    EntryHashB64, Timestamp,
-} from "@holochain/client";
-import {
-    AppletInfo,
-    Hrl,
-    WeServices, weServicesContext,
-} from "@lightningrodlabs/we-applet";
+import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
+import {AppletInfo, WeServices, weServicesContext,} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
 
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
 import {FileShareProfile} from "../viewModels/profiles.proxy";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {
-    base64ToArrayBuffer,
-    emptyAppletHash,
-    getInitials,
-    prettyFileSize,
-    prettyFiletype,
-    prettyTimestamp,
-    SplitObject
-} from "../utils";
-import {
-    DeliveryPerspective,
-    DeliveryStateType,
-    SignalProtocolType,
-    ParcelKindVariantManifest,
-    ParcelReference, DeliveryNotice
-} from "@ddd-qc/delivery";
+import {emptyAppletHash, prettyFileSize, prettyTimestamp, SplitObject} from "../utils";
+import {DeliveryPerspective, DeliveryStateType, ParcelReference} from "@ddd-qc/delivery";
 import {
     FileShareDvmPerspective,
     FileShareNotification,
-    FileShareNotificationType, FileShareNotificationVariantDeliveryRequestSent,
+    FileShareNotificationType,
+    FileShareNotificationVariantDeliveryRequestSent,
     FileShareNotificationVariantDistributionToRecipientComplete,
     FileShareNotificationVariantNewNoticeReceived,
     FileShareNotificationVariantPrivateCommitComplete,
     FileShareNotificationVariantPublicSharingComplete,
-    FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
+    FileShareNotificationVariantReceptionComplete,
+    FileShareNotificationVariantReplyReceived
 } from "../viewModels/fileShare.perspective";
 import {createAlert} from "../toast";
 import {FileShareMenu, SelectedEvent, SelectedType} from "./file-share-menu";
@@ -65,11 +43,7 @@ import "./inbound-stack";
 import "./tag-input";
 import "./tag-list";
 
-import {
-    SlAlert,
-    SlSkeleton,
-    SlDrawer, SlDialog, SlInput
-} from "@shoelace-style/shoelace";
+import {SlAlert, SlDialog, SlInput} from "@shoelace-style/shoelace";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
@@ -92,7 +66,6 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 
 //import {Upload, UploadBeforeEvent, UploadFileRejectEvent} from "@vaadin/upload";
 // import {UploadFile} from "@vaadin/upload/src/vaadin-upload";
-
 import '@vaadin/multi-select-combo-box/theme/lumo/vaadin-multi-select-combo-box.js';
 import '@vaadin/combo-box/theme/lumo/vaadin-combo-box.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
@@ -108,6 +81,7 @@ import {SendDialog} from "./send-dialog";
 import {DistributionTableItem} from "./distribution-table";
 import {columnBodyRenderer} from "@vaadin/grid/lit";
 import {ActionOverlay} from "./action-overlay";
+import {countFileTypes, FileType, kind2Type, type2Icon} from "../fileTypeUtils";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
@@ -134,6 +108,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     @property() offlineloaded: boolean = false;
 
 
+    private _typeFilter?: FileType;
 
     private _notifCount = 0;
 
@@ -167,10 +142,10 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     }
 
     get publishDialogElem() : PublishDialog {
-        return this.shadowRoot.getElementById("publish-dialog") as PublishDialog;
+        return this.shadowRoot.querySelector("publish-dialog") as PublishDialog;
     }
     get sendDialogElem() : SendDialog {
-        return this.shadowRoot.getElementById("send-dialog") as SendDialog;
+        return this.shadowRoot.querySelector("send-dialog") as SendDialog;
     }
 
     get searchInputElem() : SlInput {
@@ -422,49 +397,67 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     /** */
-    onCardClick(e) {
-        console.log("onCardClick()", this.menuElem, e);
+    onCardClick(type: FileType) {
+        console.log("onCardClick()", this.menuElem, type);
         this.menuElem.setSelected(SelectedType.AllFiles);
+        this._typeFilter = type;
         this._selectedMenuItem = {type: SelectedType.AllFiles};
     }
 
 
     /** */
     renderHome(unrepliedInbounds) {
+        const initialized = !!(this._initialized && this.deliveryPerspective.probeDhtCount);
+
+        /** Count files per type */
+        const privDescriptions = Object.values(this.deliveryPerspective.privateManifests)
+            .map(([manifest, _ts]) => manifest.description);
+        const pubDescriptions = Object.values(this.deliveryPerspective.publicParcels)
+            .map(([pd, _ts, _agent]) => pd);
+
+        let countMap: Record<string, number>;
+        if (initialized) {
+            countMap = countFileTypes(privDescriptions.concat(pubDescriptions));
+        }
+
+        /** */
         return html`
+            <!-- File type cards -->            
             <div id="card-row">
-                <div class="card" @click=${this.onCardClick}>
-                    <sl-icon name="file-earmark-text"></sl-icon>
+                <div class="card" @click=${(e) => {this.onCardClick(FileType.Document)}}>
+                    <sl-icon name=${type2Icon(FileType.Document)}></sl-icon>
                     <div>Documents</div>
-                    <div class="subtext">42 Files</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Document]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>                
-                <div class="card" @click=${this.onCardClick}>
-                    <sl-icon name="image"></sl-icon>
+                <div class="card" @click=${(e) => {this.onCardClick(FileType.Image)}}>
+                    <sl-icon name=${type2Icon(FileType.Image)}></sl-icon>
                     <div>Images</div>
-                    <div class="subtext">42 Files</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Image]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>
-                <div class="card" @click=${this.onCardClick}>
-                    <sl-icon name="film"></sl-icon>
+                <div class="card" @click=${(e) => {this.onCardClick(FileType.Video)}}>
+                    <sl-icon name=${type2Icon(FileType.Video)}></sl-icon>
                     <div>Video</div>
-                    <div class="subtext">42 Files</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Video]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>
-                <div class="card" @click=${this.onCardClick}>
-                    <sl-icon name="volume-up"></sl-icon>
+                <div class="card" @click=${(e) => {this.onCardClick(FileType.Audio)}}>
+                    <sl-icon name=${type2Icon(FileType.Audio)}></sl-icon>
                     <div>Audio</div>
-                    <div class="subtext">42 Files</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Audio]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>
-                <div class="card" @click=${this.onCardClick}>
-                    <sl-icon name="file-earmark-zip"></sl-icon>
+                <div class="card" @click=${(e) => {this.onCardClick(FileType.Zip)}}>
+                    <sl-icon name=${type2Icon(FileType.Zip)}></sl-icon>
                     <div>Zip Files</div>
-                    <div class="subtext">42 Files</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Zip]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>                
             </div>
-        ${unrepliedInbounds.length? html`
-            <h2>Incoming file requests</h2>
-            <ul>${unrepliedInbounds}</ul>
-        ` : html``}
-        <h2>Recent Activity</h2>
-        <activity-timeline @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}></activity-timeline>`;
+            <!-- Incoming file requests -->        
+            ${unrepliedInbounds.length? html`
+                <h2>Incoming file requests</h2>
+                <ul>${unrepliedInbounds}</ul>
+            ` : html``}
+            <!-- Recent Activity -->
+            <h2>Recent Activity</h2>
+            <activity-timeline @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}></activity-timeline>`;
     }
 
 
@@ -722,7 +715,14 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 mainArea = this.renderHome(unrepliedInbounds);
             }
             if (this._selectedMenuItem.type == SelectedType.AllFiles) {
-                const privateItems = Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
+                const privateItems = Object.entries(this.deliveryPerspective.privateManifests)
+                    .filter(([_ppEh, [manifest, _ts]]) => {
+                        const type = kind2Type(manifest.description.kind_info);
+                        return !this._typeFilter
+                            || this._typeFilter == type
+                            || (this._typeFilter == FileType.Document && (type == FileType.Text || type == FileType.Pdf))
+                    })
+                    .map(([ppEh, [pm, timestamp]]) => {
                     //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
                     return {
                         ppEh,
@@ -737,7 +737,14 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
                 //     return {pp_eh: decodeHashFromBase64(ppEh), description: pm.description, timestamp, author: this.cell.agentPubKey, isLocal: true, isPrivate: false} as FileTableItem;
                 // });
-                const publicItems = Object.entries(this.deliveryPerspective.publicParcels).map(([ppEh, [description, timestamp, author]]) => {
+                const publicItems = Object.entries(this.deliveryPerspective.publicParcels)
+                    .filter(([_ppEh, [description, _ts, _author]]) => {
+                        const type = kind2Type(description.kind_info);
+                        return !this._typeFilter
+                            || this._typeFilter == type
+                            || (this._typeFilter == FileType.Document && (type == FileType.Text || type == FileType.Pdf))
+                    })
+                    .map(([ppEh, [description, timestamp, author]]) => {
                     //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
                     const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
                     return {ppEh, description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
@@ -887,19 +894,19 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         /** Render all */
         return html`
         <div id="main">
-            <file-share-menu @selected=${(e) => this._selectedMenuItem = e.detail}></file-share-menu>
+            <file-share-menu @selected=${(e) => {this._selectedMenuItem = e.detail; this._typeFilter = undefined;}}></file-share-menu>
             <div id="rhs">
                 <div id="topBar">
                     <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
-                        <sl-avatar 
+                        <sl-avatar
                                 style="cursor:pointer"
-                                label=${this._myProfile.nickname} 
-                                image=${avatarUrl} 
+                                label=${this._myProfile.nickname}
+                                image=${avatarUrl}
                                 @click=${() => this.profileDialogElem.open = true}></sl-avatar>
                     </sl-tooltip>
                     <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bell" label="notifications"></sl-icon>
-                    </sl-button>                    
+                    </sl-button>
                     <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
@@ -908,11 +915,11 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                         <button type="button" @click=${() => {this.refresh();}}>refresh</button>
                     `: html``
                     }
-                    <sl-input id="search-input" placeholder="Search" size="large" clearable 
+                    <sl-input id="search-input" placeholder="Search" size="large" clearable
                               @sl-input=${(e) => {console.log("sl-change", this.searchInputElem.value);this.requestUpdate();}}
                               style="flex-grow: 2">
                         <sl-icon name="search" slot="prefix"></sl-icon>
-                    </sl-input>            
+                    </sl-input>
                 </div>
                 <div id="mainArea">
                     ${mainArea}
@@ -922,18 +929,25 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         <!-- Search result -->
         <div id="searchResultView" style="display:${searchResultItems.length? "flex" :"none"}">
             ${searchResultItems}
-        </div>        
+        </div>
         <!-- dialogs -->
-        <sl-dialog id="profile-dialog" label="Edit Profile">        
+        <sl-dialog id="profile-dialog" label="Edit Profile">
             <edit-profile
                     allowCancel
                     .profile="${this._myProfile}"
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail.profile)}
             ></edit-profile>
         </sl-dialog>
-        <action-overlay></action-overlay>
-        <publish-dialog id="publish-dialog"></publish-dialog>
-        <send-dialog id="send-dialog"></send-dialog>
+        <action-overlay @selected=${(e) => {
+            if (e.detail == "send") {
+                this.sendDialogElem.open();
+            }
+            if (e.detail == "publish") {
+                this.publishDialogElem.open();
+            }
+        }}></action-overlay>
+        <publish-dialog></publish-dialog>
+        <send-dialog></send-dialog>
         <!-- commit widget -->
         <inbound-stack></inbound-stack>
         ${this.perspective.uploadState? html`
@@ -943,18 +957,20 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <sl-progress-bar .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
             </div>
             ` : html`
+            <!--
             <sl-tooltip placement="left" content="Send file" style="--show-delay: 200;">
                 <sl-button id="fab-send" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.sendDialogElem.open()}>
                     <sl-icon name="send" label="Send"></sl-icon>
                 </sl-button>
             </sl-tooltip>
+            -->            
             <sl-tooltip placement="left" content="Publish file" style="--show-delay: 200;">
                 <sl-button id="fab-publish" size="large" variant="primary" ?disabled=${this.perspective.uploadState} circle @click=${(e) => this.actionOverlayElem.open()}>
                     <sl-icon name="plus-lg" label="Add"></sl-icon>
                 </sl-button>
             </sl-tooltip>
         `}
-        
+
         `;
     }
 
@@ -966,7 +982,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             css`
               :host {
                 display: block;
-                height: 100vh;           
+                height: 100vh;
               }
               #main {
                 background: #F7FBFE;
@@ -978,6 +994,11 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
               file-share-menu {
                 width: 300px;
               }
+              #mainArea {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+              }
               #rhs {
                 width: 100%;
                 margin: 5px;
@@ -985,7 +1006,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
               }
               #topBar {
                 display: flex;
-                flex-direction: row-reverse; 
+                flex-direction: row-reverse;
                 gap: 5px;
               }
               .top-btn::part(base) {
@@ -1029,7 +1050,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 position: absolute;
                 bottom: 90px;
                 right: 30px;
-              }   
+              }
               #uploadingView {
                 position: absolute;
                 bottom: 0px;
@@ -1039,7 +1060,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 margin-botton: 10px;
                 padding: 5px;
                 background: #ffffff;
-                border-radius: 12px;                
+                border-radius: 12px;
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
               }
               #searchResultView {

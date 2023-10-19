@@ -5,10 +5,10 @@ import {
     EntryHashB64,
 } from "@holochain/client";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
-import {mime2icon, prettyFiletype} from "../utils";
 import {sharedStyles} from "../sharedStyles";
 import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
+import {kind2Icon} from "../fileTypeUtils";
 
 
 /**
@@ -97,7 +97,7 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
         /** render all */
         return html`
             <div class="fileButton">
-                <sl-icon class="prefixIcon" name=${mime2icon(prettyFiletype(fileDescription.kind_info))}></sl-icon>
+                <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
                 ${fileDescription.name}
                 <sl-button class="hide" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
                     this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));

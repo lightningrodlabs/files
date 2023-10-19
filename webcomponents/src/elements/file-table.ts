@@ -4,7 +4,7 @@ import {
     AgentPubKeyB64,
     EntryHashB64,
 } from "@holochain/client";
-import {prettyFileSize, prettyFiletype, prettyTimestamp} from "../utils";
+import {prettyFileSize, prettyTimestamp} from "../utils";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {consume} from "@lit-labs/context";
@@ -14,6 +14,7 @@ import {sharedStyles} from "../sharedStyles";
 import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
 import {TaggingPerspective, TaggingZvm} from "../viewModels/tagging.zvm";
 import {TagList} from "./tag-list";
+import {kind2Type} from "../fileTypeUtils";
 
 
 export interface FileTableItem {
@@ -80,7 +81,7 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                 ></vaadin-grid-column>
                 <vaadin-grid-column path="description" header="Type"
                                     ${columnBodyRenderer(
-                                            ({ description }) => html`<span>${prettyFiletype(description.kind_info)}</span>`,
+                                            ({ description }) => html`<span>${kind2Type(description.kind_info)}</span>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
@@ -168,9 +169,15 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
         return [
             sharedStyles,
             css`
-            .add-tag {
-              font-size: 1.0rem;
-            }
+              :host {
+                flex: 1 1 auto;
+              }
+              #grid {
+                height: 100%;
+              }
+              .add-tag {
+                font-size: 1.0rem;
+              }
             `
         ];
     }

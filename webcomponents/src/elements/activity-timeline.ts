@@ -15,7 +15,7 @@ import {
 } from "@ddd-qc/delivery";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
-import {getInitials, mime2icon, prettyFiletype} from "../utils";
+import {getInitials} from "../utils";
 import {SlDialog, SlDrawer} from "@shoelace-style/shoelace";
 import {FileView} from "./file-view";
 import {sharedStyles} from "../sharedStyles";

@@ -6,7 +6,7 @@ import {
     EntryHash,
     EntryHashB64,
 } from "@holochain/client";
-import {prettyFileSize, prettyFiletype, prettyTimestamp} from "../utils";
+import {prettyFileSize, prettyTimestamp} from "../utils";
 import {DeliveryState, ParcelReference} from "@ddd-qc/delivery";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {DeliveryStateType, ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
@@ -14,6 +14,7 @@ import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {sharedStyles} from "../sharedStyles";
+import {kind2Type} from "../fileTypeUtils";
 
 
 export interface DistributionTableItem {
@@ -78,7 +79,7 @@ export class DistributionTable extends LitElement {
                 ></vaadin-grid-column>
                 <vaadin-grid-column path="description" header="Type"
                                     ${columnBodyRenderer(
-                                            ({ description }) => html`<span>${prettyFiletype(description.kind_info)}</span>`,
+                                            ({ description }) => html`<span>${kind2Type(description.kind_info)}</span>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
