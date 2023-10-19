@@ -947,7 +947,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             ></edit-profile>
         </sl-dialog>
         <action-overlay 
-                @sl-hide=${(e) => {this.fabElem.style.display = "block"}}
+                @sl-after-hide=${(e) => {this.fabElem.style.display = "block"}}
                 @selected=${(e) => {
             if (e.detail == "send") {
                 this.sendDialogElem.open();

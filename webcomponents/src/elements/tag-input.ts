@@ -103,6 +103,19 @@ export class TagInput extends LitElement {
                 max-width: 500px;
                 flex-wrap: wrap;
               }
+
+              sl-input::part(base) {
+                background: rgba(7, 21, 34, 0.93);
+                border: none;
+              }
+
+              sl-input::part(input) {
+                color: white;                
+              }
+
+              sl-input::part(base):focus {
+                border: 2px white solid;
+              }
             `
         ];
     }

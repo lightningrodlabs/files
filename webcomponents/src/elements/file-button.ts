@@ -23,7 +23,7 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
     @property() hash: EntryHashB64 = ''
 
     /** Enable action bar */
-    @property() showActionBar: boolean = false
+    @property() showActionBar: boolean = true
 
     /** -- State variables -- */
 
@@ -93,22 +93,30 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
         }
 
 
-
-        /** render all */
-        return html`
-            <div class="fileButton">
-                <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
-                ${fileDescription.name}
+        /** action bar */
+        let actionBar = html``;
+        if (this.showActionBar) {
+            actionBar = html`
                 <sl-button class="hide" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
                     this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));
                 }}>
                     <sl-icon name="download"></sl-icon>
                 </sl-button>
                 <sl-button class="hide" size="small" variant="primary" @click=${async (e) => {
-                        this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
-                    }}>
+                    this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
+                }}>
                     <sl-icon name="send"></sl-icon>
-                </sl-button>
+                </sl-button>                
+            `;
+        }
+
+
+        /** render all */
+        return html`
+            <div class="fileButton">
+                <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
+                ${fileDescription.name}
+                ${actionBar}
                 ${tagList}
             </div>
         `;
@@ -130,12 +138,6 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 color: #2488e0;
                 background: #FAFAFA;
                 padding: 5px;
-              }
-
-              .prefixIcon {
-                font-size: 1.275rem;
-                margin-right: 2px;
-                margin-bottom: -5px;
               }
 
               sl-icon {

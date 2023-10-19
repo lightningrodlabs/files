@@ -17,7 +17,7 @@ export class ActionOverlay extends LitElement {
 
     /** */
     get dialogElem() : SlDialog {
-        return this.shadowRoot.getElementById("action-dialog") as SlDialog;
+        return this.shadowRoot.querySelector("sl-dialog") as SlDialog;
     }
 
     /** */
@@ -39,7 +39,7 @@ export class ActionOverlay extends LitElement {
     /** */
     render() {
         return html`
-            <sl-dialog id="action-dialog" noHeader>
+            <sl-dialog id="action-overlay" class="action-dialog" noHeader>
                 <sl-button variant="neutral" @click=${(e) => {this.onClick("send")}}>
                     <sl-icon slot="prefix" name="send"></sl-icon>
                     Send
@@ -62,33 +62,22 @@ export class ActionOverlay extends LitElement {
         return [
             sharedStyles,
             css`
-              sl-dialog {
-                display: flex;
-                flex-direction: column;
+              #action-overlay {
                 --width: 500px;
               }
 
-              sl-dialog::part(base) {
-                z-index: auto;
-                background: #02070f80;
-              }
-
-              sl-dialog::part(header) {
+              #action-overlay::part(header) {
                 display: none;
               }
 
-              sl-dialog::part(body) {
-                background: transparent;
-                display: flex;
-                flex-direction: column;
+              #action-overlay::part(body) {
                 gap: 40px;
               }
 
-              sl-dialog::part(panel) {
+              #action-overlay::part(panel) {
                 background: transparent;
-                box-shadow: none;
+                border:none;
               }
-
 
               /** BUTTONS */
 
