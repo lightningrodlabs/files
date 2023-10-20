@@ -159,7 +159,7 @@ export class StoreDialog extends DnaElement<FileShareDvmPerspective, FileShareDv
                        @sl-request-close=${e => this._file = undefined}>
                 <div slot="label">
                     <sl-icon class="prefixIcon" name="${this._localOnly?"hdd" : "people"}"></sl-icon>
-                    ${this._localOnly? "Add to my private files" : "Share with group"}
+                    ${this._localOnly? "Add to my personal files" : "Share with group"}
                 </div>
                 ${content}
             </sl-dialog>

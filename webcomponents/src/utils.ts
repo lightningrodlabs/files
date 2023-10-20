@@ -1,13 +1,10 @@
 import {
-    ActionHash,
-    ActionHashB64,
-    AgentPubKey, AgentPubKeyB64, AppSignal,
-    decodeHashFromBase64,
-    encodeHashToBase64,
-    EntryHash, HoloHashB64
+    AgentPubKeyB64,
+    EntryHash,
 } from "@holochain/client";
-import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
-import {ParcelKind} from "@ddd-qc/delivery/dist/bindings/delivery.types";
+import {FileShareProfile} from "./viewModels/profiles.proxy";
+import {html, TemplateResult} from "lit";
+import {ProfilesPerspective} from "./viewModels/profiles.zvm";
 
 
 /** */
@@ -134,4 +131,28 @@ export function prettyTimestamp(ts: number): string {
     const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
     return date_str;
+}
+
+
+
+/** */
+export function agent2avatar(key: AgentPubKeyB64, profilesPerspective: ProfilesPerspective): [FileShareProfile, TemplateResult<1>] {
+    let profile = {nickname: "unknown", fields: {}} as FileShareProfile;
+    const maybeProfile = profilesPerspective.profiles[key];
+    if (maybeProfile) {
+        profile = maybeProfile;
+    } else {
+        console.log("Profile not found for agent", key, profilesPerspective.profiles)
+    }
+    const initials = getInitials(profile.nickname);
+    const avatarUrl = profile.fields['avatar'];
+    const avatar =
+        avatarUrl? html`
+          <sl-avatar class="activityAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
+              <img src=${avatarUrl}>
+        </sl-avatar>                   
+            ` : html`
+        <sl-avatar class="activityAvatar" shape="circle" initials=${initials} color-scheme="Accent2"></sl-avatar>
+                `;
+    return [profile, avatar];
 }

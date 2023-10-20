@@ -113,6 +113,7 @@ export class ProfileInput extends LitElement {
                 display: flex;
                 flex-direction: column;
                 padding-top: 10px;
+                gap: 5px;
               }
 
               #result-view {

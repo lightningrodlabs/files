@@ -50,7 +50,7 @@ export class ActionOverlay extends LitElement {
                 </sl-button>
                 <sl-button variant="neutral" @click=${(e) => {this.onClick("add")}}>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
-                    Add to my private files
+                    Add to my personal files
                 </sl-button>
             </sl-dialog>
         `;
