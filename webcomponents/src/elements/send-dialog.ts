@@ -253,7 +253,6 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
                 </div>
                 ${content}
             </sl-dialog>
-        }
         `;
     }
 

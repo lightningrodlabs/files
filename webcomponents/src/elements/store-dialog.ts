@@ -163,7 +163,6 @@ export class StoreDialog extends DnaElement<FileShareDvmPerspective, FileShareDv
                 </div>
                 ${content}
             </sl-dialog>
-        }
         `;
     }
 

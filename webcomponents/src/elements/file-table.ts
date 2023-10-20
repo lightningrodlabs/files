@@ -171,6 +171,8 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
             css`
               :host {
                 flex: 1 1 auto;
+                padding-bottom: 80px;
+                padding-right: 10px;                
               }
               #grid {
                 height: 100%;

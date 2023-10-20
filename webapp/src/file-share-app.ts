@@ -208,7 +208,7 @@ export class FileShareApp extends HappElement {
     return html`
       <cell-context .cell="${this._cell}">
         <!-- <view-cell-context></view-cell-context> -->
-        <file-share-page devmode=${IS_DEV} offlineloaded=${this._offlinePerspectiveloaded}></file-share-page>
+        <file-share-page devmode=${IS_DEV}></file-share-page>
       </cell-context>        
     `
   }

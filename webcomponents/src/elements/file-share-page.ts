@@ -764,7 +764,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 });
                 const allItems = privateItems.concat(publicItems/*, myPublicItems*/);
                 mainArea = html`
-                    <h2>All Files</h2>
+                    <h2>All Files${this._typeFilter? ": " + this._typeFilter : ""}</h2>
                     <file-table .items=${allItems}
                                 @download=${(e) => this.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -858,10 +858,12 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <ul>
                         ${outboundTable}
                     </ul>
+                    <!--
                     <h2>Incomplete files</h2>
                     <ul>
                         ${incompleteTable}
-                    </ul>\`;                    
+                    </ul>
+                    -->
                 `;
 
             }
@@ -880,7 +882,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <file-table .items=${taggedItems}
                                 @download=${(e) => this.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
-                    ></file-table>                    
+                    ></file-table>
                 `;
             }
             if (this._selectedMenuItem.type == SelectedType.PrivateTag) {
@@ -907,8 +909,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         /** Render all */
         return html`
         <div id="main">
-            <file-share-menu @selected=${(e) => {this._selectedMenuItem = e.detail; this._typeFilter = undefined;}}></file-share-menu>
-            <div id="rhs">
+             <file-share-menu @selected=${(e) => {this._selectedMenuItem = e.detail; this._typeFilter = undefined;}}></file-share-menu>
+             <div id="rhs">
                 <div id="topBar">
                     <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
                         <sl-avatar
@@ -939,6 +941,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
             </div>
         </div>
+
         <!-- Search result -->
         <div id="searchResultView" style="display:${searchResultItems.length? "flex" :"none"}">
             ${searchResultItems}
@@ -951,7 +954,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail.profile)}
             ></edit-profile>
         </sl-dialog>
-        <action-overlay 
+        <action-overlay
                 @sl-after-hide=${(e) => {this.fabElem.style.display = "block"}}
                 @selected=${(e) => {
             if (e.detail == "send") {
@@ -975,7 +978,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <sl-icon style="margin-right:3px;" name="arrow-right"></sl-icon><sl-icon name="hdd"></sl-icon>
                 <sl-progress-bar .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
             </div>
-            ` : html`
+            `
+            : html`
             <sl-tooltip placement="left" content="Send/Share file" style="--show-delay: 200;">
                 <sl-button id="fab-publish" size="large" variant="primary" circle
                            ?disabled=${this.perspective.uploadState}  
@@ -1001,9 +1005,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
               #main {
                 background: #F7FBFE;
                 display: flex;
-                height: inherit;
+                height: 100%;
                 flex-direction: row;
-                padding: 15px 10px 10px 15px;
+                /*padding: 15px 10px 10px 15px;*/
               }
               file-share-menu {
                 width: 300px;
@@ -1011,12 +1015,15 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
               #mainArea {
                 display: flex;
                 flex-direction: column;
-                height: 100%;
+                flex: 1 1 auto;
+                /*height: 100%;*/
               }
               #rhs {
                 width: 100%;
                 margin: 5px;
                 margin-left: 30px;
+                display: flex;
+                flex-direction: column;
               }
               #topBar {
                 display: flex;
