@@ -17,6 +17,9 @@ export class ProfileInput extends LitElement {
 
     @state() private _selectedAgents: AgentPubKeyB64[] = [];
 
+    @state() private _canShowResults: boolean = true;  // FIXME
+
+
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
 
@@ -26,7 +29,7 @@ export class ProfileInput extends LitElement {
 
     /** */
     onAddAgent(key: AgentPubKeyB64) {
-        console.log("onAddAgent", key);
+        console.log("<profile-input> onAddAgent", key);
         this._selectedAgents.push(key);
         this.inputElem.value = "";
         this.requestUpdate();
@@ -64,31 +67,32 @@ export class ProfileInput extends LitElement {
         if (this.inputElem && this.inputElem.value) {
             const filter = this.inputElem.value.toLowerCase();
             agentResults = profiles
-                .filter(([key, _profile]) => this._selectedAgents.indexOf(key) < 0)
-                .filter(([_key, profile]) => profile.nickname.toLowerCase().includes(filter))
+                .filter(([key, _profile]) => key != this._profilesZvm.cell.agentPubKey) // exclude self
+                .filter(([key, _profile]) => this._selectedAgents.indexOf(key) < 0) // Don't show already selected agents
+                .filter(([_key, profile]) => profile.nickname.toLowerCase().includes(filter)) // Must match filter
                 .map(([key, profile]) => {
-                    // return html`
-                    //     <button
-                    //             @click=${(_e) => {this.onAddAgent(key);}}
-                    //     >${profile.nickname}</button>
-                    // `;
+                    console.log("<profile-input> map", key, profile);
                     return html`<profile-item class="selectable-profile" .key=${key} selectable @selected=${(_e) => {this.onAddAgent(key);}}></profile-item>`;
                 });
         }
 
         console.log("agentResults", agentResults);
 
+//    @sl-blur=${(e) => {this._canShowResults = false}}
+//@sl-focus=${(e) => {this._canShowResults = true}}
+
         /** */
         return html`
             <sl-input id="tag-input" placeholder="Add Recipients" clearable
-                      @keydown=${(e: KeyboardEvent) => {this.requestUpdate();}}>
+                      @keydown=${(e: KeyboardEvent) => {this.requestUpdate();}}
+            >
                 <sl-icon name="person-plus" slot="prefix"></sl-icon>
             </sl-input>
             <div id="agent-list">
                 ${agentItems}
             </div>
             <!-- Search result -->
-            <div id="result-view" style="display:${agentResults && agentResults.length > 0? "flex" :"none"}">
+            <div id="result-view" style="display:${agentResults && agentResults.length > 0 && this._canShowResults? "flex" :"none"}">
                 ${agentResults}
             </div>
         `;

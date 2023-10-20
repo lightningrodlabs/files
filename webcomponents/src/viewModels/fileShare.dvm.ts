@@ -40,7 +40,7 @@ import {TaggingZvm} from "./tagging.zvm";
 export class FileShareDvm extends DnaViewModel {
 
     /** For commit & send follow-up */
-    private _mustSendTo?: AgentPubKeyB64;
+    private _mustSendTo?: AgentPubKeyB64[];
     /** For publish / send follow-up */
     private _mustAddTags?;
 
@@ -111,13 +111,13 @@ export class FileShareDvm extends DnaViewModel {
             const manifest = deliverySignal.NewLocalManifest[2];
             const manifestEh = encodeHashToBase64(deliverySignal.NewLocalManifest[0])
             /** Follow-up send if requested */
-            if (this._mustSendTo) {
-                const recipient = (' ' + this._mustSendTo).slice(1); // deep copy string for promise
+            if (this._mustSendTo && this._mustSendTo.length > 0) {
+                const recipients = this._mustSendTo.map((agent) => (' ' + agent).slice(1)); // deep copy string for promise
                 console.log("sendFile follow up", manifestEh, this._mustSendTo);
                 this.fileShareZvm.sendFile(manifestEh, this._mustSendTo).then((distribAh) => {
                     /** Into Notification */
-                    console.log("File delivery request sent", deliverySignal.NewLocalManifest, recipient, this._mustAddTags);
-                    this._perspective.notificationLogs.push([now, FileShareNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipient}]);
+                    console.log("File delivery request sent", deliverySignal.NewLocalManifest, recipients, this._mustAddTags);
+                    this._perspective.notificationLogs.push([now, FileShareNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipients}]);
                     if (this._mustAddTags && this._mustAddTags.isPrivate) {
                         /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
                         this._mustAddTags = undefined;
@@ -127,8 +127,12 @@ export class FileShareDvm extends DnaViewModel {
                 this._mustSendTo = undefined;
             }
             /** Add Public tags if any */
-            if (this._mustAddTags && !this._mustAddTags.isPrivate) {
-                /*await*/ this.taggingZvm.tagPublicEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
+            if (this._mustAddTags) {
+                if (this._mustAddTags.isPrivate) {
+                    /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
+                } else {
+                    /*await*/ this.taggingZvm.tagPublicEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
+                }
                 this._mustAddTags = undefined;
             }
             /** Done */
@@ -293,11 +297,15 @@ export class FileShareDvm extends DnaViewModel {
     }
 
 
-    /** */
-    async startCommitPrivateAndSendFile(file: File, recipient: AgentPubKeyB64, tags: string[]): Promise<SplitObject> {
-        if (recipient != this.cell.agentPubKey) {
-            this._mustSendTo = recipient;
+    /** Can't send to self */
+    async startCommitPrivateAndSendFile(file: File, recipients: AgentPubKeyB64[], tags: string[]): Promise<SplitObject | undefined> {
+        const mustSentTo = recipients
+            .filter((agent) => agent != this.cell.agentPubKey);
+        console.log("startCommitPrivateAndSendFile()", recipients, mustSentTo);
+        if (mustSentTo.length == 0) {
+            return undefined;
         }
+        this._mustSendTo = mustSentTo;
         return this.startCommitPrivateFile(file, tags);
     }
 

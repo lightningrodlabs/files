@@ -7,7 +7,6 @@ import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 import {SlDialog, SlInput} from "@shoelace-style/shoelace";
 import {prettyFileSize, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
-import {MultiSelectComboBoxSelectedItemsChangedEvent} from "@vaadin/multi-select-combo-box";
 import {TagList} from "./tag-list";
 import {kind2Icon} from "../fileTypeUtils";
 
@@ -16,13 +15,15 @@ import {kind2Icon} from "../fileTypeUtils";
 /**
  * @element
  */
-@customElement("publish-dialog")
-export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
+@customElement("store-dialog")
+export class StoreDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
 
     @state() private _file?: File;
     @state() private _selectedTags = [];
 
     private _splitObj?: SplitObject;
+
+    private _localOnly: boolean = false;
 
     /** -- Getters -- */
 
@@ -43,16 +44,21 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
     /** -- Methods -- */
 
     /** */
-    open() {
+    open(localOnly?: boolean) {
+        this._localOnly = false;
+        if (localOnly) this._localOnly = localOnly;
+        //console.log("<store-dialog> localOnly", localOnly, this._localOnly);
         var input = document.createElement('input');
         input.type = 'file';
         input.onchange = async (e:any) => {
-            if (e.target.files[0].size > this._dvm.dnaProperties.maxParcelSize) {
-                toastError(`File is too big ${prettyFileSize(e.target.files[0].size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
+            console.log("<store-dialog> target download file", e);
+            const file = e.target.files[0];
+            if (file.size > this._dvm.dnaProperties.maxParcelSize) {
+                toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
                 return;
             }
-            this._splitObj = await splitFile(e.target.files[0], this._dvm.dnaProperties.maxChunkSize);
-            this._file = e.target.files[0];
+            this._splitObj = await splitFile(file, this._dvm.dnaProperties.maxChunkSize);
+            this._file = file;
             this.dialogElem.open = true;
         }
         input.click();
@@ -63,9 +69,13 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     /** */
-    async onAddNewPublicTag(e) {
-        console.log("onAddNewPublicTag", e);
-        await this._dvm.taggingZvm.addPublicTag(e.detail);
+    async onAddNewTag(e) {
+        console.log("onAddNewTag", e);
+        if (this._localOnly) {
+            await this._dvm.taggingZvm.addPrivateTag(e.detail);
+        } else {
+            await this._dvm.taggingZvm.addPublicTag(e.detail);
+        }
         this._selectedTags.push(e.detail);
         if (this.tagListElem) this.tagListElem.requestUpdate();
         this.requestUpdate();
@@ -74,12 +84,18 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** */
     render() {
-        console.log("<publish-dialog>.render()", this._file);
+        console.log("<store-dialog>.render()", this._file);
 
         let content = html`<sl-spinner></sl-spinner>`;
         if (this._file) {
-            const allTags = this._dvm.taggingZvm.allPublicTags
-                .filter((tag) => this._selectedTags.indexOf(tag) < 0);
+
+            let allTags;
+            if (this._localOnly) {
+                allTags = this._dvm.taggingZvm.allPrivateTags;
+            } else {
+                allTags = this._dvm.taggingZvm.allPublicTags;
+            }
+            allTags.filter((tag) => this._selectedTags.indexOf(tag) < 0);
 
             /** */
             content = html`
@@ -115,19 +131,23 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
                     `}
                 </div>
                 <tag-input .tags=${allTags}
-                           @new-tag=${(e) => {console.log("e", e); this.onAddNewPublicTag(e)}}
+                           @new-tag=${(e) => {console.log("e", e); this.onAddNewTag(e)}}
                            @selected=${(e) => {this._selectedTags.push(e.detail); this.requestUpdate(); if (this.tagListElem) this.tagListElem.requestUpdate();}}
                 ></tag-input>
                 
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file} @click=${async (e) => {
-                const _splitObj = await this._dvm.startPublishFile(this._file, this._selectedTags);
+                   if (this._localOnly) {
+                       await this._dvm.startCommitPrivateFile(this._file, this._selectedTags);
+                   }  else {
+                       await this._dvm.startPublishFile(this._file, this._selectedTags);
+                   }
                 this._file = undefined;
                 this._selectedTags = [];
                 this.dialogElem.open = false;
-                this.dispatchEvent(new CustomEvent('publish-started', {detail: this._splitObj, bubbles: true, composed: true}));
+                //this.dispatchEvent(new CustomEvent('store-started', {detail: this._splitObj, bubbles: true, composed: true}));
             }}>
-                    Publish
+                    ${this._localOnly? "Add" :"Publish"}
                 </sl-button>                
             `;
 
@@ -138,8 +158,8 @@ export class PublishDialog extends DnaElement<FileShareDvmPerspective, FileShare
             <sl-dialog class="action-dialog" 
                        @sl-request-close=${e => this._file = undefined}>
                 <div slot="label">
-                    <sl-icon class="prefixIcon" name="people"></sl-icon>
-                    Share with group
+                    <sl-icon class="prefixIcon" name="${this._localOnly?"hdd" : "people"}"></sl-icon>
+                    ${this._localOnly? "Add to my private files" : "Share with group"}
                 </div>
                 ${content}
             </sl-dialog>

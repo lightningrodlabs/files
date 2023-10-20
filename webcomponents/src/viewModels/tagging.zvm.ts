@@ -159,6 +159,7 @@ export class TaggingZvm extends ZomeViewModel {
 
     /** */
     async addPrivateTag(tag: string) {
+        console.log("taggingZvm.addPrivateTag()", tag);
         if (!tag || tag == "") {
             return;
         }

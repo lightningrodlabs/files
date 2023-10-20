@@ -1,7 +1,7 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {sharedStyles} from "../sharedStyles";
-import {SlInput} from "@shoelace-style/shoelace";
+import {SlBlurEvent, SlInput} from "@shoelace-style/shoelace";
 
 
 /**
@@ -15,6 +15,8 @@ export class TagInput extends LitElement {
 
     @state() private _selectedTags: string[] = [];
 
+    @state() private _canShowResults: boolean = true; // FIXME
+
 
     get inputElem() : SlInput {
         return this.shadowRoot.getElementById("tag-input") as SlInput;
@@ -23,6 +25,9 @@ export class TagInput extends LitElement {
     /** */
     onAddNewTag(e) {
         console.log("<tag-input> onAddNewTag", this.inputElem.value);
+        if (this.inputElem.value.length <= 1) {
+            return;
+        }
         const string_copy = (' ' + this.inputElem.value).slice(1);
         //await this._dvm.taggingZvm.addPrivateTag(string_copy);
         this._selectedTags.push(string_copy);
@@ -65,6 +70,9 @@ export class TagInput extends LitElement {
             }
         }
 
+//     @sl-blur=${(e: SlBlurEvent) => {console.log("blur blur", e);this._canShowResults = false;}}
+// @sl-focus=${(e) => {console.log("blur focus", e); this._canShowResults = true}}
+
         /** */
         return html`
             <sl-input id="tag-input" placeholder="Add tag" clearable
@@ -79,7 +87,7 @@ export class TagInput extends LitElement {
                 <sl-icon name="plus" slot="prefix"></sl-icon>
             </sl-input>            
             <!-- Search result -->
-            <div id="tagResultView" style="display:${tagResults? "flex" :"none"}">
+            <div id="result-view" style="display:${tagResults && this._canShowResults? "flex" :"none"}">
                 ${tagResults}
             </div>
         `;
@@ -90,12 +98,12 @@ export class TagInput extends LitElement {
         return [
             sharedStyles,
             css`
-              #tagResultView {
+              #result-view {
                 /*position: absolute;*/
                 /*top: 70px;*/
                 /*left: 25%;*/
                 padding: 15px;
-                background: rgb(255, 255, 255);
+                background: rgb(24, 24, 24);
                 border-radius: 12px;
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 9px 18px, rgba(0, 0, 0, 0.22) 0px 7px 6px;
                 display: flex;

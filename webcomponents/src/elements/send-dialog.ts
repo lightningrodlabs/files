@@ -74,7 +74,8 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
         const input = document.createElement('input');
         input.type = 'file';
         input.onchange = async (e:any) => {
-                const file = e.target.files[0];
+            console.log("<send-dialog> target download file", e);
+            const file = e.target.files[0];
                 if (file.size > this._dvm.dnaProperties.maxParcelSize) {
                     toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
                     return;
@@ -226,9 +227,9 @@ export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm
 
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${this._recipients.length <= 0} @click=${async (e) => {
-                this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipient: this._recipients[0]}, bubbles: true, composed: true}));
+                this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipients: this._recipients}, bubbles: true, composed: true}));
                 //const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags.map((item) => item.value));
-                const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipients[0], this._selectedTags);
+                const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipients, this._selectedTags);
                 this._file = undefined;
                 this._selectedTags = [];
                 this._recipients = [];

@@ -16,8 +16,8 @@ import {TaggingPerspective} from "../viewModels/tagging.zvm";
 export enum SelectedType {
     Home = 'Home',
     AllFiles = 'All Files',
-    PublicFiles = 'Public Files',
-    PrivateFiles = 'Private Files',
+    GroupFiles = 'Group Files',
+    PersonalFiles = 'Personal Files',
     Inbox = 'Inbox',
     Sent = 'Sent',
     InProgress = 'In Progress',
@@ -212,12 +212,12 @@ export class FileShareMenu extends DnaElement<FileShareDvmPerspective, FileShare
                 </sl-menu-item>
                 <sl-menu-item ?disabled=${!initialized}>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
-                    ${SelectedType.PrivateFiles}
+                    ${SelectedType.PersonalFiles}
                     ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item ?disabled=${!initialized}>
                     <sl-icon slot="prefix" name="people"></sl-icon>
-                    ${SelectedType.PublicFiles}
+                    ${SelectedType.GroupFiles}
                     ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${dhtPublicCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item ?disabled=${!initialized}>

@@ -36,7 +36,7 @@ import "./file-view";
 import "./file-button";
 import "./file-share-menu";
 import "./action-overlay"
-import "./publish-dialog";
+import "./store-dialog";
 import "./send-dialog";
 import "./edit-profile";
 import "./profile-item";
@@ -78,7 +78,7 @@ import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 import {FileTableItem} from "./file-table";
 import {sharedStyles} from "../sharedStyles";
 import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
-import {PublishDialog} from "./publish-dialog";
+import {StoreDialog} from "./store-dialog";
 import {SendDialog} from "./send-dialog";
 import {DistributionTableItem} from "./distribution-table";
 import {columnBodyRenderer} from "@vaadin/grid/lit";
@@ -143,8 +143,8 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         return this.shadowRoot.querySelector("action-overlay") as ActionOverlay;
     }
 
-    get publishDialogElem() : PublishDialog {
-        return this.shadowRoot.querySelector("publish-dialog") as PublishDialog;
+    get storeDialogElem() : StoreDialog {
+        return this.shadowRoot.querySelector("store-dialog") as StoreDialog;
     }
     get sendDialogElem() : SendDialog {
         return this.shadowRoot.querySelector("send-dialog") as SendDialog;
@@ -296,10 +296,13 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         if (FileShareNotificationType.DeliveryRequestSent == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).manifestEh;
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
-            const recipient = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).recipient;
-            const maybeProfile = this._profilesZvm.getProfile(recipient);
-            const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
-            console.log("DeliveryRequestSent", notifLog, recipient, maybeProfile);
+            const recipients = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).recipients;
+            let recipientName = "" + recipients.length + " peers";
+            if (recipients.length == 1) {
+                const maybeProfile = this._profilesZvm.getProfile(recipients[0]);
+                recipientName = maybeProfile ? maybeProfile.nickname : "unknown";
+            }
+            console.log("DeliveryRequestSent", notifLog, recipients, recipientName);
             variant = 'success';
             icon = "check2-circle";
             title = "File delivery request sent";
@@ -768,9 +771,9 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     ></file-table>
                 `;
             }
-            if (this._selectedMenuItem.type == SelectedType.PrivateFiles) {
+            if (this._selectedMenuItem.type == SelectedType.PersonalFiles) {
                 mainArea = html`
-                    <h2>Private Files</h2>
+                    <h2>${SelectedType.PersonalFiles}</h2>
                     <file-table
                             .items=${Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
                                 //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
@@ -781,7 +784,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     ></file-table>
                 `;
             }
-            if (this._selectedMenuItem.type == SelectedType.PublicFiles) {
+            if (this._selectedMenuItem.type == SelectedType.GroupFiles) {
                 // console.log("this.deliveryPerspective.localPublicManifests", this.deliveryPerspective.localPublicManifests)
                 // const myPublicItems = Object.entries(this.deliveryPerspective.localPublicManifests).map(([ppEh, [pm, timestamp]]) => {
                 //     //const timestamp = this.deliveryPerspective.localPublicManifests[ppEh][1];
@@ -795,7 +798,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 //const publicItems = dhtPublicItems.concat(myPublicItems);
 
                 mainArea = html`
-                    <h2>Public Files</h2>
+                    <h2>${SelectedType.GroupFiles}</h2>
                     <file-table .items=${dhtPublicItems}
                                 @download=${(e) => this.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -955,10 +958,13 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 this.sendDialogElem.open();
             }
             if (e.detail == "publish") {
-                this.publishDialogElem.open();
+                this.storeDialogElem.open(false);
+            }
+            if (e.detail == "add") {
+                this.storeDialogElem.open(true);
             }
         }}></action-overlay>
-        <publish-dialog></publish-dialog>
+        <store-dialog></store-dialog>
         <send-dialog></send-dialog>
         <!-- stack -->
         <inbound-stack></inbound-stack>
