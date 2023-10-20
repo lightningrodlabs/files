@@ -9,7 +9,6 @@ import {html, render} from "lit";
 
 import {
   Hrl,
-  AppletViews,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
@@ -37,7 +36,7 @@ export async function appletViews(
   thisAppletId: EntryHash,
   profilesClient: ProfilesClient,
   weServices: WeServices
-): Promise<AppletViews> {
+) {
 
   const mainAppInfo = await client.appInfo();
 
@@ -68,7 +67,7 @@ export async function appletViews(
     await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
     const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
     console.log("profilesCellProxy", profilesCellProxy);
-    /** Create ThreadsApp */
+    /** Create FileShareApp */
     const app = await FileShareApp.fromWe(
       mainAppWs, undefined, false, mainAppInfo.installed_app_id,
       profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,

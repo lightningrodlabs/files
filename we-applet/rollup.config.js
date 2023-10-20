@@ -14,6 +14,7 @@ import babel from "@rollup/plugin-babel";
 
 const DIST_FOLDER = "dist"
 
+//console.log("we-applet ROLLUP START")
 
 export default {
   input: "out-tsc/index.js",

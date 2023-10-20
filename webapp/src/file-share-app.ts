@@ -27,7 +27,7 @@ import {
   ProfilesDvm
 } from "@file-share/elements";
 import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES, IS_DEV} from "./globals";
-import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
+import {weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 
 
 /**
@@ -60,6 +60,7 @@ export class FileShareApp extends HappElement {
   private _profilesDvm?: ProfilesDvm;
   protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+  protected _attachmentsProvider?: unknown;
   public appletId?: EntryHashB64;
 
 
@@ -80,8 +81,8 @@ export class FileShareApp extends HappElement {
   ) : Promise<FileShareApp> {
     const app = new FileShareApp(appWs, adminWs, canAuthorizeZfns, appId, showCommentThreadOnly);
     /** Provide it as context */
-    console.log(`\t\tProviding context "${weServicesContext}" | in host `, app);
-    app._weProvider = new ContextProvider(app, weServicesContext, weServices);
+    console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
+    app._weProvider = new ContextProvider(app, weClientContext, weServices);
     app.appletId = encodeHashToBase64(thisAppletId);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);

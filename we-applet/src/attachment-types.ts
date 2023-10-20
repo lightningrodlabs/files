@@ -2,7 +2,7 @@ import {ActionHash, AppAgentClient, decodeHashFromBase64, encodeHashToBase64, En
 import {AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
 import {asCellProxy, wrapPathInSvg} from "./we-utils";
 import {FileShareProxy} from "@file-share/elements";
-import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet/dist/types";
+import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import {ViewFileContext} from "./applet-view";
 import { mdiFileOutline } from "@mdi/js";
 

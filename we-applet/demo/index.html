@@ -10,26 +10,34 @@
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-  <body style="margin:0px;background: #91a3b7">
+
+  <body style="margin:0px;background: #91b793">
 
     <script type="module">
+
+      console.log("demo/index.html START");
+
       import {
         AdminWebsocket, AppAgentWebsocket, encodeHashToBase64, fakeDnaHash, decodeHashFromBase64
       } from "@holochain/client";
       import { fakeEntryHash } from '@holochain-open-dev/utils';
       import { ProfilesClient } from '@holochain-open-dev/profiles';
       import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
-      import { weServicesMock } from "@lightningrodlabs/we-applet/dist/mocks.js";
 
-      import Applet from "../dist";
+      //import { weServicesMock } from "@lightningrodlabs/we-applet/dist/mocks.js";
+      //import { weServicesMock, createFileShareApplet } from "../dist";
 
-      // import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
-      // setBasePath('../../node_modules/@shoelace-style/shoelace/dist');
-      // console.log("shoelace basePath", getBasePath());
+      import filesAPI from "../dist";
+
+
+      import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+      setBasePath('../../node_modules/@shoelace-style/shoelace/dist');
+      console.log("shoelace basePath", getBasePath());
+
 
       /** Define setup function */
       async function setup() {
-        console.log("Index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
+        console.log("demo/index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
 
         /** Store AppletId in LocalStorage, so we can retrieve it when refereshing webpage */
@@ -45,7 +53,7 @@
 
         /** Create custom WeServiceMock */
         console.log("fileShareDemoAppletId", fileShareAppletIdB64);
-        const myWeServicesMock = weServicesMock;
+        const myWeServicesMock = filesAPI.weServicesMock;
         myWeServicesMock.appletInfo = async (appletId) => {
           const appletIdB64 = encodeHashToBase64(appletId);
           console.log("myWeServicesMock.appletInfo()", appletIdB64, fileShareAppletIdB64);
@@ -95,13 +103,15 @@
         //console.log("mock agentId", encodeHashToBase64(mockProfilesZome.myPubKey));
         mockProfilesZome.create_profile({nickname: "Alex", fields: {}})
 
-        const renderers = await Applet.appletViews(
+        const applet = await filesAPI.createFileShareApplet(
                 appAgentWs,
                 fileShareAppletId,
                 new ProfilesClient(mockProfilesZome, mockProfilesZome.roleName),
                 myWeServicesMock,
         );
-        renderers.main(document.body);
+        //renderers.main(document.body);
+        console.log("applet", applet);
+        document.body.append(applet);
       }
 
       /** Run it */
