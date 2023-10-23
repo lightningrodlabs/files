@@ -8,7 +8,9 @@ import { mdiFileOutline } from "@mdi/js";
 
 
 /** */
-export async function attachmentTypes(appletClient: AppAgentClient, appletId: EntryHash, weServices: WeServices): Promise<Record<string, AttachmentType>> {
+// export async function attachmentTypes(appletClient: AppAgentClient, appletId: EntryHash, weServices: WeServices): Promise<Record<string, AttachmentType>> {
+  export const attachmentTypes = async function (appletClient: AppAgentClient, appletId: EntryHash, weServices: WeServices)
+    : Promise<Record<string, AttachmentType>> /*=>*/ {
   const appInfo = await appletClient.appInfo();
   return {
     file: {

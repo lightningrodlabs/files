@@ -36,6 +36,7 @@ import {weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 @customElement("file-share-app")
 export class FileShareApp extends HappElement {
 
+
   @state() private _hasStartingProfile = false;
   @state() private _offlinePerspectiveloaded = false;
 
@@ -45,7 +46,7 @@ export class FileShareApp extends HappElement {
 
   /** All arguments should be provided when constructed explicity */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public showCommentThreadOnly?: boolean) {
-    super(appWs? appWs : HC_APP_PORT, appId);
+    super(appWs ? appWs : HC_APP_PORT, appId);
     console.log("FileShareApp.HVM_DEF", FileShareApp.HVM_DEF);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
@@ -85,10 +86,11 @@ export class FileShareApp extends HappElement {
     app._weProvider = new ContextProvider(app, weClientContext, weServices);
     app.appletId = encodeHashToBase64(thisAppletId);
     /** Create Profiles Dvm from provided AppProxy */
-    console.log("<thread-app>.ctor()", profilesProxy);
+    console.log("<files-app>.ctor()", profilesProxy);
     await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
     return app;
   }
+
 
   /** Create a Profiles DVM out of a different happ */
   async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
@@ -159,8 +161,12 @@ export class FileShareApp extends HappElement {
     }
     /** Probe */
     this._cell = this.fileShareDvm.cell; // ???
+    console.log("fileShareDvm.cell", this._cell);
     this._allAppEntryTypes = await this.fileShareDvm.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
+    if (this._allAppEntryTypes["zFileShare"].length == 0) {
+      alert("Failed to connect to Holochain Conductor");
+    }
 
     if (CAN_ADD_PROFILES) {
       await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this._cell.agentPubKey);
