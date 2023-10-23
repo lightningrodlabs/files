@@ -7,6 +7,7 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="Description" content="Files we-applet" />
+    <link href="styles.css" rel="stylesheet"/>
     <base href="/" />
     <title>Files we-applet</title>
   </head>
@@ -15,89 +16,89 @@
     <script type="module">
 
       console.log("file-share-applet START");
-      //
-      // import '@shoelace-style/shoelace/dist/themes/light.css';
-      //
-      // import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
-      // import { WeClient } from "@lightningrodlabs/we-applet";
-      // import { AttachmentsClient, AttachmentsStore } from "@lightningrodlabs/attachments";
-      // import { CellType } from "@holochain/client";
-      // import { wrapPathInSvg } from "@holochain-open-dev/elements";
-      // import { mdiPost } from "@mdi/js";
-      //
-      // import {FileShareProxy} from "@file-share/elements";
-      //
-      // import {FileShareApp} from "@file-share/elements";
-      //
-      // import { FilesWeApplet } from "./src/applet-view.ts";
-      //
-      // import {appletViews} from "./applet-view";
-      // import {crossAppletViews} from "./cross-applet-view";
-      // import {attachmentTypes} from "./attachment-types";
-      // import { createFileShareApplet } from "./src/we-applet";
-      //
-      // setBasePath('shoelace');
-      //
-      //
-      // (async function() {
-      //
-      //   const appletServices = {
-      //     attachmetTypes,
-      //     blockTypes: {},
-      //     search: async (appletClient, searchFilter) => {return []},
-      //     getEntryInfo: async (
-      //       appletClient,
-      //       roleName,
-      //       integrityZomeName,
-      //       entryType,
-      //       hrl
-      //     ) => {
-      //       switch (roleName) {
-      //         case "rFileShare":
-      //           switch (integrityZomeName) {
-      //             case "file_share_integrity":
-      //               switch (entryType) {
-      //                 case "file": {
-      //                   console.log("(applet-view) pp info", hrl);
-      //                   const cellProxy = await asCellProxy(
-      //                           client,
-      //                           undefined, // hrl[0],
-      //                           mainAppInfo.installed_app_id,
-      //                           "rFileShare");
-      //                   console.log("(applet-view) cellProxy", cellProxy);
-      //                   const proxy/*: FileShareProxy*/ = new FileShareProxy(cellProxy);
-      //                   console.log("(applet-view) getFile()", encodeHashToBase64(hrl[1]), proxy);
-      //                   const manifest = await proxy.getFileInfo(hrl[1]);
-      //                   console.log("(applet-view) file", manifest.description);
-      //                   return {
-      //                     icon_src: "",
-      //                     name: manifest.description.name,
-      //                   };
-      //                 }
-      //                 default:
-      //                   throw new Error(`Unknown entry type ${entryType}.`);
-      //               }
-      //             default:
-      //               throw new Error(`Unknown zome '${integrityZomeName}'.`);
-      //           }
-      //         default:
-      //           throw new Error(`Unknown role name '${roleName}'.`);
-      //       }
-      //     }
-      //   };
-      //
-      //   const weClient = await WeClient.connect(appletServices);
-      //   console.log("weClient", weClient);
-      //
-      //   const applet = await createFileShareApplet(
-      //           weClient.renderInfo.appletClient,
-      //           weClient.appletHash,
-      //           weClient.renderInfo.profilesClient,
-      //           weClient,
-      //   );
-      //   console.log("applet", applet);
-      //   document.body.append(applet);
-      // })();
+
+      //import '@shoelace-style/shoelace/dist/themes/light.css';
+
+      import { WeClient } from "@lightningrodlabs/we-applet";
+      console.log("Imported WeClient");
+
+      import {FileShareProxy} from "@file-share/elements";
+      console.log("Imported FileShareProxy");
+
+      import filesAPI from "./";
+      console.log("Imported filesAPI");
+
+      //import { createFileShareApplet } from "./src/we-applet";
+
+      import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+      console.log("Imported shoelace");
+
+      setBasePath('shoelace');
+      console.log("shoelace basePath", getBasePath());
+
+
+      (async function() {
+
+        const appletServices = {
+          attachmetTypes,
+          blockTypes: {},
+          search: async (appletClient, searchFilter) => {return []},
+          getEntryInfo: async (
+            appletClient,
+            roleName,
+            integrityZomeName,
+            entryType,
+            hrl
+          ) => {
+            switch (roleName) {
+              case "rFileShare":
+                switch (integrityZomeName) {
+                  case "file_share_integrity":
+                    switch (entryType) {
+                      case "file": {
+                        console.log("Files/we-applet/applet-view pp info", hrl);
+                        const cellProxy = await asCellProxy(
+                                client,
+                                undefined, // hrl[0],
+                                mainAppInfo.installed_app_id,
+                                "rFileShare");
+                        console.log("Files/we-applet/applet-view cellProxy", cellProxy);
+                        const proxy/*: FileShareProxy*/ = new FileShareProxy(cellProxy);
+                        console.log("Files/we-applet/applet-view getFile()", encodeHashToBase64(hrl[1]), proxy);
+                        const manifest = await proxy.getFileInfo(hrl[1]);
+                        console.log("Files/we-applet/applet-view file", manifest.description);
+                        return {
+                          icon_src: "",
+                          name: manifest.description.name,
+                        };
+                      }
+                      default:
+                        throw new Error(`Files/we-applet: Unknown entry type ${entryType}.`);
+                    }
+                  default:
+                    throw new Error(`Files/we-applet: Unknown zome '${integrityZomeName}'.`);
+                }
+              default:
+                throw new Error(`Files/we-applet: Unknown role name '${roleName}'.`);
+            }
+          }
+        };
+
+        console.log("WeClient.connect()...");
+
+
+        const weClient = await WeClient.connect(appletServices);
+        console.log("weClient", weClient);
+
+        const applet = await filesAPI.createFileShareApplet(
+                weClient.renderInfo.appletClient,
+                weClient.appletHash,
+                weClient.renderInfo.profilesClient,
+                weClient,
+        );
+        console.log("applet", applet);
+        document.body.append(applet);
+      })();
 
     </script>
   </body>

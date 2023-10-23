@@ -8,6 +8,7 @@
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
             rel="stylesheet"
     />
+    <link href="../dist/styles.css" rel="stylesheet"/>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
 
@@ -31,7 +32,10 @@
 
 
       import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
-      setBasePath('../../node_modules/@shoelace-style/shoelace/dist');
+
+      //setBasePath('../../node_modules/@shoelace-style/shoelace/dist');
+      //setBasePath('../');
+      //setBasePath('shoelace');
       console.log("shoelace basePath", getBasePath());
 
 

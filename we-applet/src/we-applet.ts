@@ -1,10 +1,8 @@
 import {
   AppAgentClient,
   AppAgentWebsocket,
-  encodeHashToBase64,
   EntryHash
 } from "@holochain/client";
-import {html, render} from "lit";
 //import { msg } from "@lit/localize";
 
 import {

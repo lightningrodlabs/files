@@ -4,6 +4,7 @@
     "outDir": "out-tsc",
     "rootDir": "./src",
     "declaration": false,
+    "esModuleInterop": false,
   },
   "include": ["src/**/*.ts"]
 }
