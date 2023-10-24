@@ -25,9 +25,6 @@
       import { ProfilesClient } from '@holochain-open-dev/profiles';
       import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
 
-      //import { weServicesMock } from "@lightningrodlabs/we-applet/dist/mocks.js";
-      //import { weServicesMock, createFileShareApplet } from "../dist";
-
       import filesAPI from "../dist";
       console.log("filesAPI", filesAPI);
 
@@ -45,7 +42,6 @@
       /** Define setup function */
       async function setup() {
         console.log("demo/index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
-
 
         /** Store AppletId in LocalStorage, so we can retrieve it when refereshing webpage */
         let fileShareAppletId;

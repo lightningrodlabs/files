@@ -19,10 +19,11 @@ export async function getEntryInfo(
         throw new Error(`Files/we-applet: Unknown zome '${integrityZomeName}'.`);
     }
 
+    const mainAppInfo = await appletClient.appInfo();
+
     switch (entryType) {
         case "file": {
             console.log("Files/we-applet/applet-view pp info", hrl);
-            const mainAppInfo = await appletClient.appInfo();
             const cellProxy = await asCellProxy(
                 appletClient,
                 undefined, // hrl[0],

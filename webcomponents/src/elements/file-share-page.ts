@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
-import {AppletInfo, WeServices, weServicesContext,} from "@lightningrodlabs/we-applet";
+import {AppletInfo, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
 
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
@@ -105,7 +105,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     @state() private _initialized = false;
     @property() appletHash: EntryHashB64;
 
-    @property() devmode: boolean = false;
+    @property() devmode?: string;
 
     @property() offlineloaded: boolean = false;
 
@@ -121,7 +121,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
 
-    @consume({ context: weServicesContext, subscribe: true })
+    @consume({ context: weClientContext, subscribe: true })
     weServices!: WeServices;
 
     private _myProfile: FileShareProfile = {nickname: "unknown", fields: {}}
@@ -925,7 +925,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
-                    ${this.devmode? html`
+                    ${this.devmode != ""? html`
                         <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
                         <button type="button" @click=${() => {this.refresh();}}>refresh</button>
                     `: html``
