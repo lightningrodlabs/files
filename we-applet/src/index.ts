@@ -1,12 +1,17 @@
-// import "./attachment-types"
-// import "./we-applet"
-// import "./mock"
-// import "./profilesApi"
-// import "./we-utils"
-
-import {createFileShareApplet} from "./we-applet";
+//import {attachmentTypes} from "./appletServices/attachmentTypes";
+import {getEntryInfo} from "./appletServices/getEntryInfo";
+import {createFileShareApplet} from "./createFileShareApplet";
 import {weServicesMock} from "./mock";
-import {appletServices} from "./applet-services";
+
+
+/** */
+const appletServices = {
+    //attachmentTypes,
+    attachmentTypes: async (_appletClient) => ({}),
+    getEntryInfo,
+    blockTypes: {},
+    search: async (appletClient, searchFilter) => {return []},
+};
 
 export default {
     createFileShareApplet,

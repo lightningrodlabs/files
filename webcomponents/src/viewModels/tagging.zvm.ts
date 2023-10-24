@@ -60,6 +60,7 @@ export class TaggingZvm extends ZomeViewModel {
     /** */
     async initializePerspectiveOffline(): Promise<void> {
         const tuples = await this.zomeProxy.queryAllPrivateTags();
+        console.log("tagging tuples", tuples);
         for (const [_eh, _ts, tag] of tuples) {
             await this.getPrivateEntriesWithTag(tag);
         }

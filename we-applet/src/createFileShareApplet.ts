@@ -30,13 +30,13 @@ import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 /** */
 export async function createFileShareApplet(
   client: AppAgentClient,
-  thisAppletId: EntryHash,
+  thisAppletHash: EntryHash,
   profilesClient: ProfilesClient,
   weServices: WeServices
 ): Promise<FileShareApp> {
 
   console.log("createFileShareApplet() client", client);
-  console.log("createFileShareApplet() thisAppletId", thisAppletId);
+  console.log("createFileShareApplet() thisAppletId", thisAppletHash);
 
   const mainAppInfo = await client.appInfo();
 
@@ -68,7 +68,7 @@ export async function createFileShareApplet(
   const app = await FileShareApp.fromWe(
     mainAppWs, undefined, false, mainAppInfo.installed_app_id,
     profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
-    weServices, thisAppletId, showFileOnly);
+    weServices, thisAppletHash, showFileOnly);
   console.log("createFileShareApplet() app", app);
   /** Done */
   return app;

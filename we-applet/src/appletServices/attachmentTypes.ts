@@ -1,27 +1,27 @@
 import {ActionHash, AppAgentClient, decodeHashFromBase64, encodeHashToBase64, EntryHash} from "@holochain/client";
-import {AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
-import {asCellProxy, wrapPathInSvg} from "./we-utils";
+import {AttachmentName, AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
+import {asCellProxy, wrapPathInSvg} from "../we-utils";
 import {FileShareProxy} from "@file-share/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
-import {ViewFileContext} from "./applet-view";
 import { mdiFileOutline } from "@mdi/js";
 
 
 /** */
 // export async function attachmentTypes(appletClient: AppAgentClient, appletId: EntryHash, weServices: WeServices): Promise<Record<string, AttachmentType>> {
-  export const attachmentTypes = async function (appletClient: AppAgentClient, appletId: EntryHash, weServices: WeServices)
-    : Promise<Record<string, AttachmentType>> /*=>*/ {
+  export const attachmentTypes = async function (appletClient: AppAgentClient)
+    : Promise<Record<AttachmentName, AttachmentType>> {
   const appInfo = await appletClient.appInfo();
   return {
     file: {
       label: "File",
       icon_src: wrapPathInSvg(mdiFileOutline),
       /** */
-      async create(attachToHrl: Hrl) {
-        console.log("attachmentTypes.file()", attachToHrl);
-        const entryInfo = await weServices.entryInfo(attachToHrl);
+      async create(attachToHrl: Hrl): Promise<HrlWithContext> {
+        console.log("attachmentTypes::File", attachToHrl);
         const cellProxy = await asCellProxy(appletClient, undefined, appInfo.installed_app_id, "rFileShare"); // FIXME use appInfo.appId and roleName
-        const proxy: FileShareProxy = new FileShareProxy(cellProxy);
+
+        //const entryInfo = await weServices.entryInfo(attachToHrl);
+        //const proxy: FileShareProxy = new FileShareProxy(cellProxy);
         // const input: CreatePpInput = {
         //   pp: {
         //   purpose: "comment",

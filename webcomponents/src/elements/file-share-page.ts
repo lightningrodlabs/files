@@ -469,7 +469,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <ul>${unrepliedInbounds}</ul>
             ` : html``}
             <!-- Recent Activity -->
-            <h2>Recent Activity</h2>
+            <h2>Recent Activities</h2>
             <activity-timeline @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}></activity-timeline>`;
     }
 
@@ -716,7 +716,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
         /** Choose what to display */
         let mainArea = html`
-            <h2>Recent Activity</h2>
+            <h2>Recent Activity...</h2>
             <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
             <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
             <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
