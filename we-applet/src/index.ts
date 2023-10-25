@@ -3,7 +3,8 @@ import {getEntryInfo} from "./appletServices/getEntryInfo";
 import {createFileShareApplet} from "./createFileShareApplet";
 import {weServicesMock} from "./mock";
 import {AppletServices} from "@lightningrodlabs/we-applet";
-
+import {setupDemo} from "./setupDemo";
+import {setup} from "./setup";
 
 /** */
 const appletServices: AppletServices = {
@@ -18,4 +19,6 @@ export default {
     createFileShareApplet,
     weServicesMock,
     appletServices,
+    setupDemo,
+    setup,
 };
