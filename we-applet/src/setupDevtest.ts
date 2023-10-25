@@ -7,33 +7,37 @@ import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
 import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 import {weServicesMock} from "./mock";
 import {AppletInfo, EntryLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
+import {HappElement} from "@ddd-qc/lit-happ";
+import {CreateAppletFn, DevTestNames} from "./setup";
 
 
 /** */
-export async function setupDevtest(createApplet) {
-    console.log("setupDemo()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
+export async function setupDevtest(createApplet: CreateAppletFn, names: DevTestNames): Promise<HappElement> {
+    console.log("setupDevtest()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
     setBasePath('../../node_modules/@shoelace-style/shoelace/dist');
     console.log("shoelace basePath", getBasePath());
 
+    const localStorageId = names.installed_app_id + "-id";
+
     /** Store AppletId in LocalStorage, so we can retrieve it when refereshing webpage */
-    let fileShareAppletHash: EntryHash;
-    let fileShareAppletIdB64 = window.localStorage['fileShareDemoAppletId'];
-    if (!fileShareAppletIdB64) {
-        fileShareAppletHash = fakeEntryHash();
-        fileShareAppletIdB64 = encodeHashToBase64(fileShareAppletHash);
-        window.localStorage['fileShareDemoAppletId'] = fileShareAppletIdB64;
+    let devtestAppletHash: EntryHash;
+    let devtestAppletId = window.localStorage[localStorageId];
+    if (!devtestAppletId) {
+        devtestAppletHash = fakeEntryHash();
+        devtestAppletId = encodeHashToBase64(devtestAppletHash);
+        window.localStorage[localStorageId] = devtestAppletId;
     } else {
-        fileShareAppletHash = decodeHashFromBase64(fileShareAppletIdB64);
+        devtestAppletHash = decodeHashFromBase64(devtestAppletId);
     }
 
     /** Create custom WeServiceMock */
-    console.log("setupDemo() fileShareDemoAppletId", fileShareAppletIdB64);
+    console.log("setupDevtest() devtestAppletId", devtestAppletId);
     const myWeServicesMock = weServicesMock;
     myWeServicesMock.appletInfo = async (appletId) => {
         const appletIdB64 = encodeHashToBase64(appletId);
-        console.log("setupDemo() myWeServicesMock.appletInfo()", appletIdB64, fileShareAppletIdB64);
-        if (appletIdB64 == fileShareAppletIdB64) {
+        console.log("setupDevtest() myWeServicesMock.appletInfo()", appletIdB64, devtestAppletId);
+        if (appletIdB64 == devtestAppletId) {
             const appletInfo: AppletInfo = {
                 appletBundleId: await fakeActionHash(),
                 appletName: "DevTestWeApplet",
@@ -45,7 +49,7 @@ export async function setupDevtest(createApplet) {
     };
     myWeServicesMock.entryInfo = async (hrl) => {
         return {
-            appletHash: fileShareAppletHash,
+            appletHash: devtestAppletHash,
             entryInfo: {
                 icon_src: "",
                 name: "demo:" + encodeHashToBase64(hrl[1]),
@@ -55,15 +59,15 @@ export async function setupDevtest(createApplet) {
 
     /** AppWebsocket */
     // const appWs = await AppWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`);
-    // const appInfo = await appWs.appInfo({installed_app_id: "file_share-applet"});
+    // const appInfo = await appWs.appInfo({installed_app_id: names.installed_app_id});
     // console.log("setup() appInfo", appInfo);
 
     /** AppAgentWebsocket */
-    const appAgentWs = await AppAgentWebsocket.connect(new URL(`ws://localhost:${process.env.HC_APP_PORT}`), "file_share-applet");
+    const appAgentWs = await AppAgentWebsocket.connect(new URL(`ws://localhost:${process.env.HC_APP_PORT}`), names.installed_app_id);
     console.log(appAgentWs.appWebsocket);
     const appInfo = await appAgentWs.appInfo();
     console.log(appInfo);
-    const cellInfo = appInfo.cell_info['rFileShare'][0];
+    const cellInfo = appInfo.cell_info[names.provisionedRoleName][0];
     let cellId;
     if ("provisioned" in cellInfo) {
         cellId = cellInfo.provisioned.cell_id;
@@ -76,7 +80,7 @@ export async function setupDevtest(createApplet) {
     /** AdminWebsocket */
     const adminWs = await AdminWebsocket.connect(new URL(`ws://localhost:${process.env.HC_ADMIN_PORT}`));
     const apps = await adminWs.listApps({});
-    console.log("setupDemo() apps", apps);
+    console.log("setupDevtest() apps", apps);
     await adminWs.authorizeSigningCredentials(cellId);
 
     /** Creating mock lobby app with profiles dna & zome */
@@ -86,14 +90,14 @@ export async function setupDevtest(createApplet) {
     //console.log("mock agentId", encodeHashToBase64(mockProfilesZome.myPubKey));
     mockProfilesZome.create_profile({nickname: "Alex", fields: {}})
     const mockAppInfo = await mockProfilesZome.appInfo();
-    console.log("mockAppInfo", mockAppInfo);
+    console.log("setupDevtest() mockAppInfo", mockAppInfo);
     const applet = await createApplet(
         appAgentWs,
-        fileShareAppletHash,
+        devtestAppletHash,
         new ProfilesClient((mockProfilesZome as any), /*mockProfilesZome.roleName*/ "lobby"),
         myWeServicesMock,
     );
     //renderers.main(document.body);
-    console.log("setupDemo() applet", applet);
-    document.body.append(applet);
+    console.log("setupDevtest() applet", applet);
+    return applet;
 }

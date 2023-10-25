@@ -1,10 +1,28 @@
-import {WeClient} from "@lightningrodlabs/we-applet";
+import {WeClient, WeServices} from "@lightningrodlabs/we-applet";
 import {setBasePath, getBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js';
-import {delay} from "@ddd-qc/lit-happ";
+import {delay, HappElement} from "@ddd-qc/lit-happ";
 import {appletServices} from "./files-applet/appletServices";
 import {setupDevtest} from "./setupDevtest";
+import {AppAgentClient, EntryHash} from "@holochain/client";
+import {ProfilesClient} from "@holochain-open-dev/profiles";
 
-export async function setup(createApplet) {
+
+export type CreateAppletFn = (
+    client: AppAgentClient,
+    thisAppletHash: EntryHash,
+    profilesClient: ProfilesClient,
+    weServices: WeServices
+) => Promise<HappElement>;
+
+export interface DevTestNames {
+    installed_app_id: string,
+    provisionedRoleName: string,
+}
+
+
+
+
+export async function setup(createApplet: CreateAppletFn, devtestNames: DevTestNames): Promise<HappElement> {
     let BUILD_MODE = "prod";
     try {
         BUILD_MODE = process.env.BUILD_MODE;
@@ -14,19 +32,19 @@ export async function setup(createApplet) {
     console.log("BUILD_MODE", BUILD_MODE);
 
     if (BUILD_MODE == "devtest") {
-        setupDevtest(createApplet);
+        return setupDevtest(createApplet, devtestNames);
     } else {
-        setupProd(createApplet);
+        return setupProd(createApplet);
     }
 }
 
+
 /** */
-export async function setupProd(createApplet) {
+export async function setupProd(createApplet: CreateAppletFn): Promise<HappElement> {
     console.log("setup()");
 
     setBasePath('./');
     console.log("shoelace basePath", getBasePath());
-
 
     console.log("WeClient.connect()...", WeClient);
     const weClient = await WeClient.connect(appletServices);
@@ -42,5 +60,5 @@ export async function setupProd(createApplet) {
     const renderInfo = weClient.renderInfo as any;
     const applet = await createApplet(renderInfo.appletClient, renderInfo.appletHash, renderInfo.profilesClient, weClient);
     console.log("applet", applet);
-    document.body.append(applet);
+    return applet;
 }

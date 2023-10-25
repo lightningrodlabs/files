@@ -17,7 +17,8 @@
       console.log("Files we-applet index.html START");
       import filesAPI from "./out-tsc";
       console.log("Imported filesAPI");
-      filesAPI.setup(filesAPI.createFileShareApplet);
+      const happElem = await filesAPI.setup(filesAPI.createFileShareApplet, filesAPI.fileShareNames);
+      document.body.append(happElem);
     </script>
   </body>
 </html>
