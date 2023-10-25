@@ -4,11 +4,12 @@ import {asCellProxy, wrapPathInSvg} from "../we-utils";
 import {FileShareProxy} from "@file-share/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiFileOutline } from "@mdi/js";
+import {AppletHash} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */
 // export async function attachmentTypes(appletClient: AppAgentClient, appletId: EntryHash, weServices: WeServices): Promise<Record<string, AttachmentType>> {
-  export const attachmentTypes = async function (appletClient: AppAgentClient): Promise<Record<AttachmentName, AttachmentType>> {
+  export const attachmentTypes = async function (appletClient: AppAgentClient, appletHash: AppletHash, weServices: WeServices): Promise<Record<AttachmentName, AttachmentType>> {
   const appInfo = await appletClient.appInfo();
   return {
     file: {

@@ -40,7 +40,7 @@ export async function setupProd(createApplet) {
     await delay(1000);
 
     const renderInfo = weClient.renderInfo as any;
-    const applet = await createApplet(renderInfo.appletClient, weClient.appletHash, renderInfo.profilesClient, weClient);
+    const applet = await createApplet(renderInfo.appletClient, renderInfo.appletHash, renderInfo.profilesClient, weClient);
     console.log("applet", applet);
     document.body.append(applet);
 }
