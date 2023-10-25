@@ -1,53 +1,57 @@
 import {
-    AdminWebsocket, AppAgentWebsocket, encodeHashToBase64, fakeDnaHash, decodeHashFromBase64,
+    AdminWebsocket, AppAgentWebsocket, encodeHashToBase64, fakeDnaHash, decodeHashFromBase64, fakeActionHash, EntryHash,
 } from "@holochain/client";
 import { fakeEntryHash } from '@holochain-open-dev/utils';
 import { ProfilesClient } from '@holochain-open-dev/profiles';
 import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
 import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+import {weServicesMock} from "./mock";
+import {AppletInfo, EntryLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
+import {createFileShareApplet} from "./createFileShareApplet";
 
 
 /** */
-export async function setupDemo(filesAPI: any) {
+export async function setupDemo() {
     console.log("setupDemo()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
     setBasePath('../../node_modules/@shoelace-style/shoelace/dist');
     console.log("shoelace basePath", getBasePath());
 
     /** Store AppletId in LocalStorage, so we can retrieve it when refereshing webpage */
-    let fileShareAppletId;
+    let fileShareAppletHash: EntryHash;
     let fileShareAppletIdB64 = window.localStorage['fileShareDemoAppletId'];
     if (!fileShareAppletIdB64) {
-        fileShareAppletId = fakeEntryHash();
-        fileShareAppletIdB64 = encodeHashToBase64(fileShareAppletId);
+        fileShareAppletHash = fakeEntryHash();
+        fileShareAppletIdB64 = encodeHashToBase64(fileShareAppletHash);
         window.localStorage['fileShareDemoAppletId'] = fileShareAppletIdB64;
     } else {
-        fileShareAppletId = decodeHashFromBase64(fileShareAppletIdB64);
+        fileShareAppletHash = decodeHashFromBase64(fileShareAppletIdB64);
     }
 
     /** Create custom WeServiceMock */
     console.log("setupDemo() fileShareDemoAppletId", fileShareAppletIdB64);
-    const myWeServicesMock = filesAPI.weServicesMock;
+    const myWeServicesMock = weServicesMock;
     myWeServicesMock.appletInfo = async (appletId) => {
         const appletIdB64 = encodeHashToBase64(appletId);
         console.log("setupDemo() myWeServicesMock.appletInfo()", appletIdB64, fileShareAppletIdB64);
         if (appletIdB64 == fileShareAppletIdB64) {
-            return {
-                appletBundleId: await fakeEntryHash(),
+            const appletInfo: AppletInfo = {
+                appletBundleId: await fakeActionHash(),
                 appletName: "DevTestWeApplet",
-                groupIds: [await fakeDnaHash()],
-            }
+                groupsIds: [await fakeDnaHash()],
+            };
+            return appletInfo;
         }
         return undefined;
     };
     myWeServicesMock.entryInfo = async (hrl) => {
         return {
-            appletId: fileShareAppletId,
+            appletHash: fileShareAppletHash,
             entryInfo: {
                 icon_src: "",
                 name: "demo:" + encodeHashToBase64(hrl[1]),
             }
-        }
+        } as EntryLocationAndInfo;
     }
 
     /** AppWebsocket */
@@ -84,9 +88,9 @@ export async function setupDemo(filesAPI: any) {
     mockProfilesZome.create_profile({nickname: "Alex", fields: {}})
     const mockAppInfo = await mockProfilesZome.appInfo();
     console.log("mockAppInfo", mockAppInfo);
-    const applet = await filesAPI.createFileShareApplet(
+    const applet = await createFileShareApplet(
         appAgentWs,
-        fileShareAppletId,
+        fileShareAppletHash,
         new ProfilesClient((mockProfilesZome as any), /*mockProfilesZome.roleName*/ "lobby"),
         myWeServicesMock,
     );

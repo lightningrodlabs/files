@@ -20,19 +20,18 @@
       try {
         BUILD_MODE = process.env.BUILD_MODE;
       } catch (e) {
-        console.log(`BUILD_MODE not set. Defaulting to "prod".`)
+        console.log(`BUILD_MODE env variable not set. Defaulting to "prod".`)
       }
       console.log("BUILD_MODE", BUILD_MODE);
 
 
       import filesAPI from "./out-tsc";
       console.log("Imported filesAPI");
-      console.log("appletServices", filesAPI.appletServices);
 
       if (BUILD_MODE == "devtest") {
-        filesAPI.setupDemo(filesAPI);
+        filesAPI.setupDemo();
       } else {
-        filesAPI.setup(filesAPI);
+        filesAPI.setup();
       }
     </script>
   </body>
