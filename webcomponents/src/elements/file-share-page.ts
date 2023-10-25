@@ -925,7 +925,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
-                    ${this.devmode != ""? html`
+                    ${this.devmode && this.devmode == "DEV"? html`
                         <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
                         <button type="button" @click=${() => {this.refresh();}}>refresh</button>
                     `: html``

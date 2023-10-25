@@ -30,10 +30,11 @@ fn create_private_tag(tag_value: String) -> ExternResult<EntryHash> {
         return error("Private tag already exists");
     }
     /// Make sur tag length is OK
-    let properties = get_dna_properties();
-    if  tag_value.len() > properties.max_tag_name_length as usize ||
-        tag_value.len() < properties.min_tag_name_length as usize {
-        return error("Tag length is incorrect.");
+    if let Ok(properties) = get_properties() {
+        if tag_value.len() > properties.max_tag_name_length as usize ||
+            tag_value.len() < properties.min_tag_name_length as usize {
+            return error("Tag length is incorrect.");
+        }
     }
     /// Create Entry
     let tag = PrivateTag { value: tag_value };

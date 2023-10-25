@@ -26,7 +26,7 @@ import {
   globalProfilesContext,
   ProfilesDvm
 } from "@file-share/elements";
-import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES, IS_DEV} from "./globals";
+import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES, IS_DEV, BUILD_MODE} from "./globals";
 import {WeClient, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 
 
@@ -215,7 +215,7 @@ export class FileShareApp extends HappElement {
     const zomeNames = this._dnaDef?.coordinator_zomes.map((zome) => { return zome[0]; });
     console.log({zomeNames});
 
-    let view = html`<file-share-page devmode=${IS_DEV}></file-share-page>`;
+    let view = html`<file-share-page devmode=${BUILD_MODE}></file-share-page>`;
 
     if (weClient) {
       switch (weClient.renderInfo.type) {

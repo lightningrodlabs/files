@@ -93,8 +93,9 @@ export class FileShareDvm extends DnaViewModel {
 
     /** */
     get dnaProperties(): DeliveryProperties {
+        console.log('dnaProperties() dnaModifiers', this.cell.dnaModifiers);
         const properties = decode(this.cell.dnaModifiers.properties as Uint8Array) as DeliveryProperties;
-        //console.log('properties', properties);
+        console.log('dnaProperties() properties', properties);
         return properties;
     }
 

@@ -17,14 +17,14 @@ pub fn get_properties() -> ExternResult<TaggingProperties> {
    //debug!("props = {:?}", props);
    let maybe_properties: Result<TaggingProperties, <TaggingProperties as TryFrom<SerializedBytes>>::Error> = props.try_into();
    if let Err(e) = maybe_properties {
-      debug!("deserializing properties failed: {:?}", e);
-      panic!("Should deserialize dna properties");
+      debug!("Deserializing TaggingZome properties failed: {:?}", e);
+      return Err(wasm_error!("Deserializing TaggingZome properties failed: {:?}", e));
    }
    Ok(maybe_properties.unwrap())
 }
 
 
-/// Helper for crate use
-pub fn get_dna_properties() -> TaggingProperties {
-   return get_properties().unwrap();
-}
+// /// Helper for crate use
+// pub fn get_dna_properties() -> TaggingProperties {
+//    return get_properties().unwrap();
+// }
