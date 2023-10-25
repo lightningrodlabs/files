@@ -10,3 +10,12 @@ roles:
     dna:
       bundled: "../../artifacts/file_share.dna"
       clone_limit: 0
+      # HACKISH: Redefining the properties here because otherwise the values from the dna.yaml will be deleted...
+      modifiers:
+        properties:
+          maxChunkSize: 524288
+          maxParcelSize: 104857600
+          maxParcelNameLength: 256
+          minParcelNameLength: 1
+          maxTagNameLength: 32
+          minTagNameLength: 2

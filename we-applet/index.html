@@ -12,27 +12,12 @@
     <title>Files we-applet</title>
   </head>
 
-  <body>
-
+  <body style="margin: 0px;">
     <script type="module">
-      console.log("file-share-applet index.html START");
-      export let BUILD_MODE = "prod";
-      try {
-        BUILD_MODE = process.env.BUILD_MODE;
-      } catch (e) {
-        console.log(`BUILD_MODE env variable not set. Defaulting to "prod".`)
-      }
-      console.log("BUILD_MODE", BUILD_MODE);
-
-
+      console.log("Files we-applet index.html START");
       import filesAPI from "./out-tsc";
       console.log("Imported filesAPI");
-
-      if (BUILD_MODE == "devtest") {
-        filesAPI.setupDemo();
-      } else {
-        filesAPI.setup();
-      }
+      filesAPI.setup(filesAPI.createFileShareApplet);
     </script>
   </body>
 </html>

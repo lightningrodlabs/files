@@ -1,7 +1,7 @@
-import {setupDemo} from "./setupDemo";
 import {setup} from "./setup";
+import {createFileShareApplet} from "./files-applet/createFileShareApplet";
 
 export default {
-    setupDemo,
     setup,
+    createFileShareApplet,
 };

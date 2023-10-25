@@ -16,7 +16,7 @@ import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
 import {ProfilesClient} from "@holochain-open-dev/profiles";
 import {FileShareApp} from "@file-share/app";
-import {ProfilesApi} from "./profilesApi";
+import {ProfilesApi} from "../profilesApi";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 

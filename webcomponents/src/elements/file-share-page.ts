@@ -469,7 +469,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 <ul>${unrepliedInbounds}</ul>
             ` : html``}
             <!-- Recent Activity -->
-            <h2>Recent Activities</h2>
+            <h2>Recent Activity</h2>
             <activity-timeline @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}></activity-timeline>`;
     }
 

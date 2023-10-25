@@ -7,11 +7,10 @@ import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
 import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 import {weServicesMock} from "./mock";
 import {AppletInfo, EntryLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
-import {createFileShareApplet} from "./createFileShareApplet";
 
 
 /** */
-export async function setupDemo() {
+export async function setupDevtest(createApplet) {
     console.log("setupDemo()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
     setBasePath('../../node_modules/@shoelace-style/shoelace/dist');
@@ -88,7 +87,7 @@ export async function setupDemo() {
     mockProfilesZome.create_profile({nickname: "Alex", fields: {}})
     const mockAppInfo = await mockProfilesZome.appInfo();
     console.log("mockAppInfo", mockAppInfo);
-    const applet = await createFileShareApplet(
+    const applet = await createApplet(
         appAgentWs,
         fileShareAppletHash,
         new ProfilesClient((mockProfilesZome as any), /*mockProfilesZome.roleName*/ "lobby"),
