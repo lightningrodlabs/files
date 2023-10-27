@@ -1,9 +1,15 @@
-import {setup} from "./setup";
-import {createFileShareApplet} from "./files-applet/createFileShareApplet";
-import {fileShareNames} from "./files-applet/appletServices";
+import {DevTestNames, setup} from "@ddd-qc/we-utils";
+import {appletServices} from "./appletServices/appletServices";
+import {createFileShareApplet} from "./createFileShareApplet";
 
-export default {
-    setup,
-    createFileShareApplet,
-    fileShareNames,
-};
+
+/** */
+async function setupFilesApplet() {
+    const fileShareNames: DevTestNames = {
+        installed_app_id: "file_share-applet",
+        provisionedRoleName: "rFileShare",
+    }
+    return setup(appletServices, createFileShareApplet, fileShareNames);
+}
+
+export default setupFilesApplet;

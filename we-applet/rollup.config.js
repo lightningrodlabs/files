@@ -95,6 +95,7 @@ export default {
         //{ src: "index.html", dest: DIST_FOLDER },
         { src: "../assets/favicon.ico", dest: DIST_FOLDER },
         { src: "../assets/icon.png", dest: DIST_FOLDER + "/assets" },
+        { src: "../assets/icon.png", dest: DIST_FOLDER },
         { src: "../assets/favicon.png", dest: DIST_FOLDER + "/assets" },
         { src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css", dest: DIST_FOLDER, rename: "styles.css" },
         //{ src: '../node_modules/@shoelace-style/shoelace', dest: DIST_FOLDER }

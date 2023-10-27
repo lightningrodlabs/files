@@ -15,9 +15,9 @@
   <body style="margin: 0px;">
     <script type="module">
       console.log("Files we-applet index.html START");
-      import filesAPI from "./out-tsc";
-      console.log("Imported filesAPI");
-      const happElem = await filesAPI.setup(filesAPI.createFileShareApplet, filesAPI.fileShareNames);
+      import setupFilesApplet from "./out-tsc";
+      console.log("Imported setupFilesApplet");
+      const happElem = await setupFilesApplet();
       document.body.append(happElem);
     </script>
   </body>

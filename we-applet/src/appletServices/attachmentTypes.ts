@@ -1,6 +1,6 @@
 import {ActionHash, AppAgentClient, decodeHashFromBase64, encodeHashToBase64, EntryHash} from "@holochain/client";
 import {AttachmentName, AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
-import {asCellProxy, wrapPathInSvg} from "../we-utils";
+import {asCellProxy, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {FileShareProxy} from "@file-share/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiFileOutline } from "@mdi/js";

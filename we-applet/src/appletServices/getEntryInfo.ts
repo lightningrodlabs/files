@@ -1,5 +1,5 @@
 
-import {asCellProxy} from "../we-utils";
+import {asCellProxy} from "@ddd-qc/we-utils";
 import {encodeHashToBase64} from "@holochain/client";
 import {FileShareProxy} from "@file-share/elements";
 

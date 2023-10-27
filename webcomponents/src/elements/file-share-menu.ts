@@ -260,6 +260,7 @@ export class FileShareMenu extends DnaElement<FileShareDvmPerspective, FileShare
                 display: block;
                 overflow-y: auto;
                 height: 100%;
+                min-width: 210px;
               }
 
               sl-menu {
