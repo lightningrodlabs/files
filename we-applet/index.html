@@ -15,6 +15,9 @@
   <body style="margin: 0px;">
     <script type="module">
       console.log("Files we-applet index.html START");
+      window.IN_WE = true;
+    </script>
+    <script type="module">
       import setupFilesApplet from "./out-tsc";
       console.log("Imported setupFilesApplet");
       const happElem = await setupFilesApplet();

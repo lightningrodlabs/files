@@ -1,11 +1,11 @@
 import {
-  AppAgentClient,
   AppAgentWebsocket,
-  EntryHash
 } from "@holochain/client";
 //import { msg } from "@lit/localize";
 
 import {
+  AppletView,
+  RenderInfo,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
@@ -14,9 +14,8 @@ import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
 
-import {ProfilesClient} from "@holochain-open-dev/profiles";
 import {FileShareApp} from "@file-share/app";
-import {ProfilesApi} from "@ddd-qc/we-utils";
+import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 
@@ -29,23 +28,28 @@ import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 
 /** */
 export async function createFileShareApplet(
-  client: AppAgentClient,
-  thisAppletHash: EntryHash,
-  profilesClient: ProfilesClient,
-  weServices: WeServices
+  renderInfo: RenderInfo,
+  weServices: WeServices,
 ): Promise<FileShareApp> {
 
-  console.log("createFileShareApplet() client", client);
-  console.log("createFileShareApplet() thisAppletId", thisAppletHash);
+  if (renderInfo.type =="cross-applet-view") {
+    throw Error("cross-applet-view not implemented by Files");
+  }
 
-  const mainAppInfo = await client.appInfo();
+  const appletViewInfo = renderInfo as AppletViewInfo;
+  const profilesClient = appletViewInfo.profilesClient;
+
+  console.log("createFileShareApplet() client", appletViewInfo.appletClient);
+  console.log("createFileShareApplet() thisAppletId", appletViewInfo.appletHash);
+
+  const mainAppInfo = await appletViewInfo.appletClient.appInfo();
 
   console.log("createFileShareApplet() mainAppInfo", mainAppInfo);
 
-  const showFileOnly = false; // FIXME
+  //const showFileOnly = false; // FIXME
 
   /** Determine profilesAppInfo */
-  const mainAppAgentWs = client as AppAgentWebsocket;
+  const mainAppAgentWs = appletViewInfo.appletClient as AppAgentWebsocket;
   const mainAppWs = mainAppAgentWs.appWebsocket;
   let profilesAppInfo = await profilesClient.client.appInfo();
   console.log("createFileShareApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
@@ -68,7 +72,7 @@ export async function createFileShareApplet(
   const app = await FileShareApp.fromWe(
     mainAppWs, undefined, false, mainAppInfo.installed_app_id,
     profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
-    weServices, thisAppletHash, showFileOnly);
+    weServices, appletViewInfo.appletHash, appletViewInfo.view);
   console.log("createFileShareApplet() app", app);
   /** Done */
   return app;

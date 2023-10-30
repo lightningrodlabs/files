@@ -6,14 +6,11 @@ import {
   AgentPubKeyB64,
   AppWebsocket,
   DnaDefinition, encodeHashToBase64, EntryHash,
-  EntryHashB64,
   InstalledAppId,
-  RoleName, ZomeName
+  ZomeName
 } from "@holochain/client";
 import {
-  HvmDef, HappElement, HCL,
-  ViewCellContext,
-  CellDef, CellContext, delay, Cell,
+  HvmDef, HappElement, HCL, Cell,
   BaseRoleName,
   CloneId,
   AppProxy,
@@ -26,8 +23,8 @@ import {
   globalProfilesContext,
   ProfilesDvm
 } from "@file-share/elements";
-import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES, IS_DEV, BUILD_MODE} from "./globals";
-import {WeClient, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES} from "./globals";
+import {AppletId, AppletView, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 
 
 /**
@@ -51,7 +48,7 @@ export class FileShareApp extends HappElement {
 
 
   /** All arguments should be provided when constructed explicity */
-  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public showEntryOnly?: boolean) {
+  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
     super(appWs ? appWs : HC_APP_PORT, appId);
     console.log("FileShareApp.HVM_DEF", FileShareApp.HVM_DEF);
     if (_canAuthorizeZfns == undefined) {
@@ -68,7 +65,7 @@ export class FileShareApp extends HappElement {
   protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _attachmentsProvider?: unknown;
-  public appletHash?: EntryHashB64;
+  public appletId?: AppletId;
   //public weServices?: WeServices;
 
   /**  */
@@ -84,14 +81,15 @@ export class FileShareApp extends HappElement {
       profilesProxy: AppProxy,
       weServices: WeServices,
       thisAppletHash: EntryHash,
-      showEntryOnly?: boolean,
+      //showEntryOnly?: boolean,
+      appletView: AppletView,
   ) : Promise<FileShareApp> {
-    const app = new FileShareApp(appWs, adminWs, canAuthorizeZfns, appId, showEntryOnly);
+    const app = new FileShareApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
     //app.weServices = weServices;
     app._weProvider = new ContextProvider(app, weClientContext, weServices);
-    app.appletHash = encodeHashToBase64(thisAppletHash);
+    app.appletId = encodeHashToBase64(thisAppletHash);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<files-app>.ctor()", profilesProxy);
     await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
@@ -190,19 +188,17 @@ export class FileShareApp extends HappElement {
   /** */
   async perspectiveInitializedOnline(): Promise<void> {
     console.log("<fileshare-app>.perspectiveInitializedOnline()");
-    await this.hvm.probeAll();
-    /** Done */
-    //this._loaded = true;
+    if (this.appletView && this.appletView.type == "main") {
+      await this.hvm.probeAll();
+    }
   }
 
 
   /** */
   render() {
-    console.log("*** <fileshare-app> render()", this._loaded, this._hasHolochainFailed)
+    console.log("*** <fileshare-app> render()", this._loaded, this._hasHolochainFailed);
 
-    let weClient: WeClient; // FIXME
-
-    if (!this._loaded || (weClient && !weClient.renderInfo)) {
+    if (!this._loaded) {
       //return html`<span>Loading...</span>`;
       return html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;
     }
@@ -215,27 +211,24 @@ export class FileShareApp extends HappElement {
     const zomeNames = this._dnaDef?.coordinator_zomes.map((zome) => { return zome[0]; });
     console.log({zomeNames});
 
-    let view = html`<file-share-page devmode=${BUILD_MODE}></file-share-page>`;
+    let view = html`<file-share-page></file-share-page>`;
 
-    if (weClient) {
-      switch (weClient.renderInfo.type) {
-        case "applet-view":
-          switch (weClient.renderInfo.view.type) {
+    if (this.appletView) {
+          switch (this.appletView.type) {
             case "main":
               break;
             case "block":
               throw new Error("Block view is not implemented.");
             case "entry":
-              const entryViewInfo = weClient.renderInfo.view;
-              if (entryViewInfo.roleName != "rFileShare") {
-                throw new Error(`Files/we-applet: Unknown role name '${entryViewInfo.roleName}'.`);
+              if (this.appletView.roleName != "rFileShare") {
+                throw new Error(`Files/we-applet: Unknown role name '${this.appletView.roleName}'.`);
               }
-              if (entryViewInfo.integrityZomeName != "file_share_integrity") {
-                throw new Error(`Files/we-applet: Unknown zome '${entryViewInfo.integrityZomeName}'.`);
+              if (this.appletView.integrityZomeName != "file_share_integrity") {
+                throw new Error(`Files/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
               }
-              switch (entryViewInfo.entryType) {
+              switch (this.appletView.entryType) {
                 case "file":
-                  console.log("File entry:", encodeHashToBase64(entryViewInfo.hrl[1]));
+                  console.log("File entry:", encodeHashToBase64(this.appletView.hrl[1]));
 
                   // // TODO: Figure out why cell-context doesn't propagate normally via FileShareApp and has to be inserted again within the slot
                   // view = html`
@@ -244,23 +237,16 @@ export class FileShareApp extends HappElement {
                   //   </cell-context>
                   // `;
 
-                  view = html`<file-view .hash=${encodeHashToBase64(entryViewInfo.hrl[1])}></file-view>`;
+                  view = html`<file-view .hash=${encodeHashToBase64(this.appletView.hrl[1])}></file-view>`;
                 break;
                 default:
-                  throw new Error(`Unknown entry type ${entryViewInfo.entryType}.`);
+                  throw new Error(`Unknown entry type ${this.appletView.entryType}.`);
                 }
               break;
             default:
-              console.error("We applet-view type:", weClient.renderInfo.view);
+              console.error("We applet-view type:", this.appletView);
               throw new Error(`Unknown We applet-view type`);
           }
-          break;
-        case "cross-applet-view":
-          break;
-        default:
-          console.error("We renderInfo:", weClient.renderInfo);
-          throw new Error(`Unknown We render view type`);
-      }
     }
 
     /* render all */

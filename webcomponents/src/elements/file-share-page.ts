@@ -1,6 +1,6 @@
 import {css, html, TemplateResult} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
 import {AppletInfo, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
@@ -905,6 +905,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             }
         }
 
+        const isInDev = HAPP_ENV == HappEnvType.Devtest || HappEnvType.DevtestWe || HappEnvType.DevTestHolo;
 
         /** Render all */
         return html`
@@ -925,7 +926,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                     <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
-                    ${this.devmode && this.devmode.slice(0, 3).toLowerCase() == "dev"? html`
+                    ${isInDev? html`
                         <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
                         <button type="button" @click=${() => {this.refresh();}}>refresh</button>
                     `: html``

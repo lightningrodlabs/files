@@ -37,9 +37,9 @@
     "prodtest"           : "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
 
     "_save-ports"        : "echo $HC_APP_PORT > .hc_app_$INDEX && echo $HC_ADMIN_PORT > .hc_admin_$INDEX",
-    "start:mem"          : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
-    "start:local"        : "echo START:LOCAL $INDEX & cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run _save-ports\" \"npm run dev:components\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
-    "start:public"       : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:public\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:mem"          : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:local"        : "echo START:LOCAL $INDEX & cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' ADD_PROFILES=1 concurrently \"npm run _save-ports\" \"npm run dev:components\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:public"       : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:public\" \"sleep 7 && npm run start:ui -w webapp\"",
 
     "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ -a FileShareDev --run=$HC_APP_PORT network mem",
     "new-sandbox:public" : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ --run=$HC_APP_PORT -a FileShareDev network --bootstrap https://bootstrap.holo.host/ webrtc wss://signal.holo.host",
@@ -52,7 +52,7 @@
     "network:we"         : "npm run clean:hc & npm run network:local2 -w we-applet",
 
     "local:sandbox"      : "echo INDEX $INDEX & echo PORTS $BOOT_PORT $SIGNAL_PORT $HC_APP_PORT $HC_ADMIN_PORT & RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT run $INDEX",
-    "_local"             : "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) HC_APP_PORT=$(cat .hc_app_$INDEX) HC_ADMIN_PORT=$(cat .hc_admin_$INDEX) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run local:sandbox\" \"sleep 7 && npm run start:ui-only -w webapp\"",
+    "_local"             : "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) HC_APP_PORT=$(cat .hc_app_$INDEX) HC_ADMIN_PORT=$(cat .hc_admin_$INDEX) HAPP_BUILD_MODE='Debug' ADD_PROFILES=1 concurrently \"npm run local:sandbox\" \"sleep 7 && npm run start:ui-only -w webapp\"",
     "local0"             : "cross-env INDEX=0 npm run _local",
     "local1"             : "cross-env INDEX=1 npm run _local",
     "local2"             : "cross-env INDEX=2 npm run _local",
@@ -90,8 +90,9 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@ddd-qc/cell-proxy": "=0.19.11",
-    "@ddd-qc/lit-happ": "=0.19.11",
+    "@ddd-qc/cell-proxy": "=0.19.14",
+    "@ddd-qc/lit-happ": "=0.19.14",
+    "@ddd-qc/we-utils": "=0.19.15",
     "@ddd-qc/path-explorer": "=0.2.0",
     "@holochain-open-dev/core-types": "0.6.3",
     "@holochain-open-dev/profiles": "^0.16.1",
