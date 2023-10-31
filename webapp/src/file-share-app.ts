@@ -203,7 +203,7 @@ export class FileShareApp extends HappElement {
       return html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;
     }
     if(this._hasHolochainFailed) {
-      return html`<div style="width: auto; height: auto; font-size: 4rem;">Failed to connect to local Holochain Conductor</div>`;
+      return html`<div style="width: auto; height: auto; font-size: 4rem;">Failed to connect to Holochain Conductor</div>`;
     }
 
 
@@ -214,39 +214,39 @@ export class FileShareApp extends HappElement {
     let view = html`<file-share-page></file-share-page>`;
 
     if (this.appletView) {
-          switch (this.appletView.type) {
-            case "main":
-              break;
-            case "block":
-              throw new Error("Block view is not implemented.");
-            case "entry":
-              if (this.appletView.roleName != "rFileShare") {
-                throw new Error(`Files/we-applet: Unknown role name '${this.appletView.roleName}'.`);
-              }
-              if (this.appletView.integrityZomeName != "file_share_integrity") {
-                throw new Error(`Files/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
-              }
-              switch (this.appletView.entryType) {
-                case "file":
-                  console.log("File entry:", encodeHashToBase64(this.appletView.hrl[1]));
-
-                  // // TODO: Figure out why cell-context doesn't propagate normally via FileShareApp and has to be inserted again within the slot
-                  // view = html`
-                  //   <cell-context .cell=${this.fileShareDvm.cell}>
-                  //     <file-view .hash=${encodeHashToBase64(hrl[1])}></file-view>
-                  //   </cell-context>
-                  // `;
-
-                  view = html`<file-view .hash=${encodeHashToBase64(this.appletView.hrl[1])}></file-view>`;
-                break;
-                default:
-                  throw new Error(`Unknown entry type ${this.appletView.entryType}.`);
-                }
-              break;
-            default:
-              console.error("We applet-view type:", this.appletView);
-              throw new Error(`Unknown We applet-view type`);
+      switch (this.appletView.type) {
+        case "main":
+          break;
+        case "block":
+          throw new Error("Block view is not implemented.");
+        case "entry":
+          if (this.appletView.roleName != "rFileShare") {
+            throw new Error(`Files/we-applet: Unknown role name '${this.appletView.roleName}'.`);
           }
+          if (this.appletView.integrityZomeName != "file_share_integrity") {
+            throw new Error(`Files/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
+          }
+          switch (this.appletView.entryType) {
+            case "file":
+              console.log("File entry:", encodeHashToBase64(this.appletView.hrl[1]));
+
+              // // TODO: Figure out why cell-context doesn't propagate normally via FileShareApp and has to be inserted again within the slot
+              // view = html`
+              //   <cell-context .cell=${this.fileShareDvm.cell}>
+              //     <file-view .hash=${encodeHashToBase64(hrl[1])}></file-view>
+              //   </cell-context>
+              // `;
+
+              view = html`<file-view .hash=${encodeHashToBase64(this.appletView.hrl[1])}></file-view>`;
+            break;
+            default:
+              throw new Error(`Unknown entry type ${this.appletView.entryType}.`);
+            }
+          break;
+        default:
+          console.error("We applet-view type:", this.appletView);
+          throw new Error(`Unknown We applet-view type`);
+      }
     }
 
     /* render all */
