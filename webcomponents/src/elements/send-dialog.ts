@@ -10,11 +10,11 @@ import {arrayBufferToBase64, prettyFileSize, splitData, splitFile, SplitObject} 
 import {toastError} from "../toast";
 import {AgentPubKeyB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {ProfilesPerspective, ProfilesZvm} from "../viewModels/profiles.zvm";
 import {ComboBoxFilterChangedEvent} from "@vaadin/combo-box";
 import {ComboBoxLitRenderer, comboBoxRenderer} from "@vaadin/combo-box/lit";
 import {TagList} from "./tag-list";
 import {kind2Icon} from "../fileTypeUtils";
+import {ProfilesPerspective, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 interface AgentItem {

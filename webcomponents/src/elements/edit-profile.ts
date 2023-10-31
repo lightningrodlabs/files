@@ -3,10 +3,8 @@ import { customElement, property } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import { onSubmit, sharedStyles } from '@holochain-open-dev/elements';
 
-import {FileShareProfile} from "../viewModels/profiles.proxy";
-
-
 import '@holochain-open-dev/elements/dist/elements/select-avatar.js';
+import {ProfileMat} from "@ddd-qc/profiles-dvm";
 
 
 const MIN_NICKNAME_LENGTH = 2
@@ -23,7 +21,7 @@ export class EditProfile extends LitElement {
    * The profile to be edited.
    */
   @property({ type: Object })
-  profile: FileShareProfile | undefined;
+  profile: ProfileMat | undefined;
 
 
 
@@ -34,7 +32,7 @@ export class EditProfile extends LitElement {
     const nickname = fields['nickname'];
     delete fields['nickname'];
 
-    const profile: FileShareProfile = {
+    const profile: ProfileMat = {
       fields,
       nickname,
     };

@@ -1,11 +1,3 @@
-import {
-    AgentPubKeyB64,
-    EntryHash,
-} from "@holochain/client";
-import {FileShareProfile} from "./viewModels/profiles.proxy";
-import {html, TemplateResult} from "lit";
-import {ProfilesPerspective} from "./viewModels/profiles.zvm";
-
 
 /** */
 export function prettyFileSize(size: number): string {
@@ -19,22 +11,14 @@ export function prettyFileSize(size: number): string {
 }
 
 
-/** */
-export async function emptyAppletHash(): Promise<EntryHash> {
-    const zeroBytes = new Uint8Array(36).fill(0);
-    return new Uint8Array([0x84, 0x21, 0x24, ...zeroBytes]);
-}
-
-/** */
-export function getInitials(nickname: string): string {
-    const names = nickname.split(' ');
-    let initials = names[0].substring(0, 1).toUpperCase();
-    if (names.length > 1) {
-        initials += names[names.length - 1].substring(0, 1).toUpperCase();
-    } else {
-        initials += names[0].substring(1, 2);
+/** Make a pretty data string from a holochain timestamp */
+export function prettyTimestamp(ts: number): string {
+    if (ts <= 0) {
+        return "N/A";
     }
-    return initials;
+    const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+    const date_str = date.toLocaleString('en-US', {hour12: false});
+    return date_str;
 }
 
 
@@ -120,39 +104,4 @@ export async function splitData(full_data_string: string, chunkMaxSize: number):
         numChunks: chunks.length,
         chunks: chunks,
     };
-}
-
-
-/** Make a pretty data string from a holochain timestamp */
-export function prettyTimestamp(ts: number): string {
-    if (ts <= 0) {
-        return "N/A";
-    }
-    const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-    const date_str = date.toLocaleString('en-US', {hour12: false});
-    return date_str;
-}
-
-
-
-/** */
-export function agent2avatar(key: AgentPubKeyB64, profilesPerspective: ProfilesPerspective): [FileShareProfile, TemplateResult<1>] {
-    let profile = {nickname: "unknown", fields: {}} as FileShareProfile;
-    const maybeProfile = profilesPerspective.profiles[key];
-    if (maybeProfile) {
-        profile = maybeProfile;
-    } else {
-        console.log("Profile not found for agent", key, profilesPerspective.profiles)
-    }
-    const initials = getInitials(profile.nickname);
-    const avatarUrl = profile.fields['avatar'];
-    const avatar =
-        avatarUrl? html`
-          <sl-avatar class="activityAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-              <img src=${avatarUrl}>
-        </sl-avatar>                   
-            ` : html`
-        <sl-avatar class="activityAvatar" shape="circle" initials=${initials} color-scheme="Accent2"></sl-avatar>
-                `;
-    return [profile, avatar];
 }

@@ -7,10 +7,10 @@ import {
 } from "@holochain/client";
 import {consume} from "@lit-labs/context";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
 import {sharedStyles} from "../sharedStyles";
+import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 
 

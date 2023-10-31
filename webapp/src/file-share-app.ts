@@ -21,10 +21,10 @@ import {
   DEFAULT_FILESHAREDEV_DEF,
   FileShareDvm,
   globalProfilesContext,
-  ProfilesDvm
 } from "@file-share/elements";
 import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES} from "./globals";
 import {AppletId, AppletView, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 
 
 /**

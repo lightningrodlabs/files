@@ -7,10 +7,8 @@ import {AppletInfo, weClientContext, WeServices} from "@lightningrodlabs/we-appl
 import {consume} from "@lit-labs/context";
 
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
-import {FileShareProfile} from "../viewModels/profiles.proxy";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {emptyAppletHash, prettyFileSize, prettyTimestamp, SplitObject} from "../utils";
+import {prettyFileSize, prettyTimestamp, SplitObject} from "../utils";
 import {DeliveryPerspective, DeliveryStateType, ParcelReference} from "@ddd-qc/delivery";
 import {
     FileShareDvmPerspective,
@@ -84,7 +82,8 @@ import {DistributionTableItem} from "./distribution-table";
 import {columnBodyRenderer} from "@vaadin/grid/lit";
 import {ActionOverlay} from "./action-overlay";
 import {countFileTypes, FileType, kind2Type, type2Icon} from "../fileTypeUtils";
-
+import {ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {emptyAppletHash} from "@ddd-qc/we-utils";
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
 
@@ -103,7 +102,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** -- Fields -- */
     @state() private _initialized = false;
-    @property() appletHash: EntryHashB64;
+    @property() appletId: string;
 
     @property() devmode?: string;
 
@@ -124,7 +123,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
     @consume({ context: weClientContext, subscribe: true })
     weServices!: WeServices;
 
-    private _myProfile: FileShareProfile = {nickname: "unknown", fields: {}}
+    private _myProfile: ProfileMat = {nickname: "unknown", fields: {}}
 
 
     /** AppletId -> AppletInfo */
@@ -185,11 +184,11 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
     /** After first render only */
     async firstUpdated() {
-        console.log("<file-share-page> firstUpdated()", this.appletHash);
+        console.log("<file-share-page> firstUpdated()", this.appletId);
         /** Generate test data */
-        if (!this.appletHash) {
-            this.appletHash = encodeHashToBase64(await emptyAppletHash());
-            console.warn("no appletHash provided. A fake one has been generated", this.appletHash);
+        if (!this.appletId) {
+            this.appletId = encodeHashToBase64(await emptyAppletHash());
+            console.warn("no appletHash provided. A fake one has been generated", this.appletId);
         }
     }
 
@@ -395,7 +394,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     /** */
-    private async onSaveProfile(profile: FileShareProfile) {
+    private async onSaveProfile(profile: ProfileMat) {
         console.log("onSavProfile()", this._myProfile)
         try {
             await this._profilesZvm.updateMyProfile(profile);
@@ -490,7 +489,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         }
 
         /** This agent's profile info */
-        let agent = {nickname: "unknown", fields: {}} as FileShareProfile;
+        let agent = {nickname: "unknown", fields: {}} as ProfileMat;
         let maybeAgent = this._myProfile;
         if (maybeAgent) {
             agent = maybeAgent;

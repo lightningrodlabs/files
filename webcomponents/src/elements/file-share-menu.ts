@@ -6,10 +6,10 @@ import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
 import {DeliveryPerspective} from "@ddd-qc/delivery";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {sharedStyles} from "../sharedStyles";
 import {SlDrawer, SlMenu, SlMenuItem} from "@shoelace-style/shoelace";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
+import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 /** */

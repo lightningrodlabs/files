@@ -3,17 +3,14 @@ import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {consume} from "@lit-labs/context";
 import {FileShareDvm} from "../viewModels/fileShare.dvm";
-import {FileShareProfile} from "../viewModels/profiles.proxy";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {
-    DeliveryEntryType,
     DeliveryPerspective,
 } from "@ddd-qc/delivery";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
-import {agent2avatar, getInitials} from "../utils";
 import {FileView} from "./file-view";
 import {sharedStyles} from "../sharedStyles";
+import {ProfilesZvm, agent2avatar} from "@ddd-qc/profiles-dvm";
 
 
 /** */

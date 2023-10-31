@@ -1,12 +1,10 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {sharedStyles} from "../sharedStyles";
-import {SlInput} from "@shoelace-style/shoelace";
 import {AgentPubKeyB64} from "@holochain/client";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
-import {getInitials} from "../utils";
+import {ProfilesZvm, getInitials} from "@ddd-qc/profiles-dvm";
 
 
 /**

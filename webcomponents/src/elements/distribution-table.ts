@@ -2,19 +2,17 @@ import {css, html, LitElement} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {
     ActionHashB64,
-    AgentPubKeyB64, encodeHashToBase64,
-    EntryHash,
+    AgentPubKeyB64,
     EntryHashB64,
 } from "@holochain/client";
 import {prettyFileSize, prettyTimestamp} from "../utils";
-import {DeliveryState, ParcelReference} from "@ddd-qc/delivery";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {DeliveryStateType, ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {sharedStyles} from "../sharedStyles";
 import {kind2Type} from "../fileTypeUtils";
+import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 export interface DistributionTableItem {

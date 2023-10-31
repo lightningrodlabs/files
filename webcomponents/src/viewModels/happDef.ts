@@ -1,8 +1,7 @@
 import {HvmDef} from "@ddd-qc/lit-happ";
 import {Context, createContext} from "@lit-labs/context";
-import {ProfilesZvm} from "./profiles.zvm";
 import {FileShareDvm} from "./fileShare.dvm";
-import {ProfilesDvm} from "./profiles.dvm";
+import {ProfilesDvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 ///** DNA PROPERTIES (must be set to this in dna.yaml */
 // export const maxChunkSize = 204800;
