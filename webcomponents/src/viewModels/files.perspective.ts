@@ -16,16 +16,16 @@ interface UploadState {
 
 
 /** */
-export interface FileShareDvmPerspective {
+export interface FilesDvmPerspective {
     /** */
     uploadState?: UploadState;
     /** Notifications */
-    notificationLogs: [Timestamp, FileShareNotificationType, FileShareNotification][];
+    notificationLogs: [Timestamp, FilesNotificationType, FilesNotification][];
 }
 
 
 /** */
-export enum FileShareNotificationType {
+export enum FilesNotificationType {
     //NewPublicFile = 'NewPublicFile',
     DeliveryRequestSent = 'DeliveryRequestSent',
     ReceptionComplete = 'ReceptionComplete',
@@ -46,7 +46,7 @@ export type FileShareNotificationVariantNewNoticeReceived = {noticeEh: EntryHash
 export type FileShareNotificationVariantReplyReceived = {distribAh: ActionHashB64, recipient: AgentPubKeyB64, hasAccepted: boolean }
 
 /** */
-export type FileShareNotification =
+export type FilesNotification =
     //| FileShareNotificationVariantNewPublicFile
     | FileShareNotificationVariantDeliveryRequestSent
     | FileShareNotificationVariantReceptionComplete

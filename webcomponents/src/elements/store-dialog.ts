@@ -1,9 +1,9 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {FileShareDvm} from "../viewModels/fileShare.dvm";
+import {FilesDvm} from "../viewModels/files.dvm";
 import {sharedStyles} from "../sharedStyles";
-import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
+import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput} from "@shoelace-style/shoelace";
 import {prettyFileSize, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
@@ -16,7 +16,7 @@ import {kind2Icon} from "../fileTypeUtils";
  * @element
  */
 @customElement("store-dialog")
-export class StoreDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
+export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @state() private _file?: File;
     @state() private _selectedTags = [];

@@ -1,8 +1,8 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {FileShareDvm} from "../viewModels/fileShare.dvm";
-import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
+import {FilesDvm} from "../viewModels/files.dvm";
+import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {DeliveryPerspective} from "@ddd-qc/delivery";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
@@ -35,7 +35,7 @@ export interface SelectedEvent {
  * @element
  */
 @customElement("file-share-menu")
-export class FileShareMenu extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
+export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -56,7 +56,7 @@ export class FileShareMenu extends DnaElement<FileShareDvmPerspective, FileShare
      * In dvmUpdated() this._dvm is not already set!
      * Subscribe to ZVMs
      */
-    protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
+    protected async dvmUpdated(newDvm: FilesDvm, oldDvm?: FilesDvm): Promise<void> {
         console.log("<file-view>.dvmUpdated()");
         if (oldDvm) {
             console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.deliveryZvm.cell.name)

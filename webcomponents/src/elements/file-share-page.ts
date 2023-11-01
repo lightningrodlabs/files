@@ -6,14 +6,14 @@ import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from
 import {AppletInfo, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
 
-import {FileShareDvm} from "../viewModels/fileShare.dvm";
+import {FilesDvm} from "../viewModels/files.dvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {prettyFileSize, prettyTimestamp, SplitObject} from "../utils";
 import {DeliveryPerspective, DeliveryStateType, ParcelReference} from "@ddd-qc/delivery";
 import {
-    FileShareDvmPerspective,
-    FileShareNotification,
-    FileShareNotificationType,
+    FilesDvmPerspective,
+    FilesNotification,
+    FilesNotificationType,
     FileShareNotificationVariantDeliveryRequestSent,
     FileShareNotificationVariantDistributionToRecipientComplete,
     FileShareNotificationVariantNewNoticeReceived,
@@ -21,7 +21,7 @@ import {
     FileShareNotificationVariantPublicSharingComplete,
     FileShareNotificationVariantReceptionComplete,
     FileShareNotificationVariantReplyReceived
-} from "../viewModels/fileShare.perspective";
+} from "../viewModels/files.perspective";
 import {createAlert} from "../toast";
 import {FileShareMenu, SelectedEvent, SelectedType} from "./file-share-menu";
 
@@ -91,7 +91,7 @@ export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/is
  * @element
  */
 @customElement("file-share-page")
-export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
+export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     // constructor() {
     //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
@@ -169,7 +169,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
      * In dvmUpdated() this._dvm is not already set!
      * Subscribe to ZVMs
      */
-    protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
+    protected async dvmUpdated(newDvm: FilesDvm, oldDvm?: FilesDvm): Promise<void> {
         console.log("<file-view>.dvmUpdated()");
         if (oldDvm) {
             console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.fileShareZvm.cell.name)
@@ -281,7 +281,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
 
 
     /** */
-    toastNotif(notifLog: [Timestamp, FileShareNotificationType, FileShareNotification]): void {
+    toastNotif(notifLog: [Timestamp, FilesNotificationType, FilesNotification]): void {
         const type = notifLog[1];
 
         let msg = "";
@@ -292,7 +292,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
         let extraHtml;
         let id;
 
-        if (FileShareNotificationType.DeliveryRequestSent == type) {
+        if (FilesNotificationType.DeliveryRequestSent == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).manifestEh;
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             const recipients = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).recipients;
@@ -307,7 +307,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             title = "File delivery request sent";
             msg = `"${privateManifest.description.name}" to ${recipientName}`;
         }
-        if (FileShareNotificationType.ReceptionComplete == type) {
+        if (FilesNotificationType.ReceptionComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).manifestEh;
             //const noticeEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).noticeEh;
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
@@ -316,7 +316,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             title = "File succesfully received";
             msg = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
         }
-        if (FileShareNotificationType.DistributionToRecipientComplete == type) {
+        if (FilesNotificationType.DistributionToRecipientComplete == type) {
             const distribAh = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).distribAh;
             const recipient = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).recipient;
             const manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[distribAh][0].delivery_summary.parcel_reference.eh);
@@ -328,7 +328,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             title = "File successfully shared";
             msg = `"${privateManifest.description.name}" to ${recipientName}`;
         }
-        if (FileShareNotificationType.PublicSharingComplete == type) {
+        if (FilesNotificationType.PublicSharingComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantPublicSharingComplete).manifestEh;
             const publicManifest = this.deliveryPerspective.localPublicManifests[manifestEh][0];
             variant = 'success';
@@ -342,7 +342,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             console.log("PublicSharingComplete. notifying...", peers);
             this._dvm.deliveryZvm.zomeProxy.notifyNewPublicParcel({peers, timestamp, pr});
         }
-        if (FileShareNotificationType.PrivateCommitComplete == type) {
+        if (FilesNotificationType.PrivateCommitComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantPrivateCommitComplete).manifestEh;
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             variant = 'success';
@@ -350,7 +350,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
             title = "File succesfully added";
             msg = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
         }
-        if (FileShareNotificationType.NewNoticeReceived == type) {
+        if (FilesNotificationType.NewNoticeReceived == type) {
             const noticeEh = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).noticeEh;
             const description = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).description;
             const recipient = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).sender;
@@ -373,7 +373,7 @@ export class FileSharePage extends DnaElement<FileShareDvmPerspective, FileShare
                 </div>
             `;
         }
-        if (FileShareNotificationType.ReplyReceived == type) {
+        if (FilesNotificationType.ReplyReceived == type) {
             const notif = notifLog[2] as FileShareNotificationVariantReplyReceived;
             const distrib = this.deliveryPerspective.distributions[notif.distribAh][0];
             const description = distrib.delivery_summary.parcel_reference.description;

@@ -2,9 +2,9 @@ import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {consume} from "@lit-labs/context";
-import {FileShareDvm} from "../viewModels/fileShare.dvm";
+import {FilesDvm} from "../viewModels/files.dvm";
 import {sharedStyles} from "../sharedStyles";
-import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
+import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput, SlMenu, SlSelect} from "@shoelace-style/shoelace";
 import {arrayBufferToBase64, prettyFileSize, splitData, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
@@ -26,7 +26,7 @@ interface AgentItem {
  * @element
  */
 @customElement("send-dialog")
-export class SendDialog extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
+export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @state() private _allAgents: AgentItem[] = [];
     @state() private _filteredAgents: AgentItem[] = [];

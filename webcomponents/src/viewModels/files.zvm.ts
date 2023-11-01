@@ -1,21 +1,19 @@
 import {
     ActionHashB64,
-    AgentPubKeyB64, AppSignalCb,
+    AgentPubKeyB64,
     decodeHashFromBase64,
     encodeHashToBase64,
     EntryHash, EntryHashB64
 } from '@holochain/client';
-import {delay, ZomeViewModel} from "@ddd-qc/lit-happ";
-import {SplitObject} from "../utils";
+import {ZomeViewModel} from "@ddd-qc/lit-happ";
 import {FilesProxy} from "../bindings/files.proxy";
 import {SendFileInput} from "../bindings/files.types";
-import {ParcelManifest} from "@ddd-qc/delivery";
 
 //import WebWorker from 'web-worker:./commitPrivateFile.ts';
 
 
 /** */
-export class FileShareZvm extends ZomeViewModel {
+export class FilesZvm extends ZomeViewModel {
 
     static readonly ZOME_PROXY = FilesProxy;
 

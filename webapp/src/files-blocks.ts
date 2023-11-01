@@ -1,6 +1,6 @@
 import {TemplateResult, html} from "lit";
 import {FileTableItem} from "@files/elements/dist/elements/file-table";
-import {FileShareDvm} from "@files/elements";
+import {FilesDvm} from "@files/elements";
 
 /** */
 export enum FilesBlockType {
@@ -8,7 +8,7 @@ export enum FilesBlockType {
     PickFile = "PickFile",
 }
 
-export function buildBlock(blockViewInfo: any, filesDvm: FileShareDvm): TemplateResult<1> {
+export function buildBlock(blockViewInfo: any, filesDvm: FilesDvm): TemplateResult<1> {
     const deliveryPerspective = filesDvm.deliveryZvm.perspective;
     switch (blockViewInfo.block) {
         case FilesBlockType.ImportFile:

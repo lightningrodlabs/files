@@ -4,9 +4,9 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {
     EntryHashB64,
 } from "@holochain/client";
-import {FileShareDvm} from "../viewModels/fileShare.dvm";
+import {FilesDvm} from "../viewModels/files.dvm";
 import {sharedStyles} from "../sharedStyles";
-import {FileShareDvmPerspective} from "../viewModels/fileShare.perspective";
+import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
 import {kind2Icon} from "../fileTypeUtils";
 
@@ -15,7 +15,7 @@ import {kind2Icon} from "../fileTypeUtils";
  * @element
  */
 @customElement("file-button")
-export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm> {
+export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** -- Properties -- */
 
@@ -43,7 +43,7 @@ export class FileButton extends DnaElement<FileShareDvmPerspective, FileShareDvm
      * In dvmUpdated() this._dvm is not already set!
      * Subscribe to ZVMs
      */
-    protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
+    protected async dvmUpdated(newDvm: FilesDvm, oldDvm?: FilesDvm): Promise<void> {
         console.log("<file-button>.dvmUpdated()");
         if (oldDvm) {
             console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.taggingZvm.cell.name)

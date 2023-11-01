@@ -19,7 +19,7 @@ import {
 import {
   DEFAULT_FILES_WE_DEF,
   DEFAULT_FILES_DEF,
-  FileShareDvm,
+  FilesDvm,
   globalProfilesContext,
   FILES_DEFAULT_INTEGRITY_ZOME_NAME,
   FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_COORDINATOR_ZOME_NAME
@@ -136,7 +136,7 @@ export class FilesApp extends HappElement {
 
 
   /** QoL */
-  get filesDvm(): FileShareDvm { return this.hvm.getDvm(FileShareDvm.DEFAULT_BASE_ROLE_NAME)! as FileShareDvm }
+  get filesDvm(): FilesDvm { return this.hvm.getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm }
 
 
   /** -- Methods -- */

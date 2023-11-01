@@ -2,7 +2,7 @@ import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {consume} from "@lit-labs/context";
-import {FileShareDvm} from "../viewModels/fileShare.dvm";
+import {FilesDvm} from "../viewModels/files.dvm";
 import {
     DeliveryPerspective,
 } from "@ddd-qc/delivery";
@@ -42,7 +42,7 @@ export type ActivityLog = {timestamp: Timestamp, type: ActivityLogType, value: A
  * @element
  */
 @customElement("activity-timeline")
-export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
+export class ActivityTimeline extends DnaElement<unknown, FilesDvm> {
 
     @state() private _initialized = false;
 
@@ -65,7 +65,7 @@ export class ActivityTimeline extends DnaElement<unknown, FileShareDvm> {
      * In dvmUpdated() this._dvm is not already set!
      * Subscribe to ZVMs
      */
-    protected async dvmUpdated(newDvm: FileShareDvm, oldDvm?: FileShareDvm): Promise<void> {
+    protected async dvmUpdated(newDvm: FilesDvm, oldDvm?: FilesDvm): Promise<void> {
         console.log("<activity-timeline>.dvmUpdated()");
         if (oldDvm) {
             //console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.fileShareZvm.cell.name)

@@ -16,19 +16,19 @@ import {
 } from "@holochain/client";
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
-import {FileShareZvm} from "./fileShare.zvm";
+import {FilesZvm} from "./files.zvm";
 import {base64ToArrayBuffer, splitFile, SplitObject} from "../utils";
 import { decode } from "@msgpack/msgpack";
 import {
-    FileShareDvmPerspective,
-    FileShareNotificationType,
+    FilesDvmPerspective,
+    FilesNotificationType,
     FileShareNotificationVariantDistributionToRecipientComplete,
     FileShareNotificationVariantNewNoticeReceived,
     //FileShareNotificationVariantNewPublicFile,
     FileShareNotificationVariantPrivateCommitComplete,
     FileShareNotificationVariantPublicSharingComplete,
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
-} from "./fileShare.perspective";
+} from "./files.perspective";
 import {TaggingZvm} from "./tagging.zvm";
 import {FILES_DEFAULT_ROLE_NAME} from "../bindings/files.types";
 
@@ -38,7 +38,7 @@ import {FILES_DEFAULT_ROLE_NAME} from "../bindings/files.types";
 /**
  *
  */
-export class FileShareDvm extends DnaViewModel {
+export class FilesDvm extends DnaViewModel {
 
     /** For commit & send follow-up */
     private _mustSendTo?: AgentPubKeyB64[];
@@ -49,7 +49,7 @@ export class FileShareDvm extends DnaViewModel {
 
     static readonly DEFAULT_BASE_ROLE_NAME = FILES_DEFAULT_ROLE_NAME;
     static readonly ZVM_DEFS: ZvmDef[] = [
-        FileShareZvm,
+        FilesZvm,
         TaggingZvm,
         [DeliveryZvm, "zDelivery"],
     ];
@@ -58,14 +58,14 @@ export class FileShareDvm extends DnaViewModel {
 
 
     /** QoL Helpers */
-    get fileShareZvm(): FileShareZvm {return this.getZomeViewModel(FileShareZvm.DEFAULT_ZOME_NAME) as FileShareZvm}
+    get fileShareZvm(): FilesZvm {return this.getZomeViewModel(FilesZvm.DEFAULT_ZOME_NAME) as FilesZvm}
     get deliveryZvm(): DeliveryZvm {return this.getZomeViewModel("zDelivery") as DeliveryZvm}
 
     get taggingZvm(): TaggingZvm {return this.getZomeViewModel("zTagging") as TaggingZvm}
 
     /** -- ViewModel Interface -- */
 
-    private _perspective: FileShareDvmPerspective = {notificationLogs: []};
+    private _perspective: FilesDvmPerspective = {notificationLogs: []};
 
 
     /** */
@@ -89,7 +89,7 @@ export class FileShareDvm extends DnaViewModel {
 
 
     /** */
-    get perspective(): FileShareDvmPerspective { return this._perspective }
+    get perspective(): FilesDvmPerspective { return this._perspective }
 
 
     /** */
@@ -119,7 +119,7 @@ export class FileShareDvm extends DnaViewModel {
                 this.fileShareZvm.sendFile(manifestEh, this._mustSendTo).then((distribAh) => {
                     /** Into Notification */
                     console.log("File delivery request sent", deliverySignal.NewLocalManifest, recipients, this._mustAddTags);
-                    this._perspective.notificationLogs.push([now, FileShareNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipients}]);
+                    this._perspective.notificationLogs.push([now, FilesNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipients}]);
                     if (this._mustAddTags && this._mustAddTags.isPrivate) {
                         /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
                         this._mustAddTags = undefined;
@@ -174,7 +174,7 @@ export class FileShareDvm extends DnaViewModel {
                     noticeEh: encodeHashToBase64(deliverySignal.NewReceptionProof[2].notice_eh),
                     manifestEh: encodeHashToBase64(deliverySignal.NewReceptionProof[2].parcel_eh),
                 } as FileShareNotificationVariantReceptionComplete;
-                this._perspective.notificationLogs.push([now, FileShareNotificationType.ReceptionComplete, notif]);
+                this._perspective.notificationLogs.push([now, FilesNotificationType.ReceptionComplete, notif]);
                 this.notifySubscribers();
             })
         }
@@ -196,7 +196,7 @@ export class FileShareDvm extends DnaViewModel {
                 const notif = {
                     manifestEh: ppEh,
                 } as FileShareNotificationVariantPublicSharingComplete;
-                this._perspective.notificationLogs.push([now, FileShareNotificationType.PublicSharingComplete, notif]);
+                this._perspective.notificationLogs.push([now, FilesNotificationType.PublicSharingComplete, notif]);
                 this._perspective.uploadState = undefined;
 
                 this.notifySubscribers();
@@ -214,7 +214,7 @@ export class FileShareDvm extends DnaViewModel {
                 recipient: encodeHashToBase64(deliverySignal.NewReplyAck[2].recipient),
                 hasAccepted: deliverySignal.NewReplyAck[2].has_accepted,
             } as FileShareNotificationVariantReplyReceived;
-            this._perspective.notificationLogs.push([now, FileShareNotificationType.ReplyReceived, notif]);
+            this._perspective.notificationLogs.push([now, FilesNotificationType.ReplyReceived, notif]);
             this.notifySubscribers();
         }
         if (SignalProtocolType.NewNotice in deliverySignal) {
@@ -226,7 +226,7 @@ export class FileShareDvm extends DnaViewModel {
                 description: deliverySignal.NewNotice[2].summary.parcel_reference.description,
                 sender: encodeHashToBase64(deliverySignal.NewNotice[2].sender),
             } as FileShareNotificationVariantNewNoticeReceived;
-            this._perspective.notificationLogs.push([now, FileShareNotificationType.NewNoticeReceived, notif]);
+            this._perspective.notificationLogs.push([now, FilesNotificationType.NewNoticeReceived, notif]);
             this.notifySubscribers();
         }
         if (SignalProtocolType.NewReceptionAck in deliverySignal) {
@@ -236,7 +236,7 @@ export class FileShareDvm extends DnaViewModel {
                 distribAh: encodeHashToBase64(deliverySignal.NewReceptionAck[2].distribution_ah),
                 recipient: encodeHashToBase64(deliverySignal.NewReceptionAck[2].recipient),
             } as FileShareNotificationVariantDistributionToRecipientComplete;
-            this._perspective.notificationLogs.push([now, FileShareNotificationType.DistributionToRecipientComplete, notif]);
+            this._perspective.notificationLogs.push([now, FilesNotificationType.DistributionToRecipientComplete, notif]);
             this.notifySubscribers();
         }
     }

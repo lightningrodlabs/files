@@ -1,9 +1,5 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
-import {consume} from "@lit-labs/context";
-import {toastError} from "../toast";
-import {prettyFileSize, splitFile} from "../utils";
 import {SlDialog} from "@shoelace-style/shoelace";
 import {sharedStyles} from "../sharedStyles";
 
