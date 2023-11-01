@@ -4,6 +4,7 @@ import {FILES_DEFAULT_ROLE_NAME} from "@files/elements";
 import {AppletServices} from "@lightningrodlabs/we-applet";
 import {attachmentTypes} from "./appletServices/attachmentTypes";
 import {getEntryInfo} from "./appletServices/getEntryInfo";
+import {blockTypes} from "./appletServices/blockTypes";
 
 
 /** */
@@ -15,10 +16,11 @@ async function setupFilesApplet() {
     }
 
     const appletServices: AppletServices = {
-        attachmentTypes,
-        //attachmentTypes: async (_appletClient) => ({}),
+        //attachmentTypes,
+        attachmentTypes: async (_appletClient) => ({}),
         getEntryInfo,
-        blockTypes: {},
+        blockTypes,
+        //blockTypes: {},
         search: async (appletClient, searchFilter) => {return []},
     };
 

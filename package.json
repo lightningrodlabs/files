@@ -94,6 +94,7 @@
     "@ddd-qc/we-utils": "=0.19.19",
     "@ddd-qc/profiles-dvm": "=0.19.20",
     "@ddd-qc/path-explorer": "=0.2.0",
+    "@ddd-qc/delivery": "=0.7.7",
     "@holochain-open-dev/core-types": "0.6.3",
     "@holochain-open-dev/profiles": "^0.16.1",
     "@holochain/client": "=0.16.2",

@@ -21,9 +21,9 @@ import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 
 
 
-// export interface ViewFileContext {
-//   detail: string,
-// }
+export interface ViewFileContext {
+  detail: string,
+}
 
 
 /** */

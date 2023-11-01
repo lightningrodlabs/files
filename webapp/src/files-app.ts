@@ -14,7 +14,7 @@ import {
   BaseRoleName,
   CloneId,
   AppProxy,
-  DvmDef, DnaViewModel
+  DvmDef, DnaViewModel, pascal
 } from "@ddd-qc/lit-happ";
 import {
   DEFAULT_FILES_WE_DEF,
@@ -27,12 +27,15 @@ import {
 import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES} from "./globals";
 import {AppletId, AppletView, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
+import {EntryViewInfo} from "@ddd-qc/we-utils";
+import {DeliveryEntryType} from "@ddd-qc/delivery";
+import {buildBlock} from "./files-blocks";
 
 
 /**
  *
  */
-@customElement("file-share-app")
+@customElement("files-app")
 export class FilesApp extends HappElement {
 
   /** -- Fields -- */
@@ -133,7 +136,7 @@ export class FilesApp extends HappElement {
 
 
   /** QoL */
-  get fileShareDvm(): FileShareDvm { return this.hvm.getDvm(FileShareDvm.DEFAULT_BASE_ROLE_NAME)! as FileShareDvm }
+  get filesDvm(): FileShareDvm { return this.hvm.getDvm(FileShareDvm.DEFAULT_BASE_ROLE_NAME)! as FileShareDvm }
 
 
   /** -- Methods -- */
@@ -159,9 +162,9 @@ export class FilesApp extends HappElement {
       }
     }
     /** Probe */
-    this._cell = this.fileShareDvm.cell; // ???
+    this._cell = this.filesDvm.cell; // ???
     console.log("fileShareDvm.cell", this._cell);
-    this._allAppEntryTypes = await this.fileShareDvm.fetchAllEntryDefs();
+    this._allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
     console.warn(`${FILES_DEFAULT_COORDINATOR_ZOME_NAME} entries`, this._allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]);
     if (this._allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
@@ -220,16 +223,22 @@ export class FilesApp extends HappElement {
         case "main":
           break;
         case "block":
-          throw new Error("Block view is not implemented.");
+          const blockViewInfo = this.appletView as any;
+          view = buildBlock(blockViewInfo, this.filesDvm);
+          break;
         case "entry":
-          if (this.appletView.roleName != FILES_DEFAULT_ROLE_NAME) {
-            throw new Error(`Files/we-applet: Unknown role name '${this.appletView.roleName}'.`);
+          const entryViewInfo = this.appletView as EntryViewInfo;
+          if (entryViewInfo.roleName != FILES_DEFAULT_ROLE_NAME) {
+            throw new Error(`Files/we-applet: Unknown role name '${entryViewInfo.roleName}'.`);
           }
-          if (this.appletView.integrityZomeName != FILES_DEFAULT_INTEGRITY_ZOME_NAME) {
-            throw new Error(`Files/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
+          if (entryViewInfo.integrityZomeName != FILES_DEFAULT_INTEGRITY_ZOME_NAME) {
+            throw new Error(`Files/we-applet: Unknown zome '${entryViewInfo.integrityZomeName}'.`);
           }
-          switch (this.appletView.entryType) {
-            case "file":
+          const entryType = pascal(entryViewInfo.entryType);
+          console.log("pascal entryType", entryType);
+          switch (entryType) {
+            case DeliveryEntryType.PrivateManifest:
+            case DeliveryEntryType.PublicManifest:
               console.log("File entry:", encodeHashToBase64(this.appletView.hrl[1]));
 
               // // TODO: Figure out why cell-context doesn't propagate normally via FileShareApp and has to be inserted again within the slot
