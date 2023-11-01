@@ -3,8 +3,8 @@
 import {ZomeName, FunctionName} from '@holochain/client';
 
 
-/** Array of all zome function names in "fileShare" */
-export const fileShareFunctionNames: FunctionName[] = [
+/** Array of all zome function names in "files" */
+export const filesFunctionNames: FunctionName[] = [
 	"entry_defs", 
 	"get_zome_info", 
 	"get_dna_info",
@@ -26,14 +26,14 @@ export const fileShareFunctionNames: FunctionName[] = [
 
 
 /** Generate tuple array of function names with given zomeName */
-export function generateFileShareZomeFunctionsArray(zomeName: ZomeName): [ZomeName, FunctionName][] {
+export function generateFilesZomeFunctionsArray(zomeName: ZomeName): [ZomeName, FunctionName][] {
    const fns: [ZomeName, FunctionName][] = [];
-   for (const fn of fileShareFunctionNames) {
+   for (const fn of filesFunctionNames) {
       fns.push([zomeName, fn]);
    }
    return fns;
 }
 
 
-/** Tuple array of all zome function names with default zome name "zFileShare" */
-export const fileShareZomeFunctions: [ZomeName, FunctionName][] = generateFileShareZomeFunctionsArray("zFileShare");
+/** Tuple array of all zome function names with default zome name "zFiles" */
+export const filesZomeFunctions: [ZomeName, FunctionName][] = generateFilesZomeFunctionsArray("zFiles");

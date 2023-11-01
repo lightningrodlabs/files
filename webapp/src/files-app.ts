@@ -17,11 +17,13 @@ import {
   DvmDef, DnaViewModel
 } from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_FILESHARE_DEF,
-  DEFAULT_FILESHAREDEV_DEF,
+  DEFAULT_FILES_WE_DEF,
+  DEFAULT_FILES_DEF,
   FileShareDvm,
   globalProfilesContext,
-} from "@file-share/elements";
+  FILES_DEFAULT_INTEGRITY_ZOME_NAME,
+  FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_COORDINATOR_ZOME_NAME
+} from "@files/elements";
 import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES} from "./globals";
 import {AppletId, AppletView, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
@@ -31,11 +33,11 @@ import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
  *
  */
 @customElement("file-share-app")
-export class FileShareApp extends HappElement {
+export class FilesApp extends HappElement {
 
   /** -- Fields -- */
 
-  static readonly HVM_DEF: HvmDef = CAN_ADD_PROFILES? DEFAULT_FILESHAREDEV_DEF : DEFAULT_FILESHARE_DEF;
+  static readonly HVM_DEF: HvmDef = CAN_ADD_PROFILES? DEFAULT_FILES_DEF : DEFAULT_FILES_WE_DEF;
 
   @state() private _loaded = false;
   @state() private _cell?: Cell;
@@ -50,7 +52,7 @@ export class FileShareApp extends HappElement {
   /** All arguments should be provided when constructed explicity */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
     super(appWs ? appWs : HC_APP_PORT, appId);
-    console.log("FileShareApp.HVM_DEF", FileShareApp.HVM_DEF);
+    console.log("FilesApp.HVM_DEF", FilesApp.HVM_DEF);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
@@ -83,8 +85,8 @@ export class FileShareApp extends HappElement {
       thisAppletHash: EntryHash,
       //showEntryOnly?: boolean,
       appletView: AppletView,
-  ) : Promise<FileShareApp> {
-    const app = new FileShareApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
+  ) : Promise<FilesApp> {
+    const app = new FilesApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
     //app.weServices = weServices;
@@ -161,9 +163,9 @@ export class FileShareApp extends HappElement {
     console.log("fileShareDvm.cell", this._cell);
     this._allAppEntryTypes = await this.fileShareDvm.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
-    console.warn("zFileShare entries", this._allAppEntryTypes["zFileShare"]);
-    if (this._allAppEntryTypes["zFileShare"].length == 0) {
-      console.warn("No entries found for zFileShare");
+    console.warn(`${FILES_DEFAULT_COORDINATOR_ZOME_NAME} entries`, this._allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]);
+    if (this._allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+      console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
     } else {
       this._hasHolochainFailed = false;
     }
@@ -220,10 +222,10 @@ export class FileShareApp extends HappElement {
         case "block":
           throw new Error("Block view is not implemented.");
         case "entry":
-          if (this.appletView.roleName != "rFileShare") {
+          if (this.appletView.roleName != FILES_DEFAULT_ROLE_NAME) {
             throw new Error(`Files/we-applet: Unknown role name '${this.appletView.roleName}'.`);
           }
-          if (this.appletView.integrityZomeName != "file_share_integrity") {
+          if (this.appletView.integrityZomeName != FILES_DEFAULT_INTEGRITY_ZOME_NAME) {
             throw new Error(`Files/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
           }
           switch (this.appletView.entryType) {

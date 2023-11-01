@@ -1,7 +1,7 @@
 
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {encodeHashToBase64} from "@holochain/client";
-import {FileShareProxy} from "@file-share/elements";
+import {FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FilesProxy} from "@files/elements";
 
 
 /** */
@@ -12,10 +12,10 @@ export async function getEntryInfo(
     entryType,
     hrl
 ) {
-    if (roleName != "rFileShare") {
+    if (roleName != FILES_DEFAULT_ROLE_NAME) {
         throw new Error(`Files/we-applet: Unknown role name '${roleName}'.`);
     }
-    if (integrityZomeName != "file_share_integrity") {
+    if (integrityZomeName != FILES_DEFAULT_INTEGRITY_ZOME_NAME) {
         throw new Error(`Files/we-applet: Unknown zome '${integrityZomeName}'.`);
     }
 
@@ -28,9 +28,9 @@ export async function getEntryInfo(
                 appletClient,
                 undefined, // hrl[0],
                 mainAppInfo.installed_app_id,
-                "rFileShare");
+                FILES_DEFAULT_ROLE_NAME);
             console.log("Files/we-applet/applet-view cellProxy", cellProxy);
-            const proxy/*: FileShareProxy*/ = new FileShareProxy(cellProxy);
+            const proxy/*: FileShareProxy*/ = new FilesProxy(cellProxy);
             console.log("Files/we-applet/applet-view getFile()", encodeHashToBase64(hrl[1]), proxy);
             const manifest = await proxy.getFileInfo(hrl[1]);
             console.log("Files/we-applet/applet-view file", manifest.description);

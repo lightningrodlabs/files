@@ -1,5 +1,5 @@
 {
-  "name": "file-share-dev",
+  "name": "files-dev",
   "version": "0.1.0",
   "config": {
     "hc_version": "0.2.2",
@@ -23,13 +23,13 @@
     "version"            : "$npm_package_config_bin/hc --version & holochain --version & lair-keystore --version & tsc --version",
 
     "build:zome"         : "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "build:dna"          : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/file_share.dna dna/workdir",
-    "build:profiles"     : "$npm_package_config_bin/hc dna pack -o artifacts/profiles.dna dna/workdir_dev",
-    "build:happ"         : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/file_share.happ dna/workdir",
-    "build:happ:dev"     : "npm run build:dna && npm run build:profiles && $npm_package_config_bin/hc app pack -o artifacts/file_share_dev.happ dna/workdir_dev",
+    "build:dna"          : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/files.dna dna/workdir",
+    "build:profiles"     : "$npm_package_config_bin/hc dna pack -o artifacts/profiles.dna dna/workdir_profiles",
+    "build:happ"         : "npm run build:dna && npm run build:profiles && $npm_package_config_bin/hc app pack -o artifacts/files.happ dna/workdir_standalone",
+    "build:happ:we"      : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/files-we_applet.happ dna/workdir",
     "build:webapp"       : "npm run build -w webcomponents && npm run dist -w webapp",
-    "build:devtest"      : "npm run clean:hc & npm run build:happ:dev && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
-    "build:devtest:we"   : "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
+    "build:devtest"      : "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
+    "build:devtest:we"   : "npm run clean:hc & npm run build:happ:we && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
     "dev:components"     : "npm run build:watch -w webcomponents",
 
     "devtest"            : "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run build:watch -w webapp\" \"npm run start:mem\"",
@@ -41,9 +41,9 @@
     "start:local"        : "echo START:LOCAL $INDEX & cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' ADD_PROFILES=1 concurrently \"npm run _save-ports\" \"npm run dev:components\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
     "start:public"       : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:public\" \"sleep 7 && npm run start:ui -w webapp\"",
 
-    "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ -a FileShareDev --run=$HC_APP_PORT network mem",
-    "new-sandbox:public" : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ --run=$HC_APP_PORT -a FileShareDev network --bootstrap https://bootstrap.holo.host/ webrtc wss://signal.holo.host",
-    "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/file_share_dev.happ --run=$HC_APP_PORT -a FileShareDev network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
+    "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ -a Files --run=$HC_APP_PORT network mem",
+    "new-sandbox:public" : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network --bootstrap https://bootstrap.holo.host/ webrtc wss://signal.holo.host",
+    "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
     "serve:run"          : "$npm_package_config_bin/hc run-local-services --bootstrap-port $BOOT_PORT --signal-port $SIGNAL_PORT",
     "serve:save"         : "echo SIGNAL_PORT=$SIGNAL_PORT && echo $SIGNAL_PORT > .hc_signalenv && echo $BOOT_PORT > .hc_bootenv && echo BOOT_PORT=$BOOT_PORT",
     "serve"              : "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) npm run serve:run",
@@ -57,14 +57,13 @@
     "local1"             : "cross-env INDEX=1 npm run _local",
     "local2"             : "cross-env INDEX=2 npm run _local",
 
-    "launch"             : "echo pass | hc-launch --piped -n 1 artifacts/file_share_dev.webhapp network mem",
-    "launch:we"          : "echo pass | hc-launch --piped -n 1 artifacts/file_share-we_applet.webhapp network mem",
-    "test"               : "npm run build:happ && npm run build -w @file-share/elements && npm t -w @file-share/tests",
+    "launch"             : "echo pass | hc-launch --piped -n 1 artifacts/files.webhapp network mem",
+    "launch:we"          : "echo pass | hc-launch --piped -n 1 artifacts/files-we_applet.webhapp network mem",
 
-    "package:webapp"     : "rm -rf artifacts/file_share-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/file_share-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/file_share.webhapp",
-    "package:we"         : "rm -rf artifacts/file_share-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/file_share-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/file_share-we_applet.webhapp && npm run cp:we",
+    "package:webapp"     : "rm -rf artifacts/files-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/files-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/files.webhapp",
+    "package:we"         : "rm -rf artifacts/files-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/files-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/files-we_applet.webhapp && npm run cp:we",
     "dist:we"            : "npm run build -w we-applet && npm run package:we",
-    "cp:we"              : "cp artifacts/file_share-we_applet.webhapp $npm_package_config_we_test_folder/testing-applets",
+    "cp:we"              : "cp artifacts/files-we_applet.webhapp $npm_package_config_we_test_folder/testing-applets",
 
     "update-version"     : "bash scripts/update-version-number.sh $npm_package_version",
     "dl-test-release"    : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/file-share",

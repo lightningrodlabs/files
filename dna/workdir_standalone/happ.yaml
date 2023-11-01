@@ -1,14 +1,14 @@
 ---
 manifest_version: "1"
-name: FileShareDev
-description: File sharing happ
+name: Files
+description: Files storing & sharing happ
 roles:
-  - name: rFileShare
+  - name: rFiles # Must match value defined in integrity zome
     provisioning:
       strategy: create
       deferred: true
     dna:
-      bundled: "../../artifacts/file_share.dna"
+      bundled: "../../artifacts/files.dna"
       clone_limit: 0
   - name: profiles
     provisioning:

@@ -30,6 +30,7 @@ import {
     FileShareNotificationVariantReceptionComplete, FileShareNotificationVariantReplyReceived
 } from "./fileShare.perspective";
 import {TaggingZvm} from "./tagging.zvm";
+import {FILES_DEFAULT_ROLE_NAME} from "../bindings/files.types";
 
 
 
@@ -46,7 +47,7 @@ export class FileShareDvm extends DnaViewModel {
 
     /** -- DnaViewModel Interface -- */
 
-    static readonly DEFAULT_BASE_ROLE_NAME = "rFileShare";
+    static readonly DEFAULT_BASE_ROLE_NAME = FILES_DEFAULT_ROLE_NAME;
     static readonly ZVM_DEFS: ZvmDef[] = [
         FileShareZvm,
         TaggingZvm,

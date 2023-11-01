@@ -14,7 +14,7 @@ import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
 
-import {FileShareApp} from "@file-share/app";
+import {FilesApp} from "@files/app";
 import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
@@ -30,7 +30,7 @@ import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 export async function createFileShareApplet(
   renderInfo: RenderInfo,
   weServices: WeServices,
-): Promise<FileShareApp> {
+): Promise<FilesApp> {
 
   if (renderInfo.type =="cross-applet-view") {
     throw Error("cross-applet-view not implemented by Files");
@@ -69,7 +69,7 @@ export async function createFileShareApplet(
   const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
   console.log("createFileShareApplet() profilesCellProxy", profilesCellProxy);
   /** Create FileShareApp */
-  const app = await FileShareApp.fromWe(
+  const app = await FilesApp.fromWe(
     mainAppWs, undefined, false, mainAppInfo.installed_app_id,
     profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
     weServices, appletViewInfo.appletHash, appletViewInfo.view);

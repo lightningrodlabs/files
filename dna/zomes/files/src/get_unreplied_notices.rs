@@ -3,7 +3,7 @@ use zome_utils::*;
 
 use zome_delivery_types::*;
 use zome_delivery_api::*;
-use zome_file_share_integrity::*;
+use zome_files_integrity::*;
 
 /// Return ehs of all Notices waiting for a response
 #[hdk_extern]

@@ -5,8 +5,8 @@ members = [
   "dna/zomes/profiles",
   "dna/zomes/delivery_integrity",
   "dna/zomes/delivery",
-  "dna/zomes/file_share_integrity",
-  "dna/zomes/file_share",
+  "dna/zomes/files_integrity",
+  "dna/zomes/files",
   "dna/zomes/tagging_integrity",
   "dna/zomes/tagging",
   #"sweettest" // Don't add this since cargo sucks at target specific compiliation in workspaces

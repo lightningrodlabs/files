@@ -1,2 +1,2 @@
-export * from './file-share-app';
+export * from './files-app';
 export * from './globals';

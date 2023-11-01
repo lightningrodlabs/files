@@ -1,5 +1,5 @@
 [package]
-name = "zome_file_share"
+name = "zome_files_integrity"
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true
@@ -9,10 +9,7 @@ crate-type = [ "cdylib", "rlib" ]
 
 [dependencies]
 serde.workspace = true
-hdk.workspace = true
+hdi.workspace = true
 zome_utils.workspace = true
 
 zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_types", branch = "hdk-2.2" }
-zome_delivery_api = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_api", branch = "hdk-2.2" }
-
-zome_file_share_integrity = {path = "../file_share_integrity" }

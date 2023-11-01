@@ -1,14 +1,14 @@
 ---
 manifest_version: "1"
-name: FileShare
-description: File sharing happ
+name: Files we-applet
+description: File storing & sharing happ
 roles:
-  - name: rFileShare
+  - name: rFiles # Must match value defined in integrity zome
     provisioning:
       strategy: create
       deferred: true
     dna:
-      bundled: "../../artifacts/file_share.dna"
+      bundled: "../../artifacts/files.dna"
       clone_limit: 0
       # HACKISH: Redefining the properties here because otherwise the values from the dna.yaml will be deleted...
       modifiers:

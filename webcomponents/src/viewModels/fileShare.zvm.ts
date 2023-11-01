@@ -7,8 +7,8 @@ import {
 } from '@holochain/client';
 import {delay, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {SplitObject} from "../utils";
-import {FileShareProxy} from "../bindings/file_share.proxy";
-import {SendFileInput} from "../bindings/file_share.types";
+import {FilesProxy} from "../bindings/files.proxy";
+import {SendFileInput} from "../bindings/files.types";
 import {ParcelManifest} from "@ddd-qc/delivery";
 
 //import WebWorker from 'web-worker:./commitPrivateFile.ts';
@@ -17,14 +17,14 @@ import {ParcelManifest} from "@ddd-qc/delivery";
 /** */
 export class FileShareZvm extends ZomeViewModel {
 
-    static readonly ZOME_PROXY = FileShareProxy;
+    static readonly ZOME_PROXY = FilesProxy;
 
     private _allAppletIds: EntryHashB64[] = [];
 
     //private _worker = new Worker("./commitPrivateFile.ts");
 
-    get zomeProxy(): FileShareProxy {
-        return this._zomeProxy as FileShareProxy;
+    get zomeProxy(): FilesProxy {
+        return this._zomeProxy as FilesProxy;
     }
 
 

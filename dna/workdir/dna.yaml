@@ -1,6 +1,6 @@
 ---
 manifest_version: "1"
-name: dFileShare
+name: dFiles
 integrity:
   origin_time: 2023-10-24T13:55:49.200Z
   # WARN: properties might be overridden in the happ.yaml
@@ -12,7 +12,7 @@ integrity:
     maxTagNameLength: 32
     minTagNameLength: 2
   zomes:
-    - name: file_share_integrity
+    - name: files_integrity # Must match value defined in integrity zome
       bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share_integrity.wasm
     - name: tagging_integrity
       bundled: ../../target/wasm32-unknown-unknown/release/zome_tagging_integrity.wasm
@@ -22,10 +22,10 @@ coordinator:
   zomes:
     #- name: zPathExplorer
     #  bundled: ../../target/wasm32-unknown-unknown/release/path_explorer.wasm
-    - name: zFileShare
+    - name: zFiles # Must match value defined in integrity zome
       bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share.wasm
       dependencies:
-        - name: file_share_integrity
+        - name: files_integrity
     - name: zTagging
       bundled: ../../target/wasm32-unknown-unknown/release/tagging.wasm
       dependencies:

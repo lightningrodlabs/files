@@ -1,15 +1,29 @@
 import {DevTestNames, setup} from "@ddd-qc/we-utils";
-import {appletServices} from "./appletServices/appletServices";
 import {createFileShareApplet} from "./createFileShareApplet";
+import {FILES_DEFAULT_ROLE_NAME} from "@files/elements";
+import {AppletServices} from "@lightningrodlabs/we-applet";
+import {attachmentTypes} from "./appletServices/attachmentTypes";
+import {getEntryInfo} from "./appletServices/getEntryInfo";
 
 
 /** */
 async function setupFilesApplet() {
-    const fileShareNames: DevTestNames = {
-        installed_app_id: "file_share-applet",
-        provisionedRoleName: "rFileShare",
+
+    const filesNames: DevTestNames = {
+        installed_app_id: "files-we_applet",
+        provisionedRoleName: FILES_DEFAULT_ROLE_NAME,
     }
-    return setup(appletServices, createFileShareApplet, fileShareNames);
+
+    const appletServices: AppletServices = {
+        attachmentTypes,
+        //attachmentTypes: async (_appletClient) => ({}),
+        getEntryInfo,
+        blockTypes: {},
+        search: async (appletClient, searchFilter) => {return []},
+    };
+
+    return setup(appletServices, createFileShareApplet, filesNames);
 }
+
 
 export default setupFilesApplet;

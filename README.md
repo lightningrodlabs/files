@@ -87,18 +87,19 @@ All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifact
 
 ## Project structure
 
-| Directory                                  | Description                                                                                                                 |
-|:-------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
-| `/artifacts/`                              | Output folder
-| `/dna/`                                    | DNA source code
-| &nbsp;&nbsp;&nbsp;&nbsp;`workdir/`         | Release DNA work directory
-| &nbsp;&nbsp;&nbsp;&nbsp;`workdir_dev/`     | Dev DNA work directory (includes profiles zome)
-| `/scripts/`                                | Tool chain
-| `/we-applet/`                              | The we-applet source code
-| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | we-applet work directory
-| `/webapp/`                                 | The webapp source code
-| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | webhapp work directory
-| `/webcomponents/`                          | The web components source code
+| Directory                                     | Description                                                                                                                 |
+|:----------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
+| `/artifacts/`                                 | Output folder
+| `/dna/`                                       | DNA source code
+| &nbsp;&nbsp;&nbsp;&nbsp;`workdir/`            | Files DNA work directory
+| &nbsp;&nbsp;&nbsp;&nbsp;`workdir_profiles/`   | Profiles DNA work directory
+| &nbsp;&nbsp;&nbsp;&nbsp;`workdir_standalone/` | Files standalone HAPP work directory
+| `/scripts/`                                   | Tool chain
+| `/we-applet/`                                 | The we-applet source code
+| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/`    | we-applet work directory
+| `/webapp/`                                    | The webapp source code
+| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/`    | webhapp work directory
+| `/webcomponents/`                             | The web components source code
 
 ## License
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)
