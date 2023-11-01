@@ -2,6 +2,8 @@
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {encodeHashToBase64} from "@holochain/client";
 import {FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FilesProxy} from "@files/elements";
+import {pascal} from "@ddd-qc/cell-proxy";
+import {DeliveryEntryType} from "@ddd-qc/delivery";
 
 
 /** */
@@ -20,9 +22,11 @@ export async function getEntryInfo(
     }
 
     const mainAppInfo = await appletClient.appInfo();
+    const pEntryType = pascal(entryType);
 
-    switch (entryType) {
-        case "file": {
+    switch (pEntryType) {
+        case DeliveryEntryType.PrivateManifest:
+        case DeliveryEntryType.PublicManifest:
             console.log("Files/we-applet/applet-view pp info", hrl);
             const cellProxy = await asCellProxy(
                 appletClient,
@@ -38,7 +42,7 @@ export async function getEntryInfo(
                 icon_src: "",
                 name: manifest.description.name,
             };
-        }
+        break;
         default:
             throw new Error(`Files/we-applet: Unknown entry type ${entryType}.`);
     }
