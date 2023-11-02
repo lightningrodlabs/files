@@ -39,8 +39,8 @@ export async function setupFilesApplet() {
 /** */
 async function setupFilesMainView() {
     const appletServices: AppletServices = {
-        //attachmentTypes,
-        attachmentTypes: async (_appletClient) => ({}),
+        attachmentTypes,
+        //attachmentTypes: async (_appletClient) => ({}),
         getEntryInfo,
         blockTypes,
         //blockTypes: {},

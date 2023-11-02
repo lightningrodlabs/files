@@ -22,8 +22,8 @@
     "install:zits"       : "cargo install zits --version $npm_package_config_zits_version",
     "version"            : "$npm_package_config_bin/hc --version & holochain --version & lair-keystore --version & tsc --version",
 
-    "build:zome"         : "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "build:dna"          : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/files.dna dna/workdir",
+    "build:zomes"        : "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
+    "build:dna"          : "npm run build:zomes && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/files.dna dna/workdir",
     "build:profiles"     : "$npm_package_config_bin/hc dna pack -o artifacts/profiles.dna dna/workdir_profiles",
     "build:happ"         : "npm run build:dna && npm run build:profiles && $npm_package_config_bin/hc app pack -o artifacts/files.happ dna/workdir_standalone",
     "build:happ:we"      : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/files-we_applet.happ dna/workdir",

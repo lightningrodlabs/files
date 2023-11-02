@@ -16,6 +16,8 @@ pub const FILES_DEFAULT_ROLE_NAME: &'static str = "rFiles";
 pub const FILE_TYPE_NAME: &'static str = "split_file";
 
 
+pub const ATTACHMENTS_ROOT: &str = "public_attachments";
+
 ///-------------------------------------------------------------------------------------------------
 /// Declaration of this zome's entry types
 ///-------------------------------------------------------------------------------------------------
@@ -32,9 +34,20 @@ pub enum FileShareEntry {
    FileShare(FileShare),
 }
 
+
+#[hdk_link_types]
+#[derive(Serialize, Deserialize)]
+pub enum FileShareLinkTypes {
+   Attachment,
+}
+
+
 /// Bogus Entry
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct FileShare {
    pub value: String,
 }
+
+
+

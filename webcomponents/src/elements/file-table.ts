@@ -15,6 +15,7 @@ import {TaggingPerspective, TaggingZvm} from "../viewModels/tagging.zvm";
 import {TagList} from "./tag-list";
 import {kind2Type} from "../fileTypeUtils";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {GridActiveItemChangedEvent} from "@vaadin/grid";
 
 
 export interface FileTableItem {
@@ -42,6 +43,8 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
 
     @property() items: FileTableItem[] = [];
 
+    @property() selectable?: string;
+
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
 
@@ -49,6 +52,9 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
     get gridElem(): LitElement {
         return this.shadowRoot!.getElementById("grid") as LitElement;
     }
+
+
+    @state() private _selectedItems: FileTableItem[] = [];
 
     /** */
     render() {
@@ -62,9 +68,21 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
 
         const totalSize = this.items.reduce((accumulator, item) => accumulator + item.description.size, 0);
 
+
+        // if (this.selectable == undefined) {
+        //     this._selectedItems = this.items;
+        // }
+        // .selectedItems="${this._selectedItems}"
+        // @active-item-changed="${(e: GridActiveItemChangedEvent<FileTableItem>) => {
+        //     const item = e.detail.value;
+        //     this._selectedItems = item ? [item] : [];
+        // }}"
+
         /** render all */
         return html`
-            <vaadin-grid id="grid" .items="${this.items}">
+            <vaadin-grid id="grid" 
+                         .items="${this.items}"
+            >
                 <vaadin-grid-selection-column></vaadin-grid-selection-column>
                 <vaadin-grid-column path="description" header="Filename"
                                     ${columnBodyRenderer(
@@ -142,18 +160,42 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                         path="ppEh" header=""
                         ${columnBodyRenderer(
                                 ({ppEh}) => {
-                                    return html`
-                                        <sl-button size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
-                                            this.dispatchEvent(new CustomEvent('download', {detail: ppEh, bubbles: true, composed: true}));
+                                    if (this.selectable == "") {
+                                        return html`
+                                            <sl-button size="small" variant="primary" style="margin-left:5px"
+                                                       @click=${async (e) => {
+                                                           this.dispatchEvent(new CustomEvent('selected', {
+                                                               detail: ppEh,
+                                                               bubbles: true,
+                                                               composed: true
+                                                           }));
+                                                       }}>
+                                                <sl-icon name="link-45deg"></sl-icon>
+                                            </sl-button>
+                                        `;
+                                    } else {
+                                        return html`
+                                            <sl-button size="small" variant="primary" style="margin-left:5px"
+                                                       @click=${async (e) => {
+                                            this.dispatchEvent(new CustomEvent('download', {
+                                                detail: ppEh,
+                                                bubbles: true,
+                                                composed: true
+                                            }));
                                         }}>
-                                            <sl-icon name="download"></sl-icon>
-                                        </sl-button>
-                                        <sl-button size="small" variant="primary" @click=${async (e) => {
-                                            this.dispatchEvent(new CustomEvent('send', {detail: ppEh, bubbles: true, composed: true}));
+                                                <sl-icon name="download"></sl-icon>
+                                            </sl-button>
+                                            <sl-button size="small" variant="primary" @click=${async (e) => {
+                                            this.dispatchEvent(new CustomEvent('send', {
+                                                detail: ppEh,
+                                                bubbles: true,
+                                                composed: true
+                                            }));
                                         }}>
-                                            <sl-icon name="send"></sl-icon>
-                                        </sl-button>
-                                    `
+                                                <sl-icon name="send"></sl-icon>
+                                            </sl-button>
+                                        `
+                                    }
                                 },
                                 []
                         )}

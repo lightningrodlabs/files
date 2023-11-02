@@ -2,6 +2,7 @@ import {TemplateResult, html} from "lit";
 import {FileTableItem} from "@files/elements/dist/elements/file-table";
 import {StoreDialog} from "@files/elements/dist/elements/store-dialog";
 import {FilesApp} from "./files-app";
+import {Hrl} from "@lightningrodlabs/we-applet";
 
 /** */
 export enum FilesBlockType {
@@ -9,7 +10,14 @@ export enum FilesBlockType {
     PickFile = "PickFile",
 }
 
-export function buildBlock(happElem: FilesApp, blockViewInfo: any): TemplateResult<1> {
+export interface PickFileContext {
+    hrl: Hrl,
+    type: string,
+}
+
+
+export /*async*/ function buildBlock(happElem: FilesApp, blockViewInfo: any): TemplateResult<1> {
+    //await happElem.filesDvm.probeAll();
     const deliveryPerspective = happElem.filesDvm.deliveryZvm.perspective;
     switch (blockViewInfo.block) {
         case FilesBlockType.ImportFile:
@@ -26,6 +34,9 @@ export function buildBlock(happElem: FilesApp, blockViewInfo: any): TemplateResu
             `;
             break;
         case FilesBlockType.PickFile:
+            console.log("Files Block: deliveryPerspective", deliveryPerspective);
+            const pickFileContext = blockViewInfo.context as PickFileContext;
+            console.log("Files Block: pickFileContext", pickFileContext);
             const privateItems = Object.entries(deliveryPerspective.privateManifests)
                 .map(([ppEh, [pm, timestamp]]) => {
                     return {
@@ -43,12 +54,20 @@ export function buildBlock(happElem: FilesApp, blockViewInfo: any): TemplateResu
                     return {ppEh, description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
                 });
             const allItems = privateItems.concat(publicItems);
-
+            console.log("Files Block: allItems", allItems);
             return html`
                 <h2>Select File</h2>
-                <file-table 
+                <file-table selectable
                         .items=${allItems}
-                        @selected${(e) => {console.log("Block PickFile: File selected", e)}}
+                        @selected${async (e) => {
+                            console.log("PickFile Block: File selected", e);
+                            const input = {
+                                hrl: pickFileContext.hrl,
+                                manifestEh: e.detail,
+                            }
+                            await happElem.filesDvm.fileShareZvm.zomeProxy.attachToHrl(input);
+                            // TODO: weServices.closeBlock();
+                        }}
                 ></file-table>
             `;
             break;

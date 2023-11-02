@@ -42,6 +42,7 @@ export class FilesApp extends HappElement {
 
   static readonly HVM_DEF: HvmDef = CAN_ADD_PROFILES? DEFAULT_FILES_DEF : DEFAULT_FILES_WE_DEF;
 
+  @state() private _hasHolochainFailed = true;
   @state() private _loaded = false;
   @state() private _cell?: Cell;
   @state() private _hasStartingProfile = false;
@@ -141,7 +142,6 @@ export class FilesApp extends HappElement {
 
   /** -- Methods -- */
 
-  @state() private _hasHolochainFailed = true;
 
   /** */
   async hvmConstructed() {
@@ -161,8 +161,11 @@ export class FilesApp extends HappElement {
         console.log("Zome call authorization done externally")
       }
     }
-    /** Probe */
-    this._cell = this.filesDvm.cell; // ???
+
+    /** ??? */
+    this._cell = this.filesDvm.cell;
+
+    /** Probe EntryDefs */
     console.log("fileShareDvm.cell", this._cell);
     this._allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
@@ -208,7 +211,12 @@ export class FilesApp extends HappElement {
       return html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;
     }
     if(this._hasHolochainFailed) {
-      return html`<div style="width: auto; height: auto; font-size: 4rem;">Failed to connect to Holochain Conductor</div>`;
+      return html`
+        <div style="width: auto; height: auto; font-size: 4rem;">
+          Failed to connect to <b>Files</b> cell.
+          <br />
+          Holochain Conductor might not be running or the Files dna is missing from the cell.
+        </div>`;
     }
 
 

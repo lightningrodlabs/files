@@ -8,6 +8,8 @@ export const filesFunctionNames: FunctionName[] = [
 	"entry_defs", 
 	"get_zome_info", 
 	"get_dna_info",
+	"attach_to_hrl",
+	"get_files_from_hrl",
 
 	"commit_private_file",
 	"get_file_info",

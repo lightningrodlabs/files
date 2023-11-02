@@ -4,4 +4,4 @@ name: Files Official We-applet
 ui:
   bundled: "../../artifacts/files-we_applet-ui.zip"
 happ_manifest:
-  bundled: "../../artifacts/files.happ"
+  bundled: "../../artifacts/files-we_applet.happ"

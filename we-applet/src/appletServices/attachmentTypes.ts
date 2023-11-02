@@ -5,7 +5,6 @@ import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiFileOutline } from "@mdi/js";
 import {AppletHash} from "@lightningrodlabs/we-applet/dist/types";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@files/elements";
-import {ViewFileContext} from "../createFileShareApplet";
 
 
 /** */
@@ -16,17 +15,29 @@ import {ViewFileContext} from "../createFileShareApplet";
     file: {
       label: "File",
       icon_src: wrapPathInSvg(mdiFileOutline),
-      /** */
+      /** Look for a file associate to this hrl */
       async create(attachToHrl: Hrl): Promise<HrlWithContext> {
         console.log("Files/attachmentTypes::File", attachToHrl);
         const cellProxy = await asCellProxy(appletClient, undefined, appInfo.installed_app_id, FILES_DEFAULT_ROLE_NAME); // FIXME use appInfo.appId and roleName
-        //const proxy: FilesProxy = new FilesProxy(cellProxy);
+        const proxy: FilesProxy = new FilesProxy(cellProxy);
         //const entryInfo = await weServices.entryInfo(attachToHrl);
 
+        console.log("Files/attachmentTypes::File proxy", proxy);
+
+        const ManinfestEhs = await proxy.getFilesFromHrl(attachToHrl);
+
+        console.log("Files/attachmentTypes::File ManinfestEhs", ManinfestEhs);
+
+        if (ManinfestEhs.length == 0) {
+          return {
+            hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), attachToHrl[1]],
+            context: {detail: "none"},
+          }
+        }
         return {
-          hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), attachToHrl[1]], // FIXME
-          context: {detail: "create"},
-        } as HrlWithContext;
+          hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), ManinfestEhs[0]],
+          context: {detail: "some"},
+        }
       }
     }
   };

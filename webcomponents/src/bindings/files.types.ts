@@ -134,6 +134,11 @@ ValidationReceipt,
 /** User defined external dependencies */
 import {DistributionStrategy, ParcelManifest, ParcelChunk, ParcelDescription, ParcelKind, ParcelReference} from '@ddd-qc/delivery';
 
+export interface AttachInput {
+  hrl: [DnaHash, EntryHash]
+  manifestEh: EntryHash
+}
+
 export interface WriteManifestInput {
   filename: string
   filetype: string
@@ -162,12 +167,20 @@ export const FILES_DEFAULT_ROLE_NAME = "rFiles";
 
 export const FILE_TYPE_NAME = "split_file";
 
+export const ATTACHMENTS_ROOT = "public_attachments";
+
 export enum FileShareEntryType {
 	FileShare = 'FileShare',
 }
 export type FileShareEntryVariantFileShare = {FileShare: FileShare}
 export type FileShareEntry = 
  | FileShareEntryVariantFileShare;
+
+export type FileShareLinkTypes =
+  | {Attachment: null};
+export enum FileShareLinkTypesType {
+	Attachment = 'Attachment',
+}
 
 /** Bogus Entry */
 export interface FileShare {
