@@ -224,7 +224,7 @@ export class FilesApp extends HappElement {
           break;
         case "block":
           const blockViewInfo = this.appletView as any;
-          view = buildBlock(blockViewInfo, this.filesDvm);
+          view = buildBlock(this, blockViewInfo);
           break;
         case "entry":
           const entryViewInfo = this.appletView as EntryViewInfo;

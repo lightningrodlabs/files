@@ -1,6 +1,7 @@
 import {TemplateResult, html} from "lit";
 import {FileTableItem} from "@files/elements/dist/elements/file-table";
-import {FilesDvm} from "@files/elements";
+import {StoreDialog} from "@files/elements/dist/elements/store-dialog";
+import {FilesApp} from "./files-app";
 
 /** */
 export enum FilesBlockType {
@@ -8,11 +9,19 @@ export enum FilesBlockType {
     PickFile = "PickFile",
 }
 
-export function buildBlock(blockViewInfo: any, filesDvm: FilesDvm): TemplateResult<1> {
-    const deliveryPerspective = filesDvm.deliveryZvm.perspective;
+export function buildBlock(happElem: FilesApp, blockViewInfo: any): TemplateResult<1> {
+    const deliveryPerspective = happElem.filesDvm.deliveryZvm.perspective;
     switch (blockViewInfo.block) {
         case FilesBlockType.ImportFile:
             return html`
+                <button @click=${(e) => {
+                    const storeDialogElem = happElem.shadowRoot.querySelector("store-dialog") as StoreDialog;
+                    storeDialogElem.open(false);
+                }}>Add Public file</button>
+                <button @click=${(e) => {
+                    const storeDialogElem = happElem.shadowRoot.querySelector("store-dialog") as StoreDialog;
+                    storeDialogElem.open(true);
+                }}>Add Private file</button>                
                 <store-dialog></store-dialog>
             `;
             break;
