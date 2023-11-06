@@ -3,7 +3,7 @@ import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {consume} from "@lit-labs/context";
 import {FilesDvm} from "../viewModels/files.dvm";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput, SlMenu, SlSelect} from "@shoelace-style/shoelace";
 import {arrayBufferToBase64, prettyFileSize, splitData, splitFile, SplitObject} from "../utils";
@@ -260,7 +260,7 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`              
               sl-dialog {
                 --width: 400px;

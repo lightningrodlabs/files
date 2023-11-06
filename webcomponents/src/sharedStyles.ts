@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-export const sharedStyles = css`
+export const filesSharedStyles = css`
 
   .hide {
     display: none;
@@ -62,4 +62,18 @@ export const sharedStyles = css`
     border: 2px white dashed;
     box-shadow: none;
   }
+
+  .tag span {
+    margin-top: 2px;
+  }
+
+  .tag {
+    display: flex;
+    background: #bbc5ce;
+    font-size: small;
+    padding: 3px;
+    color: #232121;
+    /*border-radius: 15px;*/
+  }
+  
 `;

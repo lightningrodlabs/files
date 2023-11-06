@@ -7,7 +7,7 @@ import {
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../contexts";
 import {DeliveryPerspective, DeliveryZvm} from "@ddd-qc/delivery";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
@@ -63,7 +63,7 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
             :host {
               position: absolute;

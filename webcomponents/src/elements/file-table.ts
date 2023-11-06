@@ -9,7 +9,7 @@ import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../contexts";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
 import {TaggingPerspective, TaggingZvm} from "../viewModels/tagging.zvm";
 import {TagList} from "./tag-list";
@@ -209,7 +209,7 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               :host {
                 flex: 1 1 auto;

@@ -9,7 +9,7 @@ import {
 import {globalProfilesContext} from "../contexts";
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
 import {FileView} from "./file-view";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {ProfilesZvm, agent2avatar} from "@ddd-qc/profiles-dvm";
 
 
@@ -249,7 +249,7 @@ export class ActivityTimeline extends DnaElement<unknown, FilesDvm> {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               .activityItem {
                 display: flex;

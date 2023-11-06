@@ -1,6 +1,6 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {SlBlurEvent, SlInput} from "@shoelace-style/shoelace";
 
 
@@ -96,7 +96,7 @@ export class TagInput extends LitElement {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               #result-view {
                 /*position: absolute;*/

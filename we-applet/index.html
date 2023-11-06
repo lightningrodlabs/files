@@ -17,6 +17,15 @@
       console.log("Files we-applet index.html START");
       window.IN_WE = true;
     </script>
+    <!-- Wait for Shoelace script -->
+    <script type="module">
+      console.log("Waiting for Shoelace...")
+      await Promise.allSettled([
+        customElements.whenDefined('sl-dialog'),
+      ]);
+      console.log("Shoelace READY!");
+    </script>
+    <!-- main script -->
     <script type="module">
       import setupFilesApplet from "./out-tsc";
       console.log("Imported setupFilesApplet");

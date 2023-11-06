@@ -30,7 +30,7 @@ import {DeliveryEntryType} from "@ddd-qc/delivery";
 import {buildBlock} from "./files-blocks";
 import {DEFAULT_FILES_DEF, DEFAULT_FILES_WE_DEF} from "./happDef";
 
-import "./elements/file-share-page"
+import "./elements/files-main-view"
 
 /**
  *
@@ -44,7 +44,7 @@ export class FilesApp extends HappElement {
 
   @state() private _hasHolochainFailed = true;
   @state() private _loaded = false;
-  @state() private _cell?: Cell;
+  @state() private _filesCell: Cell;
   @state() private _hasStartingProfile = false;
   @state() private _offlinePerspectiveloaded = false;
 
@@ -162,11 +162,8 @@ export class FilesApp extends HappElement {
       }
     }
 
-    /** ??? */
-    this._cell = this.filesDvm.cell;
-
     /** Probe EntryDefs */
-    console.log("fileShareDvm.cell", this._cell);
+    console.log("FilesDvm.cell", this.filesDvm.cell);
     this._allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
     console.warn(`${FILES_DEFAULT_COORDINATOR_ZOME_NAME} entries`, this._allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]);
@@ -177,7 +174,7 @@ export class FilesApp extends HappElement {
     }
 
     if (CAN_ADD_PROFILES) {
-      await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this._cell.agentPubKey);
+      await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this.filesDvm.cell.agentPubKey);
     }
 
     /** Done */
@@ -215,7 +212,7 @@ export class FilesApp extends HappElement {
         <div style="width: auto; height: auto; font-size: 4rem;">
           Failed to connect to <b>Files</b> cell.
           <br />
-          Holochain Conductor might not be running or the Files dna is missing from the cell.
+          Holochain Conductor might not be running or the Files cell is missing.
         </div>`;
     }
 
@@ -224,7 +221,7 @@ export class FilesApp extends HappElement {
     const zomeNames = this._dnaDef?.coordinator_zomes.map((zome) => { return zome[0]; });
     console.log({zomeNames});
 
-    let view = html`<file-share-page></file-share-page>`;
+    let view = html`<files-main-view></files-main-view>`;
 
     if (this.appletView) {
       switch (this.appletView.type) {
@@ -270,7 +267,7 @@ export class FilesApp extends HappElement {
 
     /* render all */
     return html`
-      <cell-context .cell="${this._cell}">
+      <cell-context .cell="${this.filesDvm.cell}">
         <!-- <view-cell-context></view-cell-context> -->
         ${view}
       </cell-context>        

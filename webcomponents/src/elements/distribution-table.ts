@@ -10,7 +10,7 @@ import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {DeliveryStateType, ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../contexts";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {kind2Type} from "../fileTypeUtils";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
@@ -133,7 +133,7 @@ export class DistributionTable extends LitElement {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
         ];
     }
 }

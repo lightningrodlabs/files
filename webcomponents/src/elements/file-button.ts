@@ -5,7 +5,7 @@ import {
     EntryHashB64,
 } from "@holochain/client";
 import {FilesDvm} from "../viewModels/files.dvm";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
 import {kind2Icon} from "../fileTypeUtils";
@@ -126,7 +126,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               .fileButton {
                 border-radius: 6px;

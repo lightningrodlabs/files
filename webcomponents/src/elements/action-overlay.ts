@@ -1,7 +1,7 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {SlDialog} from "@shoelace-style/shoelace";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 
 
 /**
@@ -56,7 +56,7 @@ export class ActionOverlay extends LitElement {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               #action-overlay {
                 --width: 500px;

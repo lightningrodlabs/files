@@ -5,14 +5,22 @@
     <link
       rel="stylesheet"
       media="(prefers-color-scheme:light)"
-      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/themes/light.css"
+      href="../node_modules/@shoelace-style/shoelace/dist/themes/light.css"
     />
+    <base href="." />
   </head>
   <body style="margin:0px;background: #faf9ea;height:100vh;">
     <files-app></files-app>
+    <!-- Wait for Shoelace script -->
     <script type="module">
-      //console.log("   HC_PORT:", process.env.HC_PORT);
-      //console.log("ADMIN_PORT:", process.env.ADMIN_PORT);
+      console.log("Waiting for Shoelace...")
+      await Promise.allSettled([
+        customElements.whenDefined('sl-dialog'),
+      ]);
+      console.log("Shoelace READY!");
+    </script>
+    <!-- main script -->
+    <script type="module">
       import { FilesApp } from "./";
       import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
       setBasePath('../node_modules/@shoelace-style/shoelace/dist');

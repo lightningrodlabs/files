@@ -24,7 +24,7 @@ import {
     type2Icon,
     FileTableItem,
     kind2Type,
-    DistributionTableItem, sharedStyles
+    DistributionTableItem, filesSharedStyles
 } from "@ddd-qc/files";
 import {DeliveryPerspective, DeliveryStateType, ParcelReference} from "@ddd-qc/delivery";
 import {
@@ -44,24 +44,6 @@ import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.typ
 import {columnBodyRenderer} from "@vaadin/grid/lit";
 import {ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {emptyAppletHash} from "@ddd-qc/we-utils";
-
-
-/** Define my custom elements */
-// import "./activity-timeline";
-// import "./file-table";
-// import "./distribution-table";
-// import "./file-view";
-// import "./file-button";
-// import "./file-share-menu";
-// import "./action-overlay"
-// import "./store-dialog";
-// import "./send-dialog";
-// import "./edit-profile";
-// import "./profile-item";
-// import "./profile-input";
-// import "./inbound-stack";
-// import "./tag-input";
-// import "./tag-list";
 
 import {SlAlert, SlBadge, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
 
@@ -95,11 +77,12 @@ import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
 
+
 /**
  * @element
  */
-@customElement("file-share-page")
-export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
+@customElement("files-main-view")
+export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     // constructor() {
     //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
@@ -111,8 +94,6 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** -- Fields -- */
     @state() private _initialized = false;
     @property() appletId: string;
-
-    @property() devmode?: string;
 
     @property() offlineloaded: boolean = false;
 
@@ -192,7 +173,7 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** After first render only */
     async firstUpdated() {
-        console.log("<file-share-page> firstUpdated()", this.appletId);
+        console.log("<files-main-view> firstUpdated()", this.appletId);
         /** Generate test data */
         if (!this.appletId) {
             this.appletId = encodeHashToBase64(await emptyAppletHash());
@@ -483,7 +464,8 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     render() {
-        console.log("<file-share-page>.render()", this._initialized, this.offlineloaded, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
+        const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
+        console.log("<files-main-view>.render()", isInDev, this._initialized, this.offlineloaded, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
 
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
@@ -815,7 +797,7 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
             if (this._selectedMenuItem.type == SelectedType.Inbox) {
                 mainArea = html`
-                    <h2>Inbound files</h2>
+                    <h2>Inbound Files</h2>
                     <ul>
                         ${inboundList}
                     </ul>`;
@@ -861,7 +843,7 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
             }
             if (this._selectedMenuItem.type == SelectedType.InProgress) {
                 mainArea = html`
-                    <h2>Outbound files</h2>
+                    <h2>Outbound Files</h2>
                     <ul>
                         ${outboundTable}
                     </ul>
@@ -875,6 +857,7 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
             }
             if (this._selectedMenuItem.type == SelectedType.PublicTag) {
+                console.log("PublicTag", this._dvm.taggingZvm.perspective.publicTagsByTarget);
                 const taggedItems = Object.entries(this.deliveryPerspective.publicParcels)
                     .map(([ppEh, [description, timestamp, author]]) => {
                         const isLocal = !!this.deliveryPerspective.localPublicManifests[ppEh];
@@ -885,7 +868,7 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         return publicTags && publicTags.includes(this._selectedMenuItem.tag);
                     });
                 mainArea = html`
-                    <h2>${this._selectedMenuItem.tag}</h2>
+                    <h2>Group Files: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
                     <file-table .items=${taggedItems}
                                 @download=${(e) => this.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -903,7 +886,7 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 });
 
                 mainArea = html`
-                    <h2>${this._selectedMenuItem.tag}</h2>
+                    <h2>Personal Files: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
                     <file-table .items=${taggedItems}
                                 @download=${(e) => this.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -911,8 +894,6 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 `;
             }
         }
-
-        const isInDev = HAPP_ENV == HappEnvType.Devtest || HappEnvType.DevtestWe || HappEnvType.DevTestHolo;
 
         /** Render all */
         return html`
@@ -1004,7 +985,7 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               :host {
                 display: block;

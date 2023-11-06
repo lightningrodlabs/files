@@ -1,6 +1,6 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {AgentPubKeyB64} from "@holochain/client";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../contexts";
@@ -69,7 +69,7 @@ export class ProfileItem extends LitElement {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               #item {
                 display: flex;

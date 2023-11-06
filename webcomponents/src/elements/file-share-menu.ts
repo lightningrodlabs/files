@@ -6,7 +6,7 @@ import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {DeliveryPerspective} from "@ddd-qc/delivery";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../contexts";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {SlDrawer, SlMenu, SlMenuItem} from "@shoelace-style/shoelace";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
@@ -147,7 +147,9 @@ export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
             ? this.taggingPerspective.privateTags
             : this.taggingPerspective.publicTags
 
-        const groupTags = Object.entries(tags).map(([tag, array]) => {
+        const groupTags = Object.entries(tags)
+            .filter(([_tag, array]) => array.length > 0)
+            .map(([tag, array]) => {
             return html`
             <sl-menu-item isPrivate=${isPrivate} isTag="true">
                 <sl-icon slot="prefix" name="tag"></sl-icon>
@@ -253,7 +255,7 @@ export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               :host {
                 background: #E8F0F3;

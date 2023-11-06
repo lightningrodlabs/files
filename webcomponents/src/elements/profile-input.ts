@@ -1,6 +1,6 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {SlInput} from "@shoelace-style/shoelace";
 import {AgentPubKeyB64} from "@holochain/client";
 import {consume} from "@lit-labs/context";
@@ -102,7 +102,7 @@ export class ProfileInput extends LitElement {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
 
               .selectable-profile {

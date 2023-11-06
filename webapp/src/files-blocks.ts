@@ -3,8 +3,8 @@ import {FilesApp} from "./files-app";
 
 /** */
 export enum FilesBlockType {
-//     ImportFile = "ImportFile",
-//     PickFile = "PickFile",
+     StoreFile = "StoreFile",
+     PickFile = "PickFile",
 }
 
 // export interface PickFileContext {
@@ -17,7 +17,7 @@ export /*async*/ function buildBlock(happElem: FilesApp, blockViewInfo: any): Te
     //await happElem.filesDvm.probeAll();
     const deliveryPerspective = happElem.filesDvm.deliveryZvm.perspective;
     switch (blockViewInfo.block) {
-        // case FilesBlockType.ImportFile:
+         case FilesBlockType.StoreFile:
         //     return html`
         //         <button @click=${(e) => {
         //             const storeDialogElem = happElem.shadowRoot.querySelector("store-dialog") as StoreDialog;
@@ -30,7 +30,7 @@ export /*async*/ function buildBlock(happElem: FilesApp, blockViewInfo: any): Te
         //         <store-dialog></store-dialog>
         //     `;
         //     break;
-        // case FilesBlockType.PickFile:
+        case FilesBlockType.PickFile:
         //     console.log("Files Block: deliveryPerspective", deliveryPerspective);
         //     const pickFileContext = blockViewInfo.context as PickFileContext;
         //     console.log("Files Block: pickFileContext", pickFileContext);

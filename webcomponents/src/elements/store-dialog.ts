@@ -2,7 +2,7 @@ import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {FilesDvm} from "../viewModels/files.dvm";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput} from "@shoelace-style/shoelace";
 import {prettyFileSize, splitFile, SplitObject} from "../utils";
@@ -168,7 +168,7 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
             css`
               sl-dialog {
                 --width: 400px;

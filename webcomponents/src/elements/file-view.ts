@@ -9,7 +9,7 @@ import {consume} from "@lit-labs/context";
 import {FilesDvm} from "../viewModels/files.dvm";
 import {globalProfilesContext} from "../contexts";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
-import {sharedStyles} from "../sharedStyles";
+import {filesSharedStyles} from "../sharedStyles";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 
@@ -94,7 +94,7 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     static get styles() {
         return [
-            sharedStyles,
+            filesSharedStyles,
         ];
     }
 }
