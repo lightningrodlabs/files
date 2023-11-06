@@ -1,6 +1,8 @@
 [workspace]
 members = [
   #"dna/zomes/path_explorer",
+  "dna/zomes/notifications_integrity",
+  "dna/zomes/notifications",
   "dna/zomes/profiles_integrity",
   "dna/zomes/profiles",
   "dna/zomes/delivery_integrity",

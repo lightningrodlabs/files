@@ -1,0 +1,14 @@
+[package]
+name = "notifications_integrity"
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+hc_zome_notifications_integrity = {git = "https://github.com/ddd-mtl/notifications", package = "hc_zome_notifications_integrity" }
+
+hdi.workspace = true

@@ -1,0 +1,15 @@
+[package]
+name = "notifications"
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+hdk.workspace = true
+serde.workspace = true
+hc_zome_notifications_coordinator = {git = "https://github.com/ddd-mtl/notifications", package = "hc_zome_notifications" }
+
+
