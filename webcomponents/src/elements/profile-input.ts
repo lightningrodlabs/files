@@ -4,7 +4,7 @@ import {sharedStyles} from "../sharedStyles";
 import {SlInput} from "@shoelace-style/shoelace";
 import {AgentPubKeyB64} from "@holochain/client";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
+import {globalProfilesContext} from "../contexts";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 

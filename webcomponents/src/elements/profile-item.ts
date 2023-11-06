@@ -3,7 +3,7 @@ import {property, state, customElement} from "lit/decorators.js";
 import {sharedStyles} from "../sharedStyles";
 import {AgentPubKeyB64} from "@holochain/client";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
+import {globalProfilesContext} from "../contexts";
 import {ProfilesZvm, getInitials} from "@ddd-qc/profiles-dvm";
 
 

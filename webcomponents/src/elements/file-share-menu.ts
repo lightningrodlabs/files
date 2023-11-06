@@ -5,7 +5,7 @@ import {FilesDvm} from "../viewModels/files.dvm";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {DeliveryPerspective} from "@ddd-qc/delivery";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
+import {globalProfilesContext} from "../contexts";
 import {sharedStyles} from "../sharedStyles";
 import {SlDrawer, SlMenu, SlMenuItem} from "@shoelace-style/shoelace";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";

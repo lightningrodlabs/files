@@ -6,9 +6,26 @@ import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from
 import {AppletInfo, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
 
-import {FilesDvm} from "../viewModels/files.dvm";
-import {globalProfilesContext} from "../viewModels/happDef";
-import {prettyFileSize, prettyTimestamp, SplitObject} from "../utils";
+import {
+    FilesDvm,
+    globalProfilesContext,
+    FileShareMenu,
+    SelectedEvent,
+    SelectedType,
+    prettyFileSize,
+    prettyTimestamp,
+    SplitObject,
+    createAlert,
+    FileType,
+    ActionOverlay,
+    StoreDialog,
+    SendDialog,
+    countFileTypes,
+    type2Icon,
+    FileTableItem,
+    kind2Type,
+    DistributionTableItem, sharedStyles
+} from "@ddd-qc/files";
 import {DeliveryPerspective, DeliveryStateType, ParcelReference} from "@ddd-qc/delivery";
 import {
     FilesDvmPerspective,
@@ -21,27 +38,30 @@ import {
     FileShareNotificationVariantPublicSharingComplete,
     FileShareNotificationVariantReceptionComplete,
     FileShareNotificationVariantReplyReceived
-} from "../viewModels/files.perspective";
-import {createAlert} from "../toast";
-import {FileShareMenu, SelectedEvent, SelectedType} from "./file-share-menu";
+} from "@ddd-qc/files";
+
+import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
+import {columnBodyRenderer} from "@vaadin/grid/lit";
+import {ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {emptyAppletHash} from "@ddd-qc/we-utils";
 
 
 /** Define my custom elements */
-import "./activity-timeline";
-import "./file-table";
-import "./distribution-table";
-import "./file-view";
-import "./file-button";
-import "./file-share-menu";
-import "./action-overlay"
-import "./store-dialog";
-import "./send-dialog";
-import "./edit-profile";
-import "./profile-item";
-import "./profile-input";
-import "./inbound-stack";
-import "./tag-input";
-import "./tag-list";
+// import "./activity-timeline";
+// import "./file-table";
+// import "./distribution-table";
+// import "./file-view";
+// import "./file-button";
+// import "./file-share-menu";
+// import "./action-overlay"
+// import "./store-dialog";
+// import "./send-dialog";
+// import "./edit-profile";
+// import "./profile-item";
+// import "./profile-input";
+// import "./inbound-stack";
+// import "./tag-input";
+// import "./tag-list";
 
 import {SlAlert, SlBadge, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
 
@@ -72,18 +92,6 @@ import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 
-
-import {FileTableItem} from "./file-table";
-import {sharedStyles} from "../sharedStyles";
-import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
-import {StoreDialog} from "./store-dialog";
-import {SendDialog} from "./send-dialog";
-import {DistributionTableItem} from "./distribution-table";
-import {columnBodyRenderer} from "@vaadin/grid/lit";
-import {ActionOverlay} from "./action-overlay";
-import {countFileTypes, FileType, kind2Type, type2Icon} from "../fileTypeUtils";
-import {ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {emptyAppletHash} from "@ddd-qc/we-utils";
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
 
@@ -948,11 +956,11 @@ export class FileSharePage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         </div>
         <!-- dialogs -->
         <sl-dialog id="profile-dialog" label="Edit Profile">
-            <edit-profile
+            <files-edit-profile
                     allowCancel
                     .profile="${this._myProfile}"
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail.profile)}
-            ></edit-profile>
+            ></files-edit-profile>
         </sl-dialog>
         <action-overlay
                 @sl-after-hide=${(e) => {this.fabElem.style.display = "block"}}

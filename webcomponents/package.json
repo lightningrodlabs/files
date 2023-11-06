@@ -1,9 +1,14 @@
 {
-  "name": "@files/elements",
+  "name": "@ddd-qc/files",
   "version": "0.1.0",
+  "description": "lit-happ elements for the Files DNA",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "typings": "./dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "lint": "eslint --ext .ts .",
     "build": "tsc",
@@ -11,7 +16,16 @@
     "analyze": "lit-analyzer src --failFast",
     "test": "jest"
   },
-  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lightningrodlabs/file-share.git"
+  },
+  "author": "",
+  "license": "CAL-1.0",
+  "bugs": {
+    "url": "https://github.com/lightningrodlabs/file-share/issues"
+  },
+  "homepage": "https://github.com/lightningrodlabs/file-share",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",

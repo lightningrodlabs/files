@@ -9,7 +9,7 @@ import {prettyFileSize, prettyTimestamp} from "../utils";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {DeliveryStateType, ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
+import {globalProfilesContext} from "../contexts";
 import {sharedStyles} from "../sharedStyles";
 import {kind2Type} from "../fileTypeUtils";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";

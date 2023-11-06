@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@files/app": "file:../webapp",
-    "@files/elements": "file:../webcomponents",
+    "@ddd-qc/files": "file:../webcomponents",
     "@mdi/js": "^7.2.0"
   }
 }

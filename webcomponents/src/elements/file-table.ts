@@ -8,7 +8,7 @@ import {prettyFileSize, prettyTimestamp} from "../utils";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
+import {globalProfilesContext} from "../contexts";
 import {sharedStyles} from "../sharedStyles";
 import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
 import {TaggingPerspective, TaggingZvm} from "../viewModels/tagging.zvm";

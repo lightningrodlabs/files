@@ -5,7 +5,7 @@ import {
     encodeHashToBase64,
 } from "@holochain/client";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
+import {globalProfilesContext} from "../contexts";
 import {DeliveryPerspective, DeliveryZvm} from "@ddd-qc/delivery";
 import {sharedStyles} from "../sharedStyles";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";

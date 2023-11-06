@@ -11,11 +11,10 @@ const MIN_NICKNAME_LENGTH = 2
 
 
 /**
- * @element edit-profile
  * @fires save-profile - Fired when the save profile button is clicked
  */
 @localized()
-@customElement('edit-profile')
+@customElement('files-edit-profile')
 export class EditProfile extends LitElement {
   /**
    * The profile to be edited.

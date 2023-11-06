@@ -1,5 +1,5 @@
 import {createDefaultWeServicesMock, DevTestNames, EntryViewInfo, setupDevtest} from "@ddd-qc/we-utils";
-import {FILES_DEFAULT_INTEGRITY_ZOME_NAME, FILES_DEFAULT_ROLE_NAME} from "@files/elements";
+import {FILES_DEFAULT_INTEGRITY_ZOME_NAME, FILES_DEFAULT_ROLE_NAME} from "@ddd-qc/files";
 import {ActionHash, EntryHash, fakeActionHash} from "@holochain/client";
 import {emptyEntryAppletView} from "@ddd-qc/we-utils/dist/mocks/renderInfoMock";
 import {snake} from "@ddd-qc/cell-proxy";

@@ -1,7 +1,7 @@
 
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {encodeHashToBase64} from "@holochain/client";
-import {FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FilesProxy} from "@files/elements";
+import {FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FilesProxy} from "@ddd-qc/files";
 import {pascal} from "@ddd-qc/cell-proxy";
 import {DeliveryEntryType} from "@ddd-qc/delivery";
 

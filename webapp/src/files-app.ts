@@ -17,20 +17,20 @@ import {
   DvmDef, DnaViewModel, pascal
 } from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_FILES_WE_DEF,
-  DEFAULT_FILES_DEF,
   FilesDvm,
   globalProfilesContext,
   FILES_DEFAULT_INTEGRITY_ZOME_NAME,
   FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_COORDINATOR_ZOME_NAME
-} from "@files/elements";
+} from "@ddd-qc/files";
 import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES} from "./globals";
 import {AppletId, AppletView, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
 import {DeliveryEntryType} from "@ddd-qc/delivery";
 import {buildBlock} from "./files-blocks";
+import {DEFAULT_FILES_DEF, DEFAULT_FILES_WE_DEF} from "./happDef";
 
+import "./elements/file-share-page"
 
 /**
  *

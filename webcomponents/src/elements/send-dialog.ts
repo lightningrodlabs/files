@@ -9,7 +9,7 @@ import {SlDialog, SlInput, SlMenu, SlSelect} from "@shoelace-style/shoelace";
 import {arrayBufferToBase64, prettyFileSize, splitData, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
 import {AgentPubKeyB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
-import {globalProfilesContext} from "../viewModels/happDef";
+import {globalProfilesContext} from "../contexts";
 import {ComboBoxFilterChangedEvent} from "@vaadin/combo-box";
 import {ComboBoxLitRenderer, comboBoxRenderer} from "@vaadin/combo-box/lit";
 import {TagList} from "./tag-list";

@@ -1,13 +1,10 @@
 import {DevTestNames, setup} from "@ddd-qc/we-utils";
 import {createFileShareApplet} from "./createFileShareApplet";
-import {FILES_DEFAULT_ROLE_NAME, FileShareEntryType} from "@files/elements";
 import {AppletServices} from "@lightningrodlabs/we-applet";
-import {attachmentTypes} from "./appletServices/attachmentTypes";
 import {getEntryInfo} from "./appletServices/getEntryInfo";
 import {blockTypes} from "./appletServices/blockTypes";
 import {DeliveryEntryType} from "@ddd-qc/delivery";
 import {devtestNames, setupFilesBlockView, setupFilesEntryView} from "./devtest";
-import {FilesBlockType} from "@files/app";
 
 
 
@@ -26,9 +23,9 @@ export async function setupFilesApplet() {
         /** Entry views */
         case DeliveryEntryType.PrivateManifest:
         case DeliveryEntryType.PublicManifest: return setupFilesEntryView();
-        /** Block views */
-        case FilesBlockType.PickFile:
-        case FilesBlockType.ImportFile: return setupFilesBlockView(APPLET_VIEW);
+        ///** Block views */
+        //case FilesBlockType.PickFile:
+        //case FilesBlockType.ImportFile: return setupFilesBlockView(APPLET_VIEW);
         /** Main View */
         case "main":
         default: return setupFilesMainView();
@@ -39,8 +36,7 @@ export async function setupFilesApplet() {
 /** */
 async function setupFilesMainView() {
     const appletServices: AppletServices = {
-        attachmentTypes,
-        //attachmentTypes: async (_appletClient) => ({}),
+        attachmentTypes: async (_appletClient) => ({}),
         getEntryInfo,
         blockTypes,
         //blockTypes: {},

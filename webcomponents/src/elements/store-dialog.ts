@@ -45,6 +45,7 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     open(localOnly?: boolean) {
+        console.log("<store-dialog> open()", this._dvm);
         this._localOnly = false;
         if (localOnly) this._localOnly = localOnly;
         //console.log("<store-dialog> localOnly", localOnly, this._localOnly);
