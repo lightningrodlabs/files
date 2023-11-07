@@ -10,6 +10,8 @@ import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
 import {kind2Icon} from "../fileTypeUtils";
 import {SelectedType} from "./file-share-menu";
+import {prettyFileSize} from "../utils";
+import {ParcelDescription} from "@ddd-qc/delivery";
 
 
 /**
@@ -22,6 +24,8 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** Hash of ParcelManifest to display */
     @property() hash: EntryHashB64 = ''
+
+    @property() description?: ParcelDescription;
 
     /** Enable action bar */
     @property() showActionBar: boolean = true
@@ -57,68 +61,80 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     render() {
-        console.log("<file-view>.render()", this.hash);
-        if (this.hash == "") {
-            return html`<sl-button disabled>N/A</sl-button>`;
+        console.log("<file-view>.render()", this.hash, this.description);
+        if (this.hash == "" && !this.description) {
+            return html`<sl-button class="fileButton" disabled>N/A</sl-button>`;
         }
 
         /** Retrieve File description */
-        const tuple = this._dvm.deliveryZvm.perspective.privateManifests[this.hash];
-        let fileDescription;
-        let isPrivate = false;
-        if (tuple) {
-            fileDescription = tuple[0].description;
-            isPrivate = true;
-        } else {
-            const tuple = this._dvm.deliveryZvm.perspective.localPublicManifests[this.hash];
+        let fileDescription = this.description;
+        let isPrivate = true;
+        if (this.hash != "") {
+            const tuple = this._dvm.deliveryZvm.perspective.privateManifests[this.hash];
+            isPrivate = false;
             if (tuple) {
                 fileDescription = tuple[0].description;
+                isPrivate = true;
             } else {
-                const tuple = this._dvm.deliveryZvm.perspective.publicParcels[this.hash];
+                const tuple = this._dvm.deliveryZvm.perspective.localPublicManifests[this.hash];
                 if (tuple) {
-                    fileDescription = tuple[0];
+                    fileDescription = tuple[0].description;
                 } else {
-                    return html`<sl-button disabled>File not found</sl-button>`;
+                    const tuple = this._dvm.deliveryZvm.perspective.publicParcels[this.hash];
+                    if (tuple) {
+                        fileDescription = tuple[0];
+                    } else {
+                        return html`
+                            <sl-button class="unknown" disabled>Unknown file</sl-button>`;
+                    }
                 }
             }
         }
 
-        let tags;
-        let type;
-        if (isPrivate) {
-            tags = this._dvm.taggingZvm.getTargetPrivateTags(this.hash);
-            type = SelectedType.PrivateTag;
-        } else {
-            tags = this._dvm.taggingZvm.getTargetPublicTags(this.hash);
-            type = SelectedType.PublicTag;        }
-        let tagList = tags.map((tag) => {
-            return html`                
-                <sl-button class="hide tag-button pop" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
-                    this.dispatchEvent(new CustomEvent('tag', {detail: {type, tag}, bubbles: true, composed: true}));
-                }}>${tag}
-                    <sl-icon slot="prefix" name="tag"></sl-icon>
-                </sl-button>
-            `;
-        });
-
-
-
-        /** action bar */
+        /** Retrieve tags */
+        let tagList = [];
         let actionBar = html``;
-        if (this.showActionBar) {
-            actionBar = html`
-                <sl-button class="hide pop action" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
-                    this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));
-                }}>
-                    <sl-icon name="download"></sl-icon>
-                </sl-button>
-                <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
-                    this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
-                }}>
-                    <sl-icon name="send"></sl-icon>
-                </sl-button>                
-            `;
+        if (this.hash != "") {
+            let tags;
+            let type;
+            if (isPrivate) {
+                tags = this._dvm.taggingZvm.getTargetPrivateTags(this.hash);
+                type = SelectedType.PrivateTag;
+            } else {
+                tags = this._dvm.taggingZvm.getTargetPublicTags(this.hash);
+                type = SelectedType.PublicTag;
+            }
+            tagList = tags.map((tag) => {
+                return html`
+                    <sl-button class="hide tag-button pop" size="small" variant="primary" style="margin-left:5px"
+                               @click=${async (e) => {
+                                   this.dispatchEvent(new CustomEvent('tag', {
+                                       detail: {type, tag},
+                                       bubbles: true,
+                                       composed: true
+                                   }));
+                               }}>${tag}
+                        <sl-icon slot="prefix" name="tag"></sl-icon>
+                    </sl-button>
+                `;
+            });
+            /** action bar */
+            if (this.showActionBar) {
+                actionBar = html`
+                    <sl-button class="hide pop action" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
+                        this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));
+                    }}>
+                        <sl-icon name="download"></sl-icon>
+                    </sl-button>
+                    <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
+                        this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
+                    }}>
+                        <sl-icon name="send"></sl-icon>
+                    </sl-button>                
+                `;
+            }
         }
+
 
 
         /** render all */
@@ -129,6 +145,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         <div slot="anchor" class="fileName">
                             <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
                             ${fileDescription.name}
+                            <span class="filesize">${prettyFileSize(fileDescription.size)}</span>
                         </div>
                         ${actionBar}
                     </sl-popup>
@@ -145,6 +162,17 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
             filesSharedStyles,
             css`
 
+              .unknown::part(base) {
+                border: dotted 2px;  
+              }
+              
+              .filesize {
+                font-size: .75rem;
+                color: darkgray;
+                padding-left: 7px;
+                padding-right: 5px;
+              }
+              
               sl-icon {
                 font-weight: bold;
               }

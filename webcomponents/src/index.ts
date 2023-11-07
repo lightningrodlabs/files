@@ -11,6 +11,7 @@ export * from './elements/action-overlay';
 export * from './elements/activity-timeline';
 export * from './elements/distribution-table';
 export * from './elements/edit-profile';
+export * from './elements/inbox';
 export * from './elements/file-button';
 export * from './elements/file-share-menu';
 export * from './elements/file-table';

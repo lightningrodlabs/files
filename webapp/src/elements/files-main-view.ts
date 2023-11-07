@@ -24,7 +24,7 @@ import {
     type2Icon,
     FileTableItem,
     kind2Type,
-    DistributionTableItem, filesSharedStyles
+    DistributionTableItem, filesSharedStyles, kind2Icon
 } from "@ddd-qc/files";
 import {DeliveryPerspective, DeliveryStateType, ParcelReference} from "@ddd-qc/delivery";
 import {
@@ -91,10 +91,12 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     //     });
     // }
 
-    /** -- Fields -- */
-    @state() private _initialized = false;
-    @property() appletId: string;
 
+    /** -- Fields -- */
+
+    @state() private _initialized = false;
+
+    @property() appletId: string;
     @property() offlineloaded: boolean = false;
 
 
@@ -800,11 +802,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             }
 
             if (this._selectedMenuItem.type == SelectedType.Inbox) {
-                mainArea = html`
-                    <h2>Inbound Files</h2>
-                    <ul>
-                        ${inboundList}
-                    </ul>`;
+                mainArea = html`<files-inbox></files-inbox>`;
             }
             if (this._selectedMenuItem.type == SelectedType.Sent) {
                 let distributionItems = Object.entries(this.deliveryPerspective.distributions)
@@ -969,9 +967,15 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         <!-- commit button & panel -->
         ${this.perspective.uploadState? html`
             <div id="uploadingView">
-                <span style="font-weight: bold; overflow:clip; width:inherit; margin-right:3px;">${this.perspective.uploadState.file.name}</span>
-                <sl-icon style="margin-right:3px;" name="arrow-right"></sl-icon><sl-icon name="hdd"></sl-icon>
-                <sl-progress-bar .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
+                <div style="display:flex; flex-direction:row; gap:35px;">
+                    <sl-progress-bar style="flex-grow:1;" .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
+                </div>
+                <div style="display:flex; flex-direction:row; gap:5px;">
+                    <sl-icon class="prefixIcon" name=${kind2Icon({Manifest: this.perspective.uploadState.file.type})}></sl-icon>
+                    <span style="font-weight: bold; max-width: 175px; width:inherit; margin-right:3px;">${this.perspective.uploadState.file.name}</span>
+                    <sl-icon style="margin-right:3px;" name="arrow-right"></sl-icon>
+                    <sl-icon name="hdd"></sl-icon>
+                </div>
             </div>
             `
             : html`
@@ -997,22 +1001,28 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 display: block;
                 height: 100vh;
               }
+
               #main {
                 background: #F7FBFE;
                 display: flex;
                 height: 100%;
                 flex-direction: row;
+                padding-left: 15px;
                 /*padding: 15px 10px 10px 15px;*/
               }
+
               file-share-menu {
-                width: 300px;
+                width: 400px;
+                border-radius: 5px;
               }
+
               #mainArea {
                 display: flex;
                 flex-direction: column;
                 flex: 1 1 auto;
                 /*height: 100%;*/
               }
+
               #rhs {
                 width: 100%;
                 margin: 5px;
@@ -1020,21 +1030,25 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 display: flex;
                 flex-direction: column;
               }
+
               #topBar {
                 display: flex;
                 flex-direction: row-reverse;
                 gap: 5px;
               }
+
               .top-btn::part(base) {
                 background: #E9F0F3;
                 font-size: 20px;
                 width: 40px;
               }
+
               #card-row {
                 margin-top: 20px;
                 display: flex;
                 gap: 15px;
               }
+
               .card {
                 /*cursor: pointer;*/
                 color: white;
@@ -1053,37 +1067,52 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 background: aliceblue;
                 color: #21374A;
               }
+
               .card sl-icon {
                 margin-bottom: 15px;
                 font-size: 42px;
               }
+
               .card .subtext {
                 color: #aca4a4;
                 font-size: small;
               }
+
               #fab-publish {
                 position: absolute;
                 bottom: 30px;
                 right: 30px;
               }
+
               #fab-publish::part(base) {
                 font-weight: bold;
                 font-size: 32px;
                 box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
                 /*--sl-input-height-medium: 48px;*/
               }
+
+              sl-icon-button::part(base) {
+                padding: 0px;
+                background: #e6e6e6;
+              }
+
               #uploadingView {
+                background: #d5e6fc;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
                 position: absolute;
-                bottom: 0px;
+                bottom: 15px;
                 width: 250px;
                 /*left: 40%;*/
-                right:10px;
+                right: 10px;
                 margin-botton: 10px;
-                padding: 5px;
+                padding: 10px 5px 7px 10px;
                 background: #ffffff;
-                border-radius: 12px;
+                border-radius: 6px;
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
               }
+
               #searchResultView {
                 padding: 15px;
                 background: rgb(255, 255, 255);

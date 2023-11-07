@@ -4,9 +4,9 @@ export function prettyFileSize(size: number): string {
     const kib = Math.ceil(size / 1024);
     const mib = Math.ceil(kib / 1024 * 10) / 10;
     if (mib >= 1) {
-        return `${mib} MiB`;
+        return `${mib}MB`; // MiB
     } else {
-        return `${kib} KiB`;
+        return `${kib}KB`; // KiB
     }
 }
 
