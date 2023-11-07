@@ -9,6 +9,7 @@ import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
 import {kind2Icon} from "../fileTypeUtils";
+import {SelectedType} from "./file-share-menu";
 
 
 /**
@@ -82,27 +83,36 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
             }
         }
 
-        let tagList;
+        let tags;
+        let type;
         if (isPrivate) {
-            // @deleted=${async (e) => {await this._dvm.taggingZvm.untagPrivateEntry(this.hash, e.detail); this.requestUpdate()}}
-            const tags = this._dvm.taggingZvm.getTargetPrivateTags(this.hash);
-            tagList = html`<tag-list class="hide" .tags=${tags} selectable></tag-list>`;
+            tags = this._dvm.taggingZvm.getTargetPrivateTags(this.hash);
+            type = SelectedType.PrivateTag;
         } else {
-            const tags = this._dvm.taggingZvm.getTargetPublicTags(this.hash);
-            tagList = html`<tag-list class="hide" .tags=${tags} selectable></tag-list>`;
-        }
+            tags = this._dvm.taggingZvm.getTargetPublicTags(this.hash);
+            type = SelectedType.PublicTag;        }
+        let tagList = tags.map((tag) => {
+            return html`                
+                <sl-button class="hide tag-button pop" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
+                    this.dispatchEvent(new CustomEvent('tag', {detail: {type, tag}, bubbles: true, composed: true}));
+                }}>${tag}
+                    <sl-icon slot="prefix" name="tag"></sl-icon>
+                </sl-button>
+            `;
+        });
+
 
 
         /** action bar */
         let actionBar = html``;
         if (this.showActionBar) {
             actionBar = html`
-                <sl-button class="hide" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
+                <sl-button class="hide pop action" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
                     this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));
                 }}>
                     <sl-icon name="download"></sl-icon>
                 </sl-button>
-                <sl-button class="hide" size="small" variant="primary" @click=${async (e) => {
+                <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
                     this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
                 }}>
                     <sl-icon name="send"></sl-icon>
@@ -113,12 +123,18 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         /** render all */
         return html`
-            <div class="fileButton">
-                <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
-                ${fileDescription.name}
-                ${actionBar}
+            <sl-popup class="fileButton" placement="bottom-start" skidding="-4" active>
+                <div slot="anchor">
+                    <sl-popup class="fileButton" placement="right" active>
+                        <div slot="anchor" class="fileName">
+                            <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
+                            ${fileDescription.name}
+                        </div>
+                        ${actionBar}
+                    </sl-popup>
+                </div>
                 ${tagList}
-            </div>
+            </sl-popup>
         `;
     }
 
@@ -128,23 +144,53 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
         return [
             filesSharedStyles,
             css`
-              .fileButton {
-                border-radius: 6px;
-                border-width: 1px;
-                border-style: dashed;
-                border-color: rgb(179, 179, 179);
-                font-size: 0.875rem;
-                font-weight: bold;
-                color: #2488e0;
-                background: #FAFAFA;
-                padding: 5px;
-              }
 
               sl-icon {
                 font-weight: bold;
               }
 
-              .fileButton:hover {
+
+              .pop::part(base) {
+                background: #21374A;
+                box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+                font-weight: bold;
+                border: none;
+              }
+
+              .pop::part(base):hover {
+                cursor: pointer;
+                background: aliceblue;
+                color: rgb(33, 55, 74);
+                border: 1px solid #2488e0;
+              }
+
+              .tag-button::part(base) {
+                margin: 4px 0px 0px 0px;
+              }
+
+              .action::part(base) {
+                font-size: 1.0rem;
+                margin: 0px;
+              }
+
+              .fileButton {
+                font-size: 1.0rem;
+              }
+
+
+              .fileName {
+                border-radius: 6px;
+                border-width: 1px;
+                border-style: dashed;
+                border-color: rgb(179, 179, 179);
+                //font-size: 0.875rem;
+                font-weight: bold;
+                color: #2488e0;
+                background: #FAFAFA;
+                padding: 8px;
+              }
+
+              .fileButton:hover .fileName {
                 /*color: #09c8f3;*/
                 box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
                 background: white;

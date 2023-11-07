@@ -458,7 +458,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             ` : html``}
             <!-- Recent Activity -->
             <h2>Recent Activity</h2>
-            <activity-timeline @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}></activity-timeline>`;
+            <activity-timeline 
+                    @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}
+                    @tag=${(e) => this._selectedMenuItem = e.detail}
+            ></activity-timeline>`;
     }
 
 
@@ -502,6 +505,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 <file-button    hash="${ppEh}"
                                 @download=${(e) => this.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
+                                @tag=${(e) => {this._selectedMenuItem = e.detail; this.searchInputElem.value = ""}}
                 ></file-button>
             `);
         }
@@ -919,21 +923,23 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         <button type="button" @click=${() => {this.refresh();}}>refresh</button>
                     `: html``
                     }
+                    <sl-popup placement="bottom-start" sync="width" active>                    
                     <sl-input id="search-input" placeholder="Search" size="large" clearable
+                              slot="anchor"
                               @sl-input=${(e) => {console.log("sl-change", this.searchInputElem.value);this.requestUpdate();}}
                               style="flex-grow: 2">
                         <sl-icon name="search" slot="prefix"></sl-icon>
                     </sl-input>
+                    <!-- Search result -->
+                    <div id="searchResultView" style="display:${searchResultItems.length? "flex" :"none"}">
+                        ${searchResultItems}
+                    </div>
+                    </sl-popup>
                 </div>
                 <div id="mainArea">
                     ${mainArea}
                 </div>
             </div>
-        </div>
-
-        <!-- Search result -->
-        <div id="searchResultView" style="display:${searchResultItems.length? "flex" :"none"}">
-            ${searchResultItems}
         </div>
         <!-- dialogs -->
         <sl-dialog id="profile-dialog" label="Edit Profile">
@@ -1079,16 +1085,12 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
               }
               #searchResultView {
-                position: absolute;
-                top: 70px;
-                left: 25%;
                 padding: 15px;
                 background: rgb(255, 255, 255);
                 border-radius: 12px;
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
                 display: flex;
                 gap: 15px;
-                max-width: 500px;
                 flex-wrap: wrap;
               }
             `,];
