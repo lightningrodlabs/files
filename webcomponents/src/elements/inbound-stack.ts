@@ -59,7 +59,7 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
                         <div style="display:flex; flex-direction:row; gap:35px;">
                             <sl-progress-bar style="flex-grow:1;" .value=${pct}>${pct}%</sl-progress-bar>
                             <sl-icon-button name="x" label="close"
-                                            @click=${async (_e) => {this._canDisplay[distribAh] = false;}}>
+                                            @click=${async (_e) => {this._canDisplay[distribAh] = false; this.requestUpdate()}}>
                             </sl-icon-button>
                         </div>
                         <div style="display:flex; flex-direction:row; gap:5px;">
