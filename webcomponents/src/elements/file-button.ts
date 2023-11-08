@@ -1,7 +1,9 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
+import {consume} from "@lit-labs/context";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {
+    decodeHashFromBase64,
     EntryHashB64,
 } from "@holochain/client";
 import {FilesDvm} from "../viewModels/files.dvm";
@@ -12,6 +14,7 @@ import {kind2Icon} from "../fileTypeUtils";
 import {SelectedType} from "./file-share-menu";
 import {prettyFileSize} from "../utils";
 import {ParcelDescription} from "@ddd-qc/delivery";
+import {Hrl, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 
 
 /**
@@ -27,13 +30,8 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @property() description?: ParcelDescription;
 
-    /** Enable action bar */
-    @property() showActionBar: boolean = true
-
-    /** -- State variables -- */
-
-    // @state() private _loading = true;
-    // @state() private _manifest?;
+    @consume({ context: weClientContext, subscribe: true })
+    weServices: WeServices;
 
 
     /** -- Methods -- */
@@ -93,7 +91,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         /** Retrieve tags */
         let tagList = [];
-        let actionBar = html``;
+        let actionButtons = [];
         if (this.hash != "") {
             let tags;
             let type;
@@ -119,22 +117,34 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 `;
             });
             /** action bar */
-            if (this.showActionBar) {
-                actionBar = html`
-                    <sl-button class="hide pop action" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
-                        this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));
+            actionButtons.push(html`
+                <sl-button class="hide pop action" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
+                    this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));
+                }}>
+                    <sl-icon name="download"></sl-icon>
+                </sl-button>`);
+            actionButtons.push(html`
+                <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
+                    this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
+                }}>
+                    <sl-icon name="send"></sl-icon>
+                </sl-button>`);
+            /** Add button for each attachment type */
+            if (this.weServices && this.hash != '') {
+                console.log("weServices.attachmentTypes", this.weServices.attachmentTypes);
+                this.weServices.attachmentTypes.forEach((attDict, _appletHash, _map) => {
+                    for (const [_attName, attType] of Object.entries(attDict)) {
+                        actionButtons.push(html`
+                <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
+                        const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+                        await attType.create(hrl);
                     }}>
-                        <sl-icon name="download"></sl-icon>
-                    </sl-button>
-                    <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
-                        this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
-                    }}>
-                        <sl-icon name="send"></sl-icon>
-                    </sl-button>                
-                `;
+                    <sl-icon .src=${attType.icon_src}></sl-icon>
+                </sl-button>`);
+                    }
+                });
             }
         }
-
 
 
         /** render all */
@@ -147,7 +157,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             ${fileDescription.name}
                             <span class="filesize">${prettyFileSize(fileDescription.size)}</span>
                         </div>
-                        ${actionBar}
+                        ${actionButtons}
                     </sl-popup>
                 </div>
                 ${tagList}

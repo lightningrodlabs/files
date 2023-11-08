@@ -70,9 +70,8 @@ export class FilesApp extends HappElement {
   private _profilesDvm?: ProfilesDvm;
   protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
-  protected _attachmentsProvider?: unknown;
   public appletId?: AppletId;
-  //public weServices?: WeServices;
+  // protected _attachmentsProvider?: unknown;
 
   /**  */
   static async fromWe(

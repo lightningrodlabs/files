@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
-import {AppletInfo, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletInfo} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
 
 import {
@@ -110,9 +110,6 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
-
-    @consume({ context: weClientContext, subscribe: true })
-    weServices!: WeServices;
 
     private _myProfile: ProfileMat = {nickname: "unknown", fields: {}}
 
