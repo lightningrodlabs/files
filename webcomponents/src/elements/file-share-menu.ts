@@ -181,17 +181,18 @@ export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
         let unrepliedCount = 0;
         let distribCount = 0;
         let outboundCount = 0;
-        let incompleteCount = 0;
+        let inboundCount = 0;
         let privOrphans = 0;
         let pubOrphans = 0;
         if (this._initialized) {
+            const [unreplieds, inbounds] = this._dvm.deliveryZvm.inbounds();
             dhtPublicCount = Object.entries(this.deliveryPerspective.publicParcels).length;
+            inboundCount = Object.entries(inbounds).length;
+            unrepliedCount = Object.entries(unreplieds).length;
+            outboundCount = Object.entries(this._dvm.deliveryZvm.outbounds()).length;
             //localPublicCount = Object.entries(this.deliveryPerspective.localPublicManifests).length;
             privateCount = Object.entries(this.deliveryPerspective.privateManifests).length;
-            unrepliedCount = Object.entries(this._dvm.deliveryZvm.inbounds()).length;
             distribCount = Object.entries(this.deliveryPerspective.distributions).length;
-            outboundCount = Object.entries(this._dvm.deliveryZvm.outbounds()).length;
-            incompleteCount = this.deliveryPerspective.incompleteManifests.length;
             privOrphans = this.deliveryPerspective.orphanPrivateChunks.length
             pubOrphans = this.deliveryPerspective.orphanPublicChunks.length;
         }
@@ -235,7 +236,7 @@ export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 <sl-menu-item ?disabled=${!initialized}>
                     <sl-icon slot="prefix" name="arrow-left-right"></sl-icon>
                     ${SelectedType.InProgress}
-                    ${initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount + incompleteCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount + inboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 ${this.renderTags(false)}
                 ${this.renderTags(true)}

@@ -136,9 +136,10 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
         ];
 
         if (this._initialized) {
-            let unrepliedInbounds: TemplateResult<1>[] = [];
-            items = Object.entries(this._dvm.deliveryZvm.inbounds()).map(
-                ([noticeEh, [notice, ts, pct]]) => {
+            //let unrepliedInbounds: TemplateResult<1>[] = [];
+            const [unreplieds, incompletes] = this._dvm.deliveryZvm.inbounds();
+            const unrepliedItems: [number, TemplateResult<1>][] = Object.entries(unreplieds).map(
+                ([noticeEh, [notice, ts]]) => {
                     console.log("" + noticeEh, this.deliveryPerspective.notices[noticeEh]);
                     const senderKey = encodeHashToBase64(notice.sender);
                     const senderProfile = this._profilesZvm.getProfile(senderKey);
@@ -146,46 +147,67 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                     if (senderProfile) {
                         sender = senderProfile.nickname;
                     }
-
                     /** Format date */
                     const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
                     const date_str = date.toLocaleString('en-US', {hour12: false});
+                    /** */
+                    const unrepliedLi = html`
+                    <div class="inboxLine unreplied">
+                        <file-button .description=${notice.summary.parcel_reference.description}></file-button>
+                        is being sent by
+                        <span class="nickname">${sender}</span>
+                        <div class="gap"></div>
+                        <sl-button id="decline-button" type="button" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
+                            Decline
+                        </sl-button>                            
+                        <sl-button id="accept-button" type="button" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
+                            Accept
+                        </sl-button>
+                        <div class="activityDate">${date_str}</div>
+                    </div>`
+                    //unrepliedInbounds.push(unrepliedLi);
+                    return [ts, unrepliedLi];
+            });
 
-                    if (pct == -1) {
-                        const unrepliedLi = html`
-                        <div id="inbound_${noticeEh}" class="inboxLine inbound">
+            const incompleteItems: [number, TemplateResult<1>][] = Object.entries(incompletes).map(
+                ([noticeEh, [notice, ts, missingChunks]]) => {
+                    console.log("" + noticeEh, this.deliveryPerspective.notices[noticeEh]);
+                    const senderKey = encodeHashToBase64(notice.sender);
+                    const senderProfile = this._profilesZvm.getProfile(senderKey);
+                    let sender = senderKey;
+                    if (senderProfile) {
+                        sender = senderProfile.nickname;
+                    }
+                    /** Format date */
+                    const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+                    const date_str = date.toLocaleString('en-US', {hour12: false});
+                    /** */
+                    const pct =this._dvm.getCompletionPct(notice, missingChunks);
+                    const incompleteItem = html`
+                        <div class="inboxLine">
                             <file-button .description=${notice.summary.parcel_reference.description}></file-button>
-                            is being sent by
+                            from
                             <span class="nickname">${sender}</span>
                             <div class="gap"></div>
-                            <sl-button id="decline-button" type="button" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
-                                Decline
-                            </sl-button>                            
-                            <sl-button id="accept-button" type="button" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
-                                Accept
-                            </sl-button>
-                            <div class="activityDate">${date_str}</div>
-                        </div>`
-                        unrepliedInbounds.push(unrepliedLi);
-                        return unrepliedLi;
-                    } else {
-                        return html`
-                            <div id="inbound_${noticeEh}" class="inboxLine">
-                                <file-button .description=${notice.summary.parcel_reference.description}></file-button>
-                                from
-                                <span class="nickname">${sender}</span>
-                                <div class="gap"></div>
-                                <div style="display:flex; flex-direction:row; width:100px;">
-                                    <sl-progress-bar .value=${pct}>${pct}%</sl-progress-bar>
-                                    <sl-icon-button name="play-fill" @click=${() => {this._dvm.deliveryZvm.zomeProxy.requestMissingChunks(notice.summary.parcel_reference.eh)}}></sl-icon-button>
-                                </div>
-                                <div class="activityDate">${date_str}</div>
+                            <div style="display:flex; flex-direction:row; width:100px;">
+                                <sl-progress-bar .value=${pct}>${pct}%</sl-progress-bar>
+                                <sl-icon-button name="play-fill" @click=${() => {this._dvm.deliveryZvm.requestMissingChunks(noticeEh)}}></sl-icon-button>
                             </div>
-                        `;
-                    }
+                            <div class="activityDate">${date_str}</div>
+                        </div>
+                    `;
+                    return [ts, incompleteItem];
                 });
-            if (items.length == 0) {
-                items.push(html`None`);
+
+            if (incompleteItems.length + unrepliedItems.length == 0) {
+                items = [html`None`];
+            } else {
+                /** Merge the two lists */
+                const concat = unrepliedItems.concat(incompleteItems);
+                items = concat
+                    .sort((a, b) => b[0] - a[0])
+                    .map((pair) => pair[1])
+
             }
         }
 
@@ -219,7 +241,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                 --height: 15px;
                 padding-right: 5px;
               }
-              
+
               sl-icon-button::part(base) {
                 padding: 2px;
                 background: #e6e6e6;
@@ -272,7 +294,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                 border-radius: 6px;
               }
 
-              .inbound {
+              .unreplied {
                 background: rgb(221, 237, 251);
               }
 

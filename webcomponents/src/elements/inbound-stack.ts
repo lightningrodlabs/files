@@ -33,26 +33,32 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
 
     /** */
     render() {
-        //console.log("<inbound-stack>.render()");
+        const windowInnerWidth  = document.documentElement.clientWidth; // window.innerWidth;
+        console.log("<inbound-stack>.render()", windowInnerWidth);
         if (!this._profilesZvm) {
             console.warn("profilesZvm missing in <inbound-stack>");
             return html``;
         }
 
-        const currentInbounds = Object.values(this._zvm.inbounds())
-            .filter((tuple) => tuple[2] >= 0);
+        const incompletes = Object.values(this._zvm.inbounds()[1])
+            .filter((tuple) => tuple[2].size >= 0);
 
-        const items = currentInbounds
-            .map(([notice, _ts, pct]) => {
+        const items = incompletes
+            .map(([notice, _ts, missingChunks]) => {
                 const maybeProfile = this._profilesZvm.getProfile(encodeHashToBase64(notice.sender));
                 const senderName = maybeProfile? maybeProfile.nickname : "unknown";
                 const distribAh = encodeHashToBase64(notice.distribution_ah);
                 if (this._canDisplay[distribAh] == undefined) {
                     this._canDisplay[distribAh] = true;
                 }
-                const canDisplay = pct < 100 && this._canDisplay[distribAh];
+                const canDisplay = missingChunks.size > 0 && this._canDisplay[distribAh];
                 if (!canDisplay) {
                     return html``;
+                }
+                let pct = 0;
+                const manifest = this.perspective.privateManifests[encodeHashToBase64(notice.summary.parcel_reference.eh)];
+                if (manifest) {
+                    pct = Math.ceil(1 - missingChunks.size / manifest[0].chunks.length) * 100;
                 }
                 return html`
                     <div class="fab-inbound">
@@ -87,9 +93,6 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
             filesSharedStyles,
             css`
             :host {
-              position: absolute;
-              bottom: 15px;
-              right: 90px;
             }
 
             sl-icon-button::part(base) {
@@ -105,11 +108,11 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
               display: flex;
               flex-direction: column;
               gap: 8px;
-              padding: 8px 5px 7px 10px;
+              padding: 8px 8px 7px 10px;
               width: 250px;
               border-radius: 6px;              
-              margin-botton: 10px;
-              margin-left: 10px;
+              //margin-botton: 10px;
+              //margin-left: 10px;
               background: #ffffff;
               box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
             }              

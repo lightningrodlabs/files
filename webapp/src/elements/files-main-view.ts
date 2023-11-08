@@ -543,9 +543,9 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
         /** Unreplied inbounds */
-        let unrepliedInbounds: TemplateResult<1>[] = [];
-        let inboundList = Object.entries(this._dvm.deliveryZvm.inbounds()).map(
-            ([noticeEh, [notice, ts, pct]]) => {
+        //let unrepliedInbounds: TemplateResult<1>[] = [];
+        let unrepliedInbounds = Object.entries(this._dvm.deliveryZvm.inbounds()[0])
+                .map(([noticeEh, [notice, _ts]]) => {
                 console.log("" + noticeEh, this.deliveryPerspective.notices[noticeEh]);
                 const senderKey = encodeHashToBase64(notice.sender);
                 const senderProfile = this._profilesZvm.getProfile(senderKey);
@@ -553,36 +553,24 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 if (senderProfile) {
                     sender = senderProfile.nickname;
                 }
-                if (pct == -1) {
-                    const unrepliedLi = html`
-                        <li id="inbound_${noticeEh}">
-                            <span class="nickname">${sender}</span>
-                            wants to send you 
-                            <span style="font-weight: bold">${notice.summary.parcel_reference.description.name}</span>
-                            (${prettyFileSize(notice.summary.parcel_reference.description.size)})
-                            <div style="margin: 10px 10px 20px 20px;">
-                                <sl-button type="button" variant="default" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
-                                    <sl-icon slot="prefix" name="check"></sl-icon>
-                                    Accept
-                                </sl-button>
-                                <sl-button type="button" variant="default" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
-                                    <sl-icon slot="prefix" name="x"></sl-icon>
-                                    Decline
-                                </sl-button>
-                            </divstyle>
-                        </li>`
-                    unrepliedInbounds.push(unrepliedLi);
-                    return unrepliedLi;
-                } else {
-                    return html`<li id="inbound_${noticeEh}">
+                const unrepliedLi = html`
+                    <li id="inbound_${noticeEh}">
                         <span class="nickname">${sender}</span>
-                        wants to send you
+                        wants to send you 
                         <span style="font-weight: bold">${notice.summary.parcel_reference.description.name}</span>
                         (${prettyFileSize(notice.summary.parcel_reference.description.size)})
-                        <button type="button" @click=${() => {this._dvm.deliveryZvm.zomeProxy.requestMissingChunks(notice.summary.parcel_reference.eh)}}>resume</button>
-                        <sl-progress-bar .value=${pct} style="margin-top:5px; width: 50%">${pct}%</sl-progress-bar>
-                    </li>`;
-                }
+                        <div style="margin: 10px 10px 20px 20px;">
+                            <sl-button type="button" variant="default" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
+                                <sl-icon slot="prefix" name="check"></sl-icon>
+                                Accept
+                            </sl-button>
+                            <sl-button type="button" variant="default" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
+                                <sl-icon slot="prefix" name="x"></sl-icon>
+                                Decline
+                            </sl-button>
+                        </divstyle>
+                    </li>`
+                return unrepliedLi;
             });
 
         /** Unreplied outbounds */
@@ -647,63 +635,63 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 `;
 
         /** Incomplete manifests (inbound pending) */
-        let incompleteList = this.deliveryPerspective.incompleteManifests
-            .map((manifestEh) => {
-                const pair = this.deliveryPerspective.privateManifests[manifestEh];
-                if (!pair) {
-                    console.warn("Manifest not found for incomplete manifest:", manifestEh)
-                    return {};
-                };
-                let noticeTuple;
-                for (const tuple of Object.values(this.deliveryPerspective.notices)) {
-                    if (encodeHashToBase64(tuple[0].summary.parcel_reference.eh) == manifestEh) {
-                        noticeTuple = tuple;
-                        break;
-                    }
-                }
-                if (!noticeTuple) {
-                    console.warn("Notice not found for incomplete manifest:", manifestEh)
-                    return {};
-                };
-                return {
-                    notice: noticeTuple[0],
-                    timestamp: noticeTuple[1],
-                    pct: noticeTuple[3],
-                }
-            });
-        let incompleteTable = html`
-                    <vaadin-grid .items="${incompleteList}">
-                        <vaadin-grid-column path="notice" header="Filename"
-                                            ${columnBodyRenderer(
-            ({ notice }) => html`<span>${notice.summary.parcel_reference.description.name}</span>`,
-            [],
-        )}>
-                        </vaadin-grid-column>                        
-                        <vaadin-grid-column path="notice" header="Sender"
-                                            ${columnBodyRenderer(
-            ({ notice }) => {
-                const sender = encodeHashToBase64(notice.sender);
-                const maybeProfile = this._profilesZvm.perspective.profiles[sender];
-                return maybeProfile
-                    ? html`<span>${maybeProfile.nickname}</span>`
-                    : html`<sl-skeleton effect="sheen"></sl-skeleton>`
-            },
-            [],
-        )}
-                        ></vaadin-grid-column>                        
-                        <vaadin-grid-column path="pct" header="State"
-                            ${columnBodyRenderer(({ pct }) => {return html`<sl-progress-bar value=${pct}></sl-progress-bar>`},
-                [],
-                        )}>
-                        </vaadin-grid-column>
-                        <vaadin-grid-column path="timestamp" header="Sent Date"
-                                            ${columnBodyRenderer(
-            ({ timestamp }) => html`<span>${prettyTimestamp(timestamp)}</span>`,
-            [],
-        )}
-                        ></vaadin-grid-column>                        
-                    </vaadin-grid>
-                `;
+        // let incompleteList = this.deliveryPerspective.incompleteManifests
+        //     .map((manifestEh) => {
+        //         const pair = this.deliveryPerspective.privateManifests[manifestEh];
+        //         if (!pair) {
+        //             console.warn("Manifest not found for incomplete manifest:", manifestEh)
+        //             return {};
+        //         };
+        //         let noticeTuple;
+        //         for (const tuple of Object.values(this.deliveryPerspective.notices)) {
+        //             if (encodeHashToBase64(tuple[0].summary.parcel_reference.eh) == manifestEh) {
+        //                 noticeTuple = tuple;
+        //                 break;
+        //             }
+        //         }
+        //         if (!noticeTuple) {
+        //             console.warn("Notice not found for incomplete manifest:", manifestEh)
+        //             return {};
+        //         };
+        //         return {
+        //             notice: noticeTuple[0],
+        //             timestamp: noticeTuple[1],
+        //             pct: noticeTuple[3],
+        //         }
+        //     });
+        // const incompleteTable = html`
+        //             <vaadin-grid .items="${incompleteList}">
+        //                 <vaadin-grid-column path="notice" header="Filename"
+        //                                     ${columnBodyRenderer(
+        //     ({ notice }) => html`<span>${notice.summary.parcel_reference.description.name}</span>`,
+        //     [],
+        // )}>
+        //                 </vaadin-grid-column>
+        //                 <vaadin-grid-column path="notice" header="Sender"
+        //                                     ${columnBodyRenderer(
+        //     ({ notice }) => {
+        //         const sender = encodeHashToBase64(notice.sender);
+        //         const maybeProfile = this._profilesZvm.perspective.profiles[sender];
+        //         return maybeProfile
+        //             ? html`<span>${maybeProfile.nickname}</span>`
+        //             : html`<sl-skeleton effect="sheen"></sl-skeleton>`
+        //     },
+        //     [],
+        // )}
+        //                 ></vaadin-grid-column>
+        //                 <vaadin-grid-column path="pct" header="State"
+        //                     ${columnBodyRenderer(({ pct }) => {return html`<sl-progress-bar value=${pct}></sl-progress-bar>`},
+        //         [],
+        //                 )}>
+        //                 </vaadin-grid-column>
+        //                 <vaadin-grid-column path="timestamp" header="Sent Date"
+        //                                     ${columnBodyRenderer(
+        //     ({ timestamp }) => html`<span>${prettyTimestamp(timestamp)}</span>`,
+        //     [],
+        // )}
+        //                 ></vaadin-grid-column>
+        //             </vaadin-grid>
+        //         `;
 
 
         /** Choose what to display */
@@ -843,15 +831,9 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             if (this._selectedMenuItem.type == SelectedType.InProgress) {
                 mainArea = html`
                     <h2>Outbound Files</h2>
-                    <ul>
+                    <div style="padding-bottom: 80px;padding-right: 10px;">
                         ${outboundTable}
-                    </ul>
-                    <!--
-                    <h2>Incomplete files</h2>
-                    <ul>
-                        ${incompleteTable}
-                    </ul>
-                    -->
+                    </div>
                 `;
 
             }
@@ -960,31 +942,34 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         <store-dialog></store-dialog>
         <send-dialog></send-dialog>
         <!-- stack -->
-        <inbound-stack></inbound-stack>
-        <!-- commit button & panel -->
-        ${this.perspective.uploadState? html`
-            <div id="uploadingView">
-                <div style="display:flex; flex-direction:row; gap:35px;">
-                    <sl-progress-bar style="flex-grow:1;" .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
-                </div>
-                <div style="display:flex; flex-direction:row; gap:5px;">
-                    <sl-icon class="prefixIcon" name=${kind2Icon({Manifest: this.perspective.uploadState.file.type})}></sl-icon>
-                    <span style="font-weight: bold; max-width: 175px; width:inherit; margin-right:3px;">${this.perspective.uploadState.file.name}</span>
-                    <sl-icon style="margin-right:3px;" name="arrow-right"></sl-icon>
-                    <sl-icon name="hdd"></sl-icon>
-                </div>
-            </div>
-            `
-            : html`
-            <sl-tooltip placement="left" content="Send/Share file" style="--show-delay: 200;">
-                <sl-button id="fab-publish" size="large" variant="primary" circle
-                           ?disabled=${this.perspective.uploadState}  
-                           @click=${(_e) => {this.actionOverlayElem.open(); this.fabElem.style.display = "none"}}>
-                    <sl-icon name="plus-lg" label="Add"></sl-icon>
-                </sl-button>
-            </sl-tooltip>
+        <div id="bottom-stack">
+            <!-- commit button & panel -->
+            ${this.perspective.uploadState? html`
+                        <div id="uploadingView">
+                            <div style="display:flex; flex-direction:row; gap:35px;">
+                                <sl-progress-bar style="flex-grow:1;--indicator-color:#3dd23d;"
+                                                 .value=${Math.ceil(this.perspective.uploadState.chunks.length / this.perspective.uploadState.splitObj.numChunks * 100)}></sl-progress-bar>
+                            </div>
+                            <div style="display:flex; flex-direction:row; gap:5px;color:white;">
+                                <sl-icon class="prefixIcon"
+                                         name=${kind2Icon({Manifest: this.perspective.uploadState.file.type})}></sl-icon>
+                                <span style="font-weight: bold; max-width: 175px; width:inherit; margin-right:3px;">${this.perspective.uploadState.file.name}</span>
+                                <sl-icon style="margin-right:3px;" name="arrow-right"></sl-icon>
+                                <sl-icon name="hdd"></sl-icon>
+                            </div>
+                        </div>
+                    `
+                : html`
+                <sl-tooltip placement="left" content="Send/Share file" style="--show-delay: 200;">
+                    <sl-button id="fab-publish" size="large" variant="primary" circle
+                               ?disabled=${this.perspective.uploadState}  
+                               @click=${(_e) => {this.actionOverlayElem.open(); this.fabElem.style.display = "none"}}>
+                        <sl-icon name="plus-lg" label="Add"></sl-icon>
+                    </sl-button>
+                </sl-tooltip>
         `}
-
+            <inbound-stack></inbound-stack>
+        </div>
         `;
     }
 
@@ -999,12 +984,35 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 height: 100vh;
               }
 
+              #bottom-stack {
+                position: fixed;
+                right: 15px;
+                bottom: 15px;
+                width: 100vw;
+                display: flex;
+                flex-direction: row-reverse;
+                gap: 10px;
+              }
+              
+              #fab-publish {
+                //position: absolute;
+                //bottom: 30px;
+                //right: 30px;
+              }
+
+              #fab-publish::part(base) {
+                font-weight: bold;
+                font-size: 32px;
+                box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+                /*--sl-input-height-medium: 48px;*/
+              }
+              
               #main {
                 background: #F7FBFE;
                 display: flex;
                 height: 100%;
                 flex-direction: row;
-                padding-left: 15px;
+                //padding-left: 15px;
                 /*padding: 15px 10px 10px 15px;*/
               }
 
@@ -1075,37 +1083,18 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 font-size: small;
               }
 
-              #fab-publish {
-                position: absolute;
-                bottom: 30px;
-                right: 30px;
-              }
-
-              #fab-publish::part(base) {
-                font-weight: bold;
-                font-size: 32px;
-                box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
-                /*--sl-input-height-medium: 48px;*/
-              }
-
               sl-icon-button::part(base) {
                 padding: 0px;
                 background: #e6e6e6;
               }
 
               #uploadingView {
-                background: #d5e6fc;
+                background: #0284C7;
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
-                position: absolute;
-                bottom: 15px;
                 width: 250px;
-                /*left: 40%;*/
-                right: 10px;
-                margin-botton: 10px;
                 padding: 10px 5px 7px 10px;
-                background: #ffffff;
                 border-radius: 6px;
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
               }

@@ -46,9 +46,9 @@ export class DistributionTable extends LitElement {
         if (!this._profilesZvm) {
             return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
         }
-        if (!this.items.length) {
-            return html`No items found`;
-        }
+        // if (!this.items.length) {
+        //     return html`No items found`;
+        // }
 
         const totalSize = this.items.reduce((accumulator, item) => accumulator + item.description.size, 0);
 

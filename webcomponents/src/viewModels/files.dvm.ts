@@ -1,5 +1,6 @@
 import {AppProxy, delay, DnaViewModel, HCL, ZvmDef} from "@ddd-qc/lit-happ";
 import {
+    DeliveryNotice,
     DeliveryProperties,
     DeliveryZvm, ParcelChunk, ParcelDescription, ParcelKindVariantManifest,
     ParcelManifest, ParcelReference,
@@ -400,9 +401,9 @@ export class FilesDvm extends DnaViewModel {
 
     /** */
     async resumeInbounds() {
-        const inbounds = this.deliveryZvm.inbounds();
-        for (const [_notice_eh, [notice, _ts, pct]] of Object.entries(inbounds)) {
-            await this.deliveryZvm.zomeProxy.requestMissingChunks(notice.summary.parcel_reference.eh);
+        const [_unreplieds, inbounds] = this.deliveryZvm.inbounds();
+        for (const [noticeEh, [notice, _ts, pct]] of Object.entries(inbounds)) {
+            await this.deliveryZvm.requestMissingChunks(noticeEh);
         }
     }
 
@@ -425,7 +426,7 @@ export class FilesDvm extends DnaViewModel {
     /** */
     async getLocalFile(ppEh: EntryHashB64): Promise<[ParcelManifest, string]> {
         const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh));
-        this.deliveryZvm.perspective.chunkCounts[manifest.data_hash] = 0;
+        //this.deliveryZvm.perspective.chunkCounts[manifest.data_hash] = 0;
         const dataB64 = await this.deliveryZvm.getParcelData(ppEh);
         return [manifest, dataB64];
     }
@@ -454,4 +455,13 @@ export class FilesDvm extends DnaViewModel {
         const file = new File([blob], manifest.description.name);
         return file;
     }
+
+    getCompletionPct(notice: DeliveryNotice, missingChunks: Set<EntryHashB64>): number {
+        const manifest = this.deliveryZvm.perspective.privateManifests[encodeHashToBase64(notice.summary.parcel_reference.eh)]
+        if (!manifest) {
+            return 0;
+        }
+        return Math.ceil(1 - missingChunks.size / manifest[0].chunks.length) * 100;
+    }
+
 }
