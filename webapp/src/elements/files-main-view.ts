@@ -1025,13 +1025,13 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 display: flex;
                 flex-direction: column;
                 flex: 1 1 auto;
-                /*height: 100%;*/
+                min-height: 0px;
+                overflow: clip;
               }
 
               #rhs {
                 width: 100%;
-                margin: 5px;
-                margin-left: 30px;
+                margin: 0px 5px 0px 30px;
                 display: flex;
                 flex-direction: column;
               }

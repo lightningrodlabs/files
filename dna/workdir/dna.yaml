@@ -18,6 +18,8 @@ integrity:
       bundled: ../../target/wasm32-unknown-unknown/release/zome_tagging_integrity.wasm
     - name: zDeliveryIntegrity
       bundled: ../../target/wasm32-unknown-unknown/release/delivery_integrity.wasm
+    - name: notifications_integrity
+      bundled: ../../target/wasm32-unknown-unknown/release/notifications_integrity.wasm
 coordinator:
   zomes:
     #- name: zPathExplorer
@@ -34,3 +36,7 @@ coordinator:
       bundled: ../../target/wasm32-unknown-unknown/release/delivery.wasm
       dependencies:
         - name: zDeliveryIntegrity
+    - name: notifications
+      bundled: ../../target/wasm32-unknown-unknown/release/notifications.wasm
+      dependencies:
+        - name: notifications_integrity

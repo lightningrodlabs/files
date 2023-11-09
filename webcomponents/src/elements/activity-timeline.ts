@@ -227,8 +227,10 @@ export class ActivityTimeline extends DnaElement<unknown, FilesDvm> {
             `;
         }
 
-        const history = this.determineActivityHistory();
-
+        let history = this.determineActivityHistory();
+        if (history.length > 30) {
+            history = history.slice(0, 30);
+        }
 
         const items = history.map(
             (activityLog) => {

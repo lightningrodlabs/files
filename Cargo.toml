@@ -36,3 +36,11 @@ overflow-checks = false
 opt-level = "z"
 #lto = true
 lto = false
+
+
+[workspace.dependencies.notifications]
+path = "dna/zomes/notifications"
+
+[workspace.dependencies.notifications_integrity]
+path = "dna/zomes/notifications_integrity"
+

@@ -1,12 +1,14 @@
+import {DeliveryNotice, DeliveryZvm} from "@ddd-qc/delivery";
+import {encodeHashToBase64, EntryHashB64} from "@holochain/client";
 
 /** */
 export function prettyFileSize(size: number): string {
     const kib = Math.ceil(size / 1024);
     const mib = Math.ceil(kib / 1024 * 10) / 10;
     if (mib >= 1) {
-        return `${mib}MB`; // MiB
+        return `${mib} MB`; // MiB
     } else {
-        return `${kib}KB`; // KiB
+        return `${kib} KB`; // KiB
     }
 }
 
@@ -104,4 +106,16 @@ export async function splitData(full_data_string: string, chunkMaxSize: number):
         numChunks: chunks.length,
         chunks: chunks,
     };
+}
+
+
+
+export function getCompletionPct(deliveryZvm: DeliveryZvm, notice: DeliveryNotice, missingChunks: Set<EntryHashB64>): number {
+    const manifest = deliveryZvm.perspective.privateManifests[encodeHashToBase64(notice.summary.parcel_reference.eh)]
+    if (!manifest) {
+        return 0;
+    }
+    const pct = Math.ceil((manifest[0].chunks.length - missingChunks.size) / manifest[0].chunks.length * 100);
+    console.log(`getCompletionPct() ${missingChunks.size}/${manifest[0].chunks.length} = ${pct}%`);
+    return pct;
 }

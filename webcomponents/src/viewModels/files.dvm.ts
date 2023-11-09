@@ -104,6 +104,23 @@ export class FilesDvm extends DnaViewModel {
 
     /** -- Methods -- */
 
+    private _sendFile(manifestEh: EntryHashB64, manifest: ParcelManifest) {
+        const recipients = this._mustSendTo.map((agent) => (' ' + agent).slice(1)); // deep copy string for promise
+        console.log("sendFile follow up", manifestEh, this._mustSendTo);
+        this.fileShareZvm.sendFile(manifestEh, this._mustSendTo).then((distribAh) => {
+            /** Into Notification */
+            const now = Date.now();
+            console.log("File delivery request sent", recipients, this._mustAddTags);
+            this._perspective.notificationLogs.push([now, FilesNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipients}]);
+            if (this._mustAddTags && this._mustAddTags.isPrivate) {
+                /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
+                this._mustAddTags = undefined;
+            }
+            this.notifySubscribers();
+        });
+        this._mustSendTo = undefined;
+    }
+
     /** */
     mySignalHandler(signal: AppSignal): void {
         const now = Date.now();
@@ -115,19 +132,7 @@ export class FilesDvm extends DnaViewModel {
             const manifestEh = encodeHashToBase64(deliverySignal.NewLocalManifest[0])
             /** Follow-up send if requested */
             if (this._mustSendTo && this._mustSendTo.length > 0) {
-                const recipients = this._mustSendTo.map((agent) => (' ' + agent).slice(1)); // deep copy string for promise
-                console.log("sendFile follow up", manifestEh, this._mustSendTo);
-                this.fileShareZvm.sendFile(manifestEh, this._mustSendTo).then((distribAh) => {
-                    /** Into Notification */
-                    console.log("File delivery request sent", deliverySignal.NewLocalManifest, recipients, this._mustAddTags);
-                    this._perspective.notificationLogs.push([now, FilesNotificationType.DeliveryRequestSent, {distribAh, manifestEh, recipients}]);
-                    if (this._mustAddTags && this._mustAddTags.isPrivate) {
-                        /*await*/ this.taggingZvm.tagPrivateEntry(manifestEh, this._mustAddTags.tags, manifest.description.name);
-                        this._mustAddTags = undefined;
-                    }
-                    this.notifySubscribers();
-                });
-                this._mustSendTo = undefined;
+                this._sendFile(manifestEh, manifest);
             }
             /** Add Public tags if any */
             if (this._mustAddTags) {
@@ -320,10 +325,13 @@ export class FilesDvm extends DnaViewModel {
             return Promise.reject("File commit already in progress");
         }
         const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
+
         /** Check if file already present */
-        if (this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash]) {
+        const maybeManifest = this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash]
+        if (maybeManifest) {
             console.warn("File already stored locally");
-            //return this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
+            const manifestEh = maybeManifest[0];
+            this._sendFile(manifestEh, this.deliveryZvm.perspective.privateManifests[manifestEh][0]);
             return;
         }
         this._perspective.uploadState = {
@@ -336,10 +344,9 @@ export class FilesDvm extends DnaViewModel {
         };
         this.notifySubscribers();
 
-        /** Initial write chunk loop */
+        /** Initiate write chunk loop */
         /* await */ this.writeChunks();
         this._mustAddTags = {isPrivate: true, tags};
-
         /* Done */
         return splitObj;
     }
@@ -455,13 +462,4 @@ export class FilesDvm extends DnaViewModel {
         const file = new File([blob], manifest.description.name);
         return file;
     }
-
-    getCompletionPct(notice: DeliveryNotice, missingChunks: Set<EntryHashB64>): number {
-        const manifest = this.deliveryZvm.perspective.privateManifests[encodeHashToBase64(notice.summary.parcel_reference.eh)]
-        if (!manifest) {
-            return 0;
-        }
-        return Math.ceil(1 - missingChunks.size / manifest[0].chunks.length) * 100;
-    }
-
 }

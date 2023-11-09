@@ -11,7 +11,7 @@ import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timesta
 import {FileView} from "./file-view";
 import {filesSharedStyles} from "../sharedStyles";
 import {ProfilesZvm, agent2avatar} from "@ddd-qc/profiles-dvm";
-import {prettyFileSize} from "../utils";
+import {getCompletionPct, prettyFileSize} from "../utils";
 
 
 /**
@@ -182,7 +182,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                     const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
                     const date_str = date.toLocaleString('en-US', {hour12: false});
                     /** */
-                    const pct =this._dvm.getCompletionPct(notice, missingChunks);
+                    const pct = getCompletionPct(this._dvm.deliveryZvm, notice, missingChunks);
                     const incompleteItem = html`
                         <div class="inboxLine">
                             <file-button .description=${notice.summary.parcel_reference.description}></file-button>

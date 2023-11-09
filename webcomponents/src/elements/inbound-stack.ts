@@ -11,6 +11,7 @@ import {filesSharedStyles} from "../sharedStyles";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {kind2Icon} from "../fileTypeUtils";
 import {Dictionary} from "@ddd-qc/cell-proxy";
+import {getCompletionPct} from "../utils";
 
 
 /**
@@ -55,11 +56,7 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
                 if (!canDisplay) {
                     return html``;
                 }
-                let pct = 0;
-                const manifest = this.perspective.privateManifests[encodeHashToBase64(notice.summary.parcel_reference.eh)];
-                if (manifest) {
-                    pct = Math.ceil(1 - missingChunks.size / manifest[0].chunks.length) * 100;
-                }
+                let pct = getCompletionPct(this._zvm, notice, missingChunks);
                 return html`
                     <div class="fab-inbound">
                         <div style="display:flex; flex-direction:row; gap:35px;">

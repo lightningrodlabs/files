@@ -1,5 +1,12 @@
 use hdk::prelude::{*};
-use hc_zome_notifications_coordinator::*;
+use hc_zome_notifications::*;
+
+/// Architecture: Run an agent as the Notifier agent that has credentials to notification services
+/// Notifiers register themselves as available Notifiers in the DHT.
+/// Agents grabs the list of Notifiers
+/// Agents sends their contact info to the Notifier
+/// Agents send "notify some agent" requests to the Notifier.
+/// Notifier will lookup for the recipients contact info and process the notification
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NotificationTip {

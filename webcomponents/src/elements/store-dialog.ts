@@ -6,7 +6,7 @@ import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput} from "@shoelace-style/shoelace";
 import {prettyFileSize, splitFile, SplitObject} from "../utils";
-import {toastError} from "../toast";
+import {toastError, toastWarning} from "../toast";
 import {TagList} from "./tag-list";
 import {kind2Icon} from "../fileTypeUtils";
 
@@ -138,7 +138,10 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                    if (this._localOnly) {
                        await this._dvm.startCommitPrivateFile(this._file, this._selectedTags);
                    }  else {
-                       await this._dvm.startPublishFile(this._file, this._selectedTags);
+                       const maybeSplitObj = await this._dvm.startPublishFile(this._file, this._selectedTags);
+                       if (!maybeSplitObj) {
+                           toastError("File already shared to group");
+                       }
                    }
                 this._file = undefined;
                 this._selectedTags = [];
