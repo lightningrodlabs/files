@@ -1,9 +1,9 @@
 
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {encodeHashToBase64} from "@holochain/client";
-import {FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FilesProxy} from "@ddd-qc/files";
+import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 import {pascal} from "@ddd-qc/cell-proxy";
-import {DeliveryEntryType} from "@ddd-qc/delivery";
+import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 
 
 /** */
@@ -14,37 +14,39 @@ export async function getEntryInfo(
     entryType,
     hrl
 ) {
+    console.log("Files/we-applet/getEntryInfo():", roleName, integrityZomeName, hrl);
     if (roleName != FILES_DEFAULT_ROLE_NAME) {
-        throw new Error(`Files/we-applet: Unknown role name '${roleName}'.`);
+        throw new Error(`Files/we-applet/getEntryInfo(): Unknown role name '${roleName}'.`);
     }
-    if (integrityZomeName != FILES_DEFAULT_INTEGRITY_ZOME_NAME) {
-        throw new Error(`Files/we-applet: Unknown zome '${integrityZomeName}'.`);
+    if (integrityZomeName != DELIVERY_INTERGRITY_ZOME_NAME) {
+        throw new Error(`Files/we-applet/getEntryInfo(): Unknown zome '${integrityZomeName}'.`);
     }
 
     const mainAppInfo = await appletClient.appInfo();
     const pEntryType = pascal(entryType);
 
+    console.log("Files/we-applet/getEntryInfo(): pEntryType", pEntryType);
     switch (pEntryType) {
         case DeliveryEntryType.PrivateManifest:
         case DeliveryEntryType.PublicManifest:
-            console.log("Files/we-applet/applet-view pp info", hrl);
+            console.log("Files/we-applet/getEntryInfo(): pp info", hrl);
             const cellProxy = await asCellProxy(
                 appletClient,
                 undefined, // hrl[0],
                 mainAppInfo.installed_app_id,
                 FILES_DEFAULT_ROLE_NAME);
-            console.log("Files/we-applet/applet-view cellProxy", cellProxy);
+            console.log("Files/we-applet/getEntryInfo(): cellProxy", cellProxy);
             const proxy/*: FileShareProxy*/ = new FilesProxy(cellProxy);
-            console.log("Files/we-applet/applet-view getFile()", encodeHashToBase64(hrl[1]), proxy);
+            console.log("Files/we-applet/getEntryInfo(): getFile()", encodeHashToBase64(hrl[1]), proxy);
             const manifest = await proxy.getFileInfo(hrl[1]);
-            console.log("Files/we-applet/applet-view file", manifest.description);
+            console.log("Files/we-applet/getEntryInfo(): file", manifest.description);
             return {
                 icon_src: "",
                 name: manifest.description.name,
             };
         break;
         default:
-            throw new Error(`Files/we-applet: Unknown entry type ${entryType}.`);
+            throw new Error(`Files/we-applet/getEntryInfo(): Unknown entry type ${entryType}.`);
     }
 }
 

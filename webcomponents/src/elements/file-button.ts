@@ -130,14 +130,16 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     <sl-icon name="send"></sl-icon>
                 </sl-button>`);
             /** Add button for each attachment type */
-            if (this.weServices && this.hash != '') {
+            if (this.weServices && this.weServices.attachmentTypes && this.hash != '') {
                 console.log("weServices.attachmentTypes", this.weServices.attachmentTypes);
                 this.weServices.attachmentTypes.forEach((attDict, _appletHash, _map) => {
                     for (const [_attName, attType] of Object.entries(attDict)) {
                         actionButtons.push(html`
                 <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
                         const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
-                        await attType.create(hrl);
+                        const res = await attType.create(hrl);
+                        console.log("Create attachment result:", res);
+                        this.weServices.openHrl(res.hrl, res.context);
                     }}>
                     <sl-icon .src=${attType.icon_src}></sl-icon>
                 </sl-button>`);

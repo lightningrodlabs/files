@@ -152,8 +152,11 @@ export class FilesDvm extends DnaViewModel {
             //this._perspective.notificationLogs.push([now, SignalProtocolType.NewChunk, deliverySignal]);
             const chunk = deliverySignal.NewLocalChunk[1];
             const manifestPair = this.deliveryZvm.perspective.localManifestByData[chunk.data_hash];
-            if (!manifestPair) {
+            if (!manifestPair && this._perspective.uploadState) {
                 /** We are the original creator of this file */
+                if (!this._perspective.uploadState.chunks) {
+                    this._perspective.uploadState.chunks = [];
+                }
                 this._perspective.uploadState.chunks.push(deliverySignal.NewLocalChunk[0]);
                 const index = this._perspective.uploadState.chunks.length;
                 /** Commit manifest if it was the last chunk */
