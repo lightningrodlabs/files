@@ -334,7 +334,9 @@ export class FilesDvm extends DnaViewModel {
         if (maybeManifest) {
             console.warn("File already stored locally");
             const manifestEh = maybeManifest[0];
-            this._sendFile(manifestEh, this.deliveryZvm.perspective.privateManifests[manifestEh][0]);
+            if (this._mustSendTo) {
+                this._sendFile(manifestEh, this.deliveryZvm.perspective.privateManifests[manifestEh][0]);
+            }
             return;
         }
         this._perspective.uploadState = {

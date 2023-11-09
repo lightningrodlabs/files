@@ -136,11 +136,15 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${!this._file} @click=${async (e) => {
                    if (this._localOnly) {
-                       await this._dvm.startCommitPrivateFile(this._file, this._selectedTags);
+                       const res = await this._dvm.startCommitPrivateFile(this._file, this._selectedTags);
+                       if (!res) {
+                           toastError("File already stored locally");
+                           //this.dialogElem.open = false;
+                       }
                    }  else {
                        const maybeSplitObj = await this._dvm.startPublishFile(this._file, this._selectedTags);
                        if (!maybeSplitObj) {
-                           toastError("File already shared to group");
+                           toastError("File already shared to group or stored locally");
                        }
                    }
                 this._file = undefined;
