@@ -69,7 +69,7 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
                             <span class="nickname">${senderName}</span>                            
                             <sl-icon name="arrow-right"></sl-icon>
                             <sl-icon class="prefixIcon" name=${kind2Icon(notice.summary.parcel_reference.description.kind_info)}></sl-icon>
-                            <span style="font-weight: bold; max-width: 175px; width:inherit; margin-right:3px;">${notice.summary.parcel_reference.description.name}</span>
+                            <files-filename style="font-weight: bold; max-width: 175px; width:inherit; margin-right:3px;" filename=${notice.summary.parcel_reference.description.name}></files-filename>
                         </div>
                     </div>
                 `;

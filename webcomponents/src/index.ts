@@ -16,6 +16,7 @@ export * from './elements/file-button';
 export * from './elements/file-share-menu';
 export * from './elements/file-table';
 export * from './elements/file-view';
+export * from './elements/filename';
 export * from './elements/inbound-stack';
 export * from './elements/profile-input';
 export * from './elements/profile-item';

@@ -953,7 +953,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             <div style="display:flex; flex-direction:row; gap:5px;color:white;">
                                 <sl-icon class="prefixIcon"
                                          name=${kind2Icon({Manifest: this.perspective.uploadState.file.type})}></sl-icon>
-                                <span style="font-weight: bold; max-width: 175px; width:inherit; margin-right:3px;">${this.perspective.uploadState.file.name}</span>
+                                <files-filename filename=${this.perspective.uploadState.file.name} 
+                                                 style="font-weight: bold; max-width: 175px; width:inherit; margin-right:3px;"></files-filename>
                                 <sl-icon style="margin-right:3px;" name="arrow-right"></sl-icon>
                                 <sl-icon name="hdd"></sl-icon>
                             </div>
@@ -1094,6 +1095,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 flex-direction: column;
                 gap: 8px;
                 width: 250px;
+                max-width: 250px;
                 padding: 10px 5px 7px 10px;
                 border-radius: 6px;
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;

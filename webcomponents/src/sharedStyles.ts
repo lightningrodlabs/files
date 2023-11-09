@@ -17,6 +17,7 @@ export const filesSharedStyles = css`
     font-size: 1.275rem;
     margin-right: 2px;
     margin-bottom: -5px;
+    flex-shrink: 0;
   }
   
   sl-button.file::part(base) {

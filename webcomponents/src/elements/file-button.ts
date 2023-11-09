@@ -154,7 +154,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     <sl-popup class="fileButton" placement="right" active>
                         <div slot="anchor" class="fileName">
                             <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
-                            ${fileDescription.name}
+                            <files-filename .filename=${fileDescription.name}></files-filename>
                             <span class="filesize">${prettyFileSize(fileDescription.size)}</span>
                         </div>
                         ${actionButtons}
@@ -176,12 +176,6 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 border: dotted 2px;  
               }
               
-              .filesize {
-                font-size: .75rem;
-                color: darkgray;
-                padding-left: 7px;
-                padding-right: 5px;
-              }
               
               sl-icon {
                 font-weight: bold;
@@ -215,8 +209,17 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 font-size: 1.0rem;
               }
 
-
+              .filesize {
+                font-size: .75rem;
+                color: darkgray;
+                padding-left: 7px;
+                padding-right: 5px;
+                padding-top: 3px;
+                flex-shrink: 0;
+              }
+              
               .fileName {
+                display: flex;
                 border-radius: 6px;
                 border-width: 1px;
                 border-style: dashed;
@@ -226,6 +229,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 color: #2488e0;
                 background: #FAFAFA;
                 padding: 8px;
+                max-width: 250px;
               }
 
               .fileButton:hover .fileName {
