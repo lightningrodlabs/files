@@ -89,7 +89,7 @@ export class EditProfile extends LitElement {
             <sl-input
                     name="mailgun"
                     .label=${msg('mailgun token')}
-                    .helpText=${msg(str`Set this to be a Notifier Agent`)}
+                    .helpText=${msg(str`Set this to become a Notifier Agent`)}
                     style="margin-left: 16px;"
             ></sl-input>
 

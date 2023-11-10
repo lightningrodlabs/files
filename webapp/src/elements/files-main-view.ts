@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
-import {AppletInfo} from "@lightningrodlabs/we-applet";
+import {AppletInfo, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
 
 import {
@@ -104,9 +104,14 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     private _notifCount = 0;
 
+    private _groupName = "";
+
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     deliveryPerspective!: DeliveryPerspective;
+
+    @consume({ context: weClientContext, subscribe: true })
+    weServices: WeServices;
 
     @consume({ context: globalProfilesContext, subscribe: true })
     _profilesZvm!: ProfilesZvm;
@@ -174,7 +179,12 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     async firstUpdated() {
         console.log("<files-main-view> firstUpdated()", this.appletId);
         /** Notifier */
-        this._dvm.notificationsZvm.zomeProxy.selectFirstNotifier();
+        await this._dvm.notificationsZvm.selectNotifier();
+        /** Grab we-group name */
+        if (this.weServices) {
+            const groupProfile =  await this.weServices.groupProfile(decodeHashFromBase64(this.cell.dnaHash));
+            this._groupName = groupProfile.name;
+        }
         /** Generate test data */
         if (!this.appletId) {
             this.appletId = encodeHashToBase64(await emptyAppletHash());
@@ -185,6 +195,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     async initializeNotifier(auth_token: string) {
+        console.log("initializeNotifier()", auth_token);
         await this._dvm.notificationsZvm.zomeProxy.claimNotifier(this.cell.agentPubKey);
         this._dvm.notificationsZvm.setConfig({"mailgun": {
                 "email_address": "whosin@mg.flowplace.org",
@@ -192,7 +203,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 "domain": "mg.flowplace.org"
             }});
         this._dvm.notificationsZvm.serviceName = "Files Notification";
-        await this._dvm.notificationsZvm.zomeProxy.selectFirstNotifier();
+        await this._dvm.notificationsZvm.selectNotifier();
     }
 
 
@@ -309,6 +320,14 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             icon = "check2-circle";
             title = "File delivery request sent";
             msg = `"${privateManifest.description.name}" to ${recipientName}`;
+            /** Ext. Notification */
+            const subject = `${this._myProfile.nickname} wants to send you a file`;
+            const notifMsg = `
+            ${this._myProfile.nickname} would like to send you the file: "${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)}).
+            Please go to the Files app to Accept or Decline the request.
+            `;
+            this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
+
         }
         if (FilesNotificationType.ReceptionComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).manifestEh;
@@ -344,6 +363,17 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const peers = this._profilesZvm.getAgents().map((peer) => decodeHashFromBase64(peer));
             console.log("PublicSharingComplete. notifying...", peers);
             this._dvm.deliveryZvm.zomeProxy.notifyNewPublicParcel({peers, timestamp, pr});
+            /** Ext. Notification */
+            const subject = `${this._myProfile.nickname} shared a file`;
+            const notifMsg = `
+            ${this._myProfile.nickname} has shared the file "${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)}) with the group ${this._groupName}.
+            You can download this file by going to the Files app.
+            `;
+            const recipients = peers
+                .map((agent) => encodeHashToBase64(agent))
+                .filter((agent) => agent != this.cell.agentPubKey); // exclude self
+            console.log("sendNotification() recipients", recipients.map((agent) => this._profilesZvm.getProfile(agent).nickname));
+            this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
         }
         if (FilesNotificationType.PrivateCommitComplete == type) {
             const manifestEh = (notifLog[2] as FileShareNotificationVariantPrivateCommitComplete).manifestEh;
@@ -412,7 +442,13 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         /** email */
         if (profile.fields["email"] && profile.fields["email"].length > 0) {
+            console.log("onSavProfile() email", profile.fields["email"]);
             await this._dvm.notificationsZvm.createMyContact("", "", profile.fields["email"]);
+            let maybeNotifier = this._dvm.notificationsZvm.perspective.myNotifier;
+            if (!this._dvm.notificationsZvm.perspective.myNotifier) {
+                maybeNotifier = await this._dvm.notificationsZvm.selectNotifier();
+                //console.log("New notifier:" encomaybeNotifier);
+            }
         }
         /** */
         this.profileDialogElem.open = false;
@@ -921,9 +957,25 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
                     ${isInDev? html`
-                        <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
+                        <button type="button" @click=${async () => {
+                            this._dvm.dumpLogs(); 
+                            await this._dvm.notificationsZvm.probeAll();
+                            await this._dvm.notificationsZvm.probeContacts(this._profilesZvm.getAgents());
+                            console.log("notificationsZvm.perspective", this._dvm.notificationsZvm.perspective);
+                            console.log("myNotifier:", this._dvm.notificationsZvm.perspective.myNotifier? encodeHashToBase64(this._dvm.notificationsZvm.perspective.myNotifier) : "none");
+                        }}>dump</button>
                         <button type="button" @click=${() => {this.refresh();}}>refresh</button>
-                        <button type="button" @click=${() => {this._dvm.notificationsZvm.sendNotification("this is a notif",  "Testing", this.cell.agentPubKey);}}>send</button>
+                        <button type="button" @click=${() => {this._dvm.notificationsZvm.selectNotifier();}}>select</button>
+                        <button type="button" @click=${() => {this._dvm.notificationsZvm.zomeProxy.grantUnrestrictedCapability();}}>grant</button>
+
+                        <button type="button" @click=${ async() => {
+                            //const myContact = this._dvm.notificationsZvm.perspective.contacts[this.cell.agentPubKey];
+                            await this._dvm.notificationsZvm.probeContacts([this.cell.agentPubKey]);
+                            const myContact = this._dvm.notificationsZvm.getMyContact();
+                            console.log("sending my contact to notifier", myContact, encodeHashToBase64(this._dvm.notificationsZvm.perspective.myNotifier));
+                            this._dvm.notificationsZvm.zomeProxy.sendContact(myContact);
+                        }}>contact</button>
+                        <button type="button" @click=${() => {this._dvm.notificationsZvm.sendNotification("this is a notif",  "Testing", [this.cell.agentPubKey]);}}>send</button>
                     `: html``
                     }
                     <sl-popup placement="bottom-start" sync="width" active>                    

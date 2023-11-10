@@ -1,11 +1,10 @@
 [package]
 name = "notifications"
-version = "0.0.1"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "notifications"
 
 [dependencies]
 hdk = { workspace = true }
@@ -14,4 +13,6 @@ serde = { workspace = true }
 
 notifications_integrity = { workspace = true }
 
-hc_zome_notifications = { git = "https://github.com/holochain-open-dev/notifications", branch = "0.2-merge" }
+#hc_zome_notifications = { git = "https://github.com/holochain-open-dev/notifications", branch = "0.2-merge" }
+hc_zome_notifications = { git = "https://github.com/ddd-mtl/notifications" }
+
