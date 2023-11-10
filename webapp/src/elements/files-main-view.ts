@@ -173,6 +173,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** After first render only */
     async firstUpdated() {
         console.log("<files-main-view> firstUpdated()", this.appletId);
+        /** Notifier */
+        this._dvm.notificationsZvm.zomeProxy.selectFirstNotifier();
         /** Generate test data */
         if (!this.appletId) {
             this.appletId = encodeHashToBase64(await emptyAppletHash());
@@ -182,8 +184,21 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
     /** */
+    async initializeNotifier(auth_token: string) {
+        await this._dvm.notificationsZvm.zomeProxy.claimNotifier(this.cell.agentPubKey);
+        this._dvm.notificationsZvm.setConfig({"mailgun": {
+                "email_address": "whosin@mg.flowplace.org",
+                "auth_token": "api:" + auth_token,
+                "domain": "mg.flowplace.org"
+            }});
+        this._dvm.notificationsZvm.serviceName = "Files Notification";
+        await this._dvm.notificationsZvm.zomeProxy.selectFirstNotifier();
+    }
+
+
+    /** */
     updated() {
-        //console.log("UPDATED START");
+        //console.log("<files-main-view> UPDATED START");
         /** Add behavior to buttons in reply notification */
         const acceptButton = document.getElementById("accept-notice-btn") as HTMLInputElement;
         const declineButton = document.getElementById("decline-notice-btn") as HTMLInputElement;
@@ -382,14 +397,24 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
     /** */
-    private async onSaveProfile(profile: ProfileMat) {
+    private async onSaveProfile(detail: any) {
         console.log("onSavProfile()", this._myProfile)
+        const profile: ProfileMat = detail.profile;
         try {
             await this._profilesZvm.updateMyProfile(profile);
         } catch(e) {
             await this._profilesZvm.createMyProfile(profile);
             this._myProfile = profile;
         }
+        /** mailgun */
+        if (detail.mailgun && detail.mailgun.length > 0) {
+            await this.initializeNotifier(detail.mailgun);
+        }
+        /** email */
+        if (profile.fields["email"] && profile.fields["email"].length > 0) {
+            await this._dvm.notificationsZvm.createMyContact("", "", profile.fields["email"]);
+        }
+        /** */
         this.profileDialogElem.open = false;
         this._myProfile.fields.avatar = profile.fields.avatar;
         this.requestUpdate();
@@ -898,6 +923,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     ${isInDev? html`
                         <button type="button" @click=${() => {this._dvm.dumpLogs();}}>dump</button>
                         <button type="button" @click=${() => {this.refresh();}}>refresh</button>
+                        <button type="button" @click=${() => {this._dvm.notificationsZvm.sendNotification("this is a notif",  "Testing", this.cell.agentPubKey);}}>send</button>
                     `: html``
                     }
                     <sl-popup placement="bottom-start" sync="width" active>                    
@@ -923,7 +949,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <files-edit-profile
                     allowCancel
                     .profile="${this._myProfile}"
-                    @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail.profile)}
+                    @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
             ></files-edit-profile>
         </sl-dialog>
         <action-overlay

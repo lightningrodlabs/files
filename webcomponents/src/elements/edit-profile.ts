@@ -26,10 +26,16 @@ export class EditProfile extends LitElement {
 
   /** -- Methods -- */
 
-  /** */
-  fireSaveProfile(fields: Record<string, string>) {
-    const nickname = fields['nickname'];
-    delete fields['nickname'];
+  /**
+   * Seperate Mailgun token from other fields as we don't want it to be saved in Profiles
+   */
+  fireSaveProfile(formFields: Record<string, string>) {
+    console.log("fireSaveProfile()", formFields);
+    const nickname = formFields['nickname'];
+    delete formFields['nickname'];
+
+    const fields = {}
+      fields['email'] = formFields['email']
 
     const profile: ProfileMat = {
       fields,
@@ -40,6 +46,7 @@ export class EditProfile extends LitElement {
       new CustomEvent('save-profile', {
         detail: {
           profile,
+          mailgun:  formFields["mailgun"],
         },
         bubbles: true,
         composed: true,
@@ -68,12 +75,23 @@ export class EditProfile extends LitElement {
             required
             minLength="${MIN_NICKNAME_LENGTH}"
             .value=${this.profile?.nickname || ''}
-            .helpText=${msg(
-              str`Min. ${MIN_NICKNAME_LENGTH} characters`
-            )}
+            .helpText=${msg(str`Min. ${MIN_NICKNAME_LENGTH} characters`)}
             style="margin-left: 16px;"
           ></sl-input>
         </div>
+            <h3>Notifications</h3>
+            <sl-input
+                    name="email"
+                    .label=${msg('email')}
+                    .helpText=${msg(str``)}
+                    style="margin-left: 16px;"
+            ></sl-input>
+            <sl-input
+                    name="mailgun"
+                    .label=${msg('mailgun token')}
+                    .helpText=${msg(str`Set this to be a Notifier Agent`)}
+                    style="margin-left: 16px;"
+            ></sl-input>
 
         <div class="row" style="margin-top: 8px;">
           <sl-button style="flex: 1;" variant="primary" type="submit"

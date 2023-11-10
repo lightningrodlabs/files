@@ -1,5 +1,6 @@
 import {AppProxy, delay, DnaViewModel, HCL, ZvmDef} from "@ddd-qc/lit-happ";
 import {
+    DELIVERY_ZOME_NAME,
     DeliveryNotice,
     DeliveryProperties,
     DeliveryZvm, ParcelChunk, ParcelDescription, ParcelKindVariantManifest,
@@ -32,6 +33,7 @@ import {
 } from "./files.perspective";
 import {TaggingZvm} from "./tagging.zvm";
 import {FILES_DEFAULT_ROLE_NAME} from "../bindings/files.types";
+import {NotificationsZvm} from "@ddd-qc/notifications-dvm/dist/viewModels/notifications.zvm";
 
 
 
@@ -53,6 +55,7 @@ export class FilesDvm extends DnaViewModel {
         FilesZvm,
         TaggingZvm,
         [DeliveryZvm, "zDelivery"],
+        [NotificationsZvm, "notifications"],
     ];
 
     readonly signalHandler?: AppSignalCb = this.mySignalHandler;
@@ -63,6 +66,8 @@ export class FilesDvm extends DnaViewModel {
     get deliveryZvm(): DeliveryZvm {return this.getZomeViewModel("zDelivery") as DeliveryZvm}
 
     get taggingZvm(): TaggingZvm {return this.getZomeViewModel("zTagging") as TaggingZvm}
+
+    get notificationsZvm(): NotificationsZvm {return this.getZomeViewModel("notifications") as NotificationsZvm}
 
     /** -- ViewModel Interface -- */
 
@@ -121,10 +126,14 @@ export class FilesDvm extends DnaViewModel {
         this._mustSendTo = undefined;
     }
 
+
     /** */
     mySignalHandler(signal: AppSignal): void {
         const now = Date.now();
         console.log("FileShareDvm received signal", now, signal);
+        if (signal.zome_name != DELIVERY_ZOME_NAME) {
+            return;
+        }
         const deliverySignal = signal.payload as SignalProtocol;
         /** */
         if (SignalProtocolType.NewLocalManifest in deliverySignal) {
