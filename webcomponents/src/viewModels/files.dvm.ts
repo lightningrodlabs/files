@@ -130,10 +130,11 @@ export class FilesDvm extends DnaViewModel {
     /** */
     mySignalHandler(signal: AppSignal): void {
         const now = Date.now();
-        console.log("FileShareDvm received signal", now, signal);
+        //console.log("FileShareDvm received signal", now, signal);
         if (signal.zome_name != DELIVERY_ZOME_NAME) {
             return;
         }
+        console.log("FileShareDvm received signal", signal);
         const deliverySignal = signal.payload as SignalProtocol;
         /** */
         if (SignalProtocolType.NewLocalManifest in deliverySignal) {

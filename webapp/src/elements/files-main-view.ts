@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
-import {AppletInfo, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletInfo, GroupProfile, weClientContext, weLinkFromAppletHash, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
 
 import {
@@ -97,7 +97,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     @state() private _initialized = false;
 
     @property() appletId: string;
-    @property() offlineloaded: boolean = false;
+    @property() groupProfiles: GroupProfile[];
+
 
 
     private _typeFilter?: FileType;
@@ -180,16 +181,11 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         console.log("<files-main-view> firstUpdated()", this.appletId);
         /** Notifier */
         await this._dvm.notificationsZvm.selectNotifier();
-        /** Grab we-group name */
-        if (this.weServices) {
-            const groupProfile =  await this.weServices.groupProfile(decodeHashFromBase64(this.cell.dnaHash));
-            this._groupName = groupProfile.name;
-        }
-        /** Generate test data */
-        if (!this.appletId) {
-            this.appletId = encodeHashToBase64(await emptyAppletHash());
-            console.warn("no appletHash provided. A fake one has been generated", this.appletId);
-        }
+        // /** Generate test data */
+        // if (!this.appletId) {
+        //     this.appletId = encodeHashToBase64(await emptyAppletHash());
+        //     console.warn("no appletHash provided. A fake one has been generated", this.appletId);
+        // }
     }
 
 
@@ -202,6 +198,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 "auth_token": "api:" + auth_token,
                 "domain": "mg.flowplace.org"
             }});
+        console.log("Config keys:", Object.keys(this._dvm.notificationsZvm.config));
         this._dvm.notificationsZvm.serviceName = "Files Notification";
         await this._dvm.notificationsZvm.selectNotifier();
     }
@@ -323,8 +320,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             /** Ext. Notification */
             const subject = `${this._myProfile.nickname} wants to send you a file`;
             const notifMsg = `
-            ${this._myProfile.nickname} would like to send you the file: "${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)}).
-            Please go to the Files app to Accept or Decline the request.
+            ${this._myProfile.nickname}${this.groupProfiles? "from " + this.groupProfiles[0].name : "" } would like to send you the file: "${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)}).
+            Please go to the Files app to Accept or Decline the request${this.appletId? `: ${weLinkFromAppletHash(decodeHashFromBase64(this.appletId))}` : "." }
             `;
             this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
 
@@ -373,6 +370,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 .map((agent) => encodeHashToBase64(agent))
                 .filter((agent) => agent != this.cell.agentPubKey); // exclude self
             console.log("sendNotification() recipients", recipients.map((agent) => this._profilesZvm.getProfile(agent).nickname));
+            console.log("Publish. Config keys:", Object.keys(this._dvm.notificationsZvm.config));
             this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
         }
         if (FilesNotificationType.PrivateCommitComplete == type) {
@@ -527,8 +525,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     render() {
-        const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
-        console.log("<files-main-view>.render()", isInDev, this._initialized, this.offlineloaded, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
+        //const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
+        const isInDev = true;
+
+        console.log("<files-main-view>.render()", isInDev, this._initialized, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
 
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
@@ -975,7 +975,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             console.log("sending my contact to notifier", myContact, encodeHashToBase64(this._dvm.notificationsZvm.perspective.myNotifier));
                             this._dvm.notificationsZvm.zomeProxy.sendContact(myContact);
                         }}>contact</button>
-                        <button type="button" @click=${() => {this._dvm.notificationsZvm.sendNotification("this is a notif",  "Testing", [this.cell.agentPubKey]);}}>send</button>
+                        <button type="button" @click=${() => {
+                            console.log("Send. Config keys:", Object.keys(this._dvm.notificationsZvm.config));
+                            const groupName = this.groupProfiles? this.groupProfiles[0].name : "No WeGroup";
+                            this._dvm.notificationsZvm.sendNotification(`This is a notif. ${this.appletId? weLinkFromAppletHash(decodeHashFromBase64(this.appletId)): ""}` ,  `Testing ${groupName}`, [this.cell.agentPubKey]);}}>send</button>
                     `: html``
                     }
                     <sl-popup placement="bottom-start" sync="width" active>                    

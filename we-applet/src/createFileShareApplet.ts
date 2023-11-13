@@ -72,7 +72,7 @@ export async function createFileShareApplet(
   const app = await FilesApp.fromWe(
     mainAppWs, undefined, false, mainAppInfo.installed_app_id,
     profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
-    weServices, appletViewInfo.appletHash, appletViewInfo.view);
+    weServices, appletViewInfo.appletHash, appletViewInfo.view, appletViewInfo.groupProfiles);
   console.log("createFileShareApplet() app", app);
   /** Done */
   return app;

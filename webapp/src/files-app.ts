@@ -22,7 +22,7 @@ import {
   FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_COORDINATOR_ZOME_NAME
 } from "@ddd-qc/files";
 import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES} from "./globals";
-import {AppletId, AppletView, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletId, AppletView, GroupProfile, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
@@ -70,6 +70,7 @@ export class FilesApp extends HappElement {
   protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   public appletId?: AppletId;
+  public groupProfiles?: GroupProfile[];
   // protected _attachmentsProvider?: unknown;
 
   /**  */
@@ -87,6 +88,7 @@ export class FilesApp extends HappElement {
       thisAppletHash: EntryHash,
       //showEntryOnly?: boolean,
       appletView: AppletView,
+      groupProfiles: GroupProfile[],
   ) : Promise<FilesApp> {
     const app = new FilesApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
@@ -94,6 +96,7 @@ export class FilesApp extends HappElement {
     //app.weServices = weServices;
     app._weProvider = new ContextProvider(app, weClientContext, weServices);
     app.appletId = encodeHashToBase64(thisAppletHash);
+    app.groupProfiles = groupProfiles;
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<files-app>.ctor()", profilesProxy);
     await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
@@ -219,7 +222,7 @@ export class FilesApp extends HappElement {
     const zomeNames = this._dnaDef?.coordinator_zomes.map((zome) => { return zome[0]; });
     console.log({zomeNames});
 
-    let view = html`<files-main-view></files-main-view>`;
+    let view = html`<files-main-view .appletId=${this.appletId} .groupProfiles=${this.groupProfiles}></files-main-view>`;
 
     if (this.appletView) {
       switch (this.appletView.type) {
