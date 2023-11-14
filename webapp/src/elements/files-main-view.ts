@@ -75,7 +75,7 @@ import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 
 
-export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/issues/new`;
+export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/files/issues/new`;
 
 
 /**
