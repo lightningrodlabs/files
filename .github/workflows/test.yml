@@ -30,5 +30,4 @@ jobs:
         working-directory: artifacts
         run: |
           rm -f *.blockmap    
-          echo files*
-          gh release upload "manual-release" files* --clobber
+          gh release upload "manual-release" * --clobber
