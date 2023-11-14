@@ -525,8 +525,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     render() {
-        //const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
-        const isInDev = true;
+        const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
+        //const isInDev = true;
 
         console.log("<files-main-view>.render()", isInDev, this._initialized, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
 
@@ -972,11 +972,15 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             //const myContact = this._dvm.notificationsZvm.perspective.contacts[this.cell.agentPubKey];
                             await this._dvm.notificationsZvm.probeContacts([this.cell.agentPubKey]);
                             const myContact = this._dvm.notificationsZvm.getMyContact();
-                            console.log("sending my contact to notifier", myContact, encodeHashToBase64(this._dvm.notificationsZvm.perspective.myNotifier));
-                            this._dvm.notificationsZvm.zomeProxy.sendContact(myContact);
+                            if (myContact && this._dvm.notificationsZvm.perspective.myNotifier) {
+                                console.log("sending my contact to notifier", myContact, encodeHashToBase64(this._dvm.notificationsZvm.perspective.myNotifier));
+                                this._dvm.notificationsZvm.zomeProxy.sendContact(myContact);
+                            } else {
+                                console.log("No Contact info or Notifier found");
+                            }
                         }}>contact</button>
                         <button type="button" @click=${() => {
-                            console.log("Send. Config keys:", Object.keys(this._dvm.notificationsZvm.config));
+                            console.log("Send. Config keys:", this._dvm.notificationsZvm.config? Object.keys(this._dvm.notificationsZvm.config) : "none");
                             const groupName = this.groupProfiles? this.groupProfiles[0].name : "No WeGroup";
                             this._dvm.notificationsZvm.sendNotification(`This is a notif. ${this.appletId? weLinkFromAppletHash(decodeHashFromBase64(this.appletId)): ""}` ,  `Testing ${groupName}`, [this.cell.agentPubKey]);}}>send</button>
                     `: html``

@@ -12,31 +12,31 @@ integrity:
     maxTagNameLength: 32
     minTagNameLength: 2
   zomes:
-    - name: files_integrity # Must match value defined in integrity zome
-      bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share_integrity.wasm
-    - name: tagging_integrity
-      bundled: ../../target/wasm32-unknown-unknown/release/zome_tagging_integrity.wasm
     - name: zDeliveryIntegrity
       bundled: ../../target/wasm32-unknown-unknown/release/delivery_integrity.wasm
+    - name: tagging_integrity
+      bundled: ../../target/wasm32-unknown-unknown/release/zome_tagging_integrity.wasm
     - name: notifications_integrity
       bundled: ../../target/wasm32-unknown-unknown/release/notifications_integrity.wasm
+    - name: files_integrity # Must match value defined in integrity zome
+      bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share_integrity.wasm
 coordinator:
   zomes:
     #- name: zPathExplorer
     #  bundled: ../../target/wasm32-unknown-unknown/release/path_explorer.wasm
-    - name: zFiles # Must match value defined in integrity zome
-      bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share.wasm
-      dependencies:
-        - name: files_integrity
-    - name: zTagging
-      bundled: ../../target/wasm32-unknown-unknown/release/tagging.wasm
-      dependencies:
-        - name: tagging_integrity
     - name: zDelivery
       bundled: ../../target/wasm32-unknown-unknown/release/delivery.wasm
       dependencies:
         - name: zDeliveryIntegrity
+    - name: zTagging
+      bundled: ../../target/wasm32-unknown-unknown/release/tagging.wasm
+      dependencies:
+        - name: tagging_integrity
     - name: notifications
       bundled: ../../target/wasm32-unknown-unknown/release/notifications.wasm
       dependencies:
         - name: notifications_integrity
+    - name: zFiles # Must match value defined in integrity zome
+      bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share.wasm
+      dependencies:
+        - name: files_integrity
