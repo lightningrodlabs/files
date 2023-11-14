@@ -75,7 +75,7 @@ export class FilesDvm extends DnaViewModel {
     /** */
     protected hasChanged(): boolean {
         return true;
-        // //console.log("fileShareDvm.hasChanged()");
+        // //console.log("filesDvm.hasChanged()");
         // if (!this._previousPerspective) {
         //     return true;
         // }

@@ -1,6 +1,7 @@
 dist
 .dist
-file-share-ui.zip
+files-ui.zip
 out-tsc/
 out-builder
 /src/generated/
+assets/

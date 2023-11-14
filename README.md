@@ -1,19 +1,19 @@
-# File-share applet
+# Files hApp
 
-[We-applet](https://github.com/lightningrodlabs/we) for sharing files between agents of a We group.
-Provides the `File` attachable type.
+[We-applet](https://github.com/lightningrodlabs/we) for sharing and sending files between agents of a We group.
+
 
 ##  Design Goal
 
-Enable sharing of files between agents by using the [Delivery zome module](https://github.com/ddd-mtl/delivery-zome).
+Enable sharing of big files between agents by using the [Delivery zome module](https://github.com/ddd-mtl/delivery-zome).
 
 ### Features
 
-- Store a file privately on source-chain
+- Store a file privately on source-chain.
 - Share a file publicly (On DHT).
-- Download a file shared publicly
-- Send a file privately to another agent
-- Accept or decline a file sent from another agent (and store it on source-chain)
+- Download a file shared publicly by other agents.
+- Send a file privately to another agent.
+- Accept or decline a file sent from another agent (and store it on source-chain).
 
 #### Affordances
 
@@ -91,7 +91,7 @@ All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifact
 |:----------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
 | `/artifacts/`                                 | Output folder
 | `/dna/`                                       | DNA source code
-| &nbsp;&nbsp;&nbsp;&nbsp;`workdir/`            | Files DNA work directory
+| &nbsp;&nbsp;&nbsp;&nbsp;`workdir/`            | Files DNA & We-happ work directory
 | &nbsp;&nbsp;&nbsp;&nbsp;`workdir_profiles/`   | Profiles DNA work directory
 | &nbsp;&nbsp;&nbsp;&nbsp;`workdir_standalone/` | Files standalone HAPP work directory
 | `/scripts/`                                   | Tool chain

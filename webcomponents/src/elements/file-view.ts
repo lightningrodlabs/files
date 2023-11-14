@@ -33,7 +33,7 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** Observed perspective from zvm */
     // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-    // fileSharePerspective!: FileSharePerspective;
+    // filesPerspective!: FileSharePerspective;
 
     /** -- State variables -- */
 

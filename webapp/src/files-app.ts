@@ -247,9 +247,9 @@ export class FilesApp extends HappElement {
             case DeliveryEntryType.PublicManifest:
               console.log("File entry:", encodeHashToBase64(this.appletView.hrl[1]));
 
-              // // TODO: Figure out why cell-context doesn't propagate normally via FileShareApp and has to be inserted again within the slot
+              // // TODO: Figure out why cell-context doesn't propagate normally via FilesApp and has to be inserted again within the slot
               // view = html`
-              //   <cell-context .cell=${this.fileShareDvm.cell}>
+              //   <cell-context .cell=${this.filesDvm.cell}>
               //     <file-view .hash=${encodeHashToBase64(hrl[1])}></file-view>
               //   </cell-context>
               // `;

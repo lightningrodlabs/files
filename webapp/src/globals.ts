@@ -17,6 +17,6 @@ try {
 }
 console.log("CAN_ADD_PROFILES =", CAN_ADD_PROFILES)
 
-//console.log("HAPP_ID =", DEFAULT_FILESHARE_DEF.id)
+//console.log("HAPP_ID =", DEFAULT_FILES_DEF.id)
 console.log("HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);

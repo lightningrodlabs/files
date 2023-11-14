@@ -18,14 +18,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lightningrodlabs/file-share.git"
+    "url": "git+https://github.com/lightningrodlabs/files.git"
   },
   "author": "",
   "license": "CAL-1.0",
   "bugs": {
-    "url": "https://github.com/lightningrodlabs/file-share/issues"
+    "url": "https://github.com/lightningrodlabs/files/issues"
   },
-  "homepage": "https://github.com/lightningrodlabs/file-share",
+  "homepage": "https://github.com/lightningrodlabs/files",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
