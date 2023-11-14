@@ -34,8 +34,8 @@ export interface SelectedEvent {
 /**
  * @element
  */
-@customElement("file-share-menu")
-export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
+@customElement("files-menu")
+export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -108,15 +108,15 @@ export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     onSelected(e) {
-        console.log("<file-share-menu> onSelected", e.detail.item);
-        //console.log("<file-share-menu> onSelected", e.detail.item.getTextLabel().trim());
+        console.log("<files-menu> onSelected", e.detail.item);
+        //console.log("<files-menu> onSelected", e.detail.item.getTextLabel().trim());
 
         /** Set "selectedItem" class */
         this.setSelected(e.detail.item.innerText.split('\n')[0]);
 
         const isPrivate = e.detail.item.getAttribute("isPrivate");
         const isTag = e.detail.item.getAttribute("isTag");
-        console.log("<file-share-menu> attrs", isPrivate, isTag);
+        console.log("<files-menu> attrs", isPrivate, isTag);
 
 
 
@@ -126,7 +126,7 @@ export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 tag: e.detail.item.getTextLabel().trim()
             } as SelectedEvent
             : { type: e.detail.item.getTextLabel().trim() } as SelectedEvent;
-        console.log("<file-share-menu> event", event);
+        console.log("<files-menu> event", event);
 
         /** Dispatch to main page */
         this.dispatchEvent(new CustomEvent<SelectedEvent>('selected', {detail: event, bubbles: true, composed: true}));
@@ -171,7 +171,7 @@ export class FileShareMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     render() {
-        console.log("<file-share-menu>.render()", this._initialized, this.deliveryPerspective.probeDhtCount, this.taggingPerspective);
+        console.log("<files-menu>.render()", this._initialized, this.deliveryPerspective.probeDhtCount, this.taggingPerspective);
 
         const initialized = !!(this._initialized && this.deliveryPerspective.probeDhtCount);
 

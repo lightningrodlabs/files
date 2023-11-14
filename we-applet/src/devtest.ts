@@ -3,7 +3,7 @@ import {FILES_DEFAULT_ROLE_NAME} from "@ddd-qc/files";
 import {ActionHash, EntryHash, fakeActionHash} from "@holochain/client";
 import {emptyEntryAppletView} from "@ddd-qc/we-utils/dist/mocks/renderInfoMock";
 import {snake} from "@ddd-qc/cell-proxy";
-import {createFileShareApplet, ViewFileContext} from "./createFileShareApplet";
+import {createFilesApplet, ViewFileContext} from "./createFilesApplet";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 import {AppletView} from "@lightningrodlabs/we-applet";
 
@@ -32,7 +32,7 @@ export function setupFilesBlockView(blockName: string) {
         block: blockName,
         context,
     } as AppletView;
-    return setupDevtest(createFileShareApplet, devtestNames, createDefaultWeServicesMock, appletView);
+    return setupDevtest(createFilesApplet, devtestNames, createDefaultWeServicesMock, appletView);
 }
 
 
@@ -47,7 +47,7 @@ export async function setupFilesEntryView() {
         detail: "none",
     }
     const appletView = createManifestEntryRenderInfo(await fakeActionHash(), context);
-    return setupDevtest(createFileShareApplet, devtestNames, createDefaultWeServicesMock, appletView);
+    return setupDevtest(createFilesApplet, devtestNames, createDefaultWeServicesMock, appletView);
 }
 
 

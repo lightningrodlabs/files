@@ -8,19 +8,19 @@ use zome_delivery_api::*;
 /// API sugar
 #[hdk_extern]
 pub fn refuse_file_share(parcel_eh: EntryHash) -> ExternResult<EntryHash> {
-    return respond_to_file_share_notice(parcel_eh, false);
+    return respond_to_file_notice(parcel_eh, false);
 }
 
 
 /// API sugar
 #[hdk_extern]
 pub fn accept_file_share(parcel_eh: EntryHash) -> ExternResult<EntryHash> {
-    return respond_to_file_share_notice(parcel_eh, true);
+    return respond_to_file_notice(parcel_eh, true);
 }
 
 
-/// Wrapper for respond_to_notice()
-pub fn respond_to_file_share_notice(parcel_eh: EntryHash, has_accepted: bool) -> ExternResult<EntryHash> {
+/// Wrapper for Delivery::respond_to_notice()
+pub fn respond_to_file_notice(parcel_eh: EntryHash, has_accepted: bool) -> ExternResult<EntryHash> {
     let response = call_delivery_zome(
         "query_DeliveryNotice",
         DeliveryNoticeQueryField::Parcel(parcel_eh),

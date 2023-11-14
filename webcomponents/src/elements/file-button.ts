@@ -11,7 +11,7 @@ import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
 import {kind2Icon} from "../fileTypeUtils";
-import {SelectedType} from "./file-share-menu";
+import {SelectedType} from "./files-menu";
 import {prettyFileSize} from "../utils";
 import {ParcelDescription} from "@ddd-qc/delivery";
 import {Hrl, weClientContext, WeServices} from "@lightningrodlabs/we-applet";

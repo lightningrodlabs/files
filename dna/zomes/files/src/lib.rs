@@ -16,6 +16,6 @@ mod publish_file_manifest;
 mod utils;
 mod probe_public_files;
 mod write_file_chunk;
-mod respond_to_file_share_notice;
+mod respond_to_file_notice;
 mod get_file_info;
 mod attach_to_hrl;

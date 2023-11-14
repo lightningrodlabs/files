@@ -169,16 +169,16 @@ export const FILE_TYPE_NAME = "split_file";
 
 export const ATTACHMENTS_ROOT = "public_attachments";
 
-export enum FileShareEntryType {
+export enum FilesEntryType {
 	FileShare = 'FileShare',
 }
-export type FileShareEntryVariantFileShare = {FileShare: FileShare}
-export type FileShareEntry = 
- | FileShareEntryVariantFileShare;
+export type FilesEntryVariantFileShare = {FileShare: FileShare}
+export type FilesEntry = 
+ | FilesEntryVariantFileShare;
 
-export type FileShareLinkTypes =
+export type FilesLinkTypes =
   | {Attachment: null};
-export enum FileShareLinkTypesType {
+export enum FilesLinkTypesType {
 	Attachment = 'Attachment',
 }
 

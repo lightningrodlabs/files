@@ -28,8 +28,8 @@ pub const ATTACHMENTS_ROOT: &str = "public_attachments";
 use hdi::prelude::*;
 
 #[hdk_entry_defs]
-#[unit_enum(FileShareEntryTypes)]
-pub enum FileShareEntry {
+#[unit_enum(FilesEntryTypes)]
+pub enum FilesEntry {
    #[entry_def(required_validations = 2, visibility = "private")]
    FileShare(FileShare),
 }
@@ -37,7 +37,7 @@ pub enum FileShareEntry {
 
 #[hdk_link_types]
 #[derive(Serialize, Deserialize)]
-pub enum FileShareLinkTypes {
+pub enum FilesLinkTypes {
    Attachment,
 }
 

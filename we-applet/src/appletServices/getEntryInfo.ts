@@ -36,7 +36,7 @@ export async function getEntryInfo(
                 mainAppInfo.installed_app_id,
                 FILES_DEFAULT_ROLE_NAME);
             console.log("Files/we-applet/getEntryInfo(): cellProxy", cellProxy);
-            const proxy/*: FileShareProxy*/ = new FilesProxy(cellProxy);
+            const proxy/*: FilesProxy */ = new FilesProxy(cellProxy);
             console.log("Files/we-applet/getEntryInfo(): getFile()", encodeHashToBase64(hrl[1]), proxy);
             const manifest = await proxy.getFileInfo(hrl[1]);
             console.log("Files/we-applet/getEntryInfo(): file", manifest.description);

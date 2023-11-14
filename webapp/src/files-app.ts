@@ -185,7 +185,7 @@ export class FilesApp extends HappElement {
 
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
-    console.log("<fileshare-app>.perspectiveInitializedOffline()");
+    console.log("<files-app>.perspectiveInitializedOffline()");
     /** Done */
     this._offlinePerspectiveloaded = true;
   }
@@ -193,7 +193,7 @@ export class FilesApp extends HappElement {
 
   /** */
   async perspectiveInitializedOnline(): Promise<void> {
-    console.log("<fileshare-app>.perspectiveInitializedOnline()");
+    console.log("<files-app>.perspectiveInitializedOnline()");
     if (this.appletView && this.appletView.type == "main") {
       await this.hvm.probeAll();
     }
@@ -202,7 +202,7 @@ export class FilesApp extends HappElement {
 
   /** */
   render() {
-    console.log("*** <fileshare-app> render()", this._loaded, this._hasHolochainFailed);
+    console.log("*** <files-app> render()", this._loaded, this._hasHolochainFailed);
 
     if (!this._loaded) {
       //return html`<span>Loading...</span>`;

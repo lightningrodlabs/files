@@ -19,7 +19,7 @@ integrity:
     - name: notifications_integrity
       bundled: ../../target/wasm32-unknown-unknown/release/notifications_integrity.wasm
     - name: files_integrity # Must match value defined in integrity zome
-      bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share_integrity.wasm
+      bundled: ../../target/wasm32-unknown-unknown/release/zome_files_integrity.wasm
 coordinator:
   zomes:
     #- name: zPathExplorer
@@ -37,6 +37,6 @@ coordinator:
       dependencies:
         - name: notifications_integrity
     - name: zFiles # Must match value defined in integrity zome
-      bundled: ../../target/wasm32-unknown-unknown/release/zome_file_share.wasm
+      bundled: ../../target/wasm32-unknown-unknown/release/zome_files.wasm
       dependencies:
         - name: files_integrity

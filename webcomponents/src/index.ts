@@ -13,7 +13,7 @@ export * from './elements/distribution-table';
 export * from './elements/edit-profile';
 export * from './elements/inbox';
 export * from './elements/file-button';
-export * from './elements/file-share-menu';
+export * from './elements/files-menu';
 export * from './elements/file-table';
 export * from './elements/file-view';
 export * from './elements/filename';

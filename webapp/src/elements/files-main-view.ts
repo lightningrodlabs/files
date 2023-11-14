@@ -9,7 +9,7 @@ import {consume} from "@lit-labs/context";
 import {
     FilesDvm,
     globalProfilesContext,
-    FileShareMenu,
+    FilesMenu,
     SelectedEvent,
     SelectedType,
     prettyFileSize,
@@ -31,13 +31,13 @@ import {
     FilesDvmPerspective,
     FilesNotification,
     FilesNotificationType,
-    FileShareNotificationVariantDeliveryRequestSent,
-    FileShareNotificationVariantDistributionToRecipientComplete,
-    FileShareNotificationVariantNewNoticeReceived,
-    FileShareNotificationVariantPrivateCommitComplete,
-    FileShareNotificationVariantPublicSharingComplete,
-    FileShareNotificationVariantReceptionComplete,
-    FileShareNotificationVariantReplyReceived
+    FilesNotificationVariantDeliveryRequestSent,
+    FilesNotificationVariantDistributionToRecipientComplete,
+    FilesNotificationVariantNewNoticeReceived,
+    FilesNotificationVariantPrivateCommitComplete,
+    FilesNotificationVariantPublicSharingComplete,
+    FilesNotificationVariantReceptionComplete,
+    FilesNotificationVariantReplyReceived
 } from "@ddd-qc/files";
 
 import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
@@ -84,22 +84,12 @@ export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/file-share/is
 @customElement("files-main-view")
 export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
-    // constructor() {
-    //     super(FileShareDvm.DEFAULT_BASE_ROLE_NAME);
-    //       this.addEventListener('beforeunload', (e) => {
-    //         console.log("<file-share-page> beforeunload", e);
-    //     });
-    // }
-
-
     /** -- Fields -- */
 
     @state() private _initialized = false;
 
     @property() appletId: string;
     @property() groupProfiles: GroupProfile[];
-
-
 
     private _typeFilter?: FileType;
 
@@ -147,8 +137,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         return this.shadowRoot.getElementById("search-input") as SlInput;
     }
 
-    get menuElem() : FileShareMenu {
-        return this.shadowRoot.querySelector("file-share-menu") as FileShareMenu;
+    get menuElem() : FilesMenu {
+        return this.shadowRoot.querySelector("files-menu") as FilesMenu;
     }
 
 
@@ -166,12 +156,12 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     protected async dvmUpdated(newDvm: FilesDvm, oldDvm?: FilesDvm): Promise<void> {
         console.log("<file-view>.dvmUpdated()");
         if (oldDvm) {
-            console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.fileShareZvm.cell.name)
-            //oldDvm.fileShareZvm.unsubscribe(this);
+            console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.filesZvm.cell.name)
+            //oldDvm.filesZvm.unsubscribe(this);
             oldDvm.deliveryZvm.unsubscribe(this);
         }
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
-        console.log("\t Subscribed Zvms roleName = ", newDvm.fileShareZvm.cell.name);
+        console.log("\t Subscribed Zvms roleName = ", newDvm.filesZvm.cell.name);
         this._initialized = true;
     }
 
@@ -263,7 +253,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     async refresh() {
         await this._dvm.probeAll();
-        await this._dvm.fileShareZvm.zomeProxy.getPrivateFiles();
+        await this._dvm.filesZvm.zomeProxy.getPrivateFiles();
         await this._dvm.deliveryZvm.queryAll();
         this.requestUpdate();
     }
@@ -304,9 +294,9 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         let id;
 
         if (FilesNotificationType.DeliveryRequestSent == type) {
-            const manifestEh = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).manifestEh;
+            const manifestEh = (notifLog[2] as FilesNotificationVariantDeliveryRequestSent).manifestEh;
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
-            const recipients = (notifLog[2] as FileShareNotificationVariantDeliveryRequestSent).recipients;
+            const recipients = (notifLog[2] as FilesNotificationVariantDeliveryRequestSent).recipients;
             let recipientName = "" + recipients.length + " peers";
             if (recipients.length == 1) {
                 const maybeProfile = this._profilesZvm.getProfile(recipients[0]);
@@ -327,7 +317,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         }
         if (FilesNotificationType.ReceptionComplete == type) {
-            const manifestEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).manifestEh;
+            const manifestEh = (notifLog[2] as FilesNotificationVariantReceptionComplete).manifestEh;
             //const noticeEh = (notifLog[2] as FileShareNotificationVariantReceptionComplete).noticeEh;
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             variant = 'success';
@@ -336,8 +326,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             msg = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
         }
         if (FilesNotificationType.DistributionToRecipientComplete == type) {
-            const distribAh = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).distribAh;
-            const recipient = (notifLog[2] as FileShareNotificationVariantDistributionToRecipientComplete).recipient;
+            const distribAh = (notifLog[2] as FilesNotificationVariantDistributionToRecipientComplete).distribAh;
+            const recipient = (notifLog[2] as FilesNotificationVariantDistributionToRecipientComplete).recipient;
             const manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[distribAh][0].delivery_summary.parcel_reference.eh);
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             const maybeProfile = this._profilesZvm.getProfile(recipient);
@@ -348,7 +338,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             msg = `"${privateManifest.description.name}" to ${recipientName}`;
         }
         if (FilesNotificationType.PublicSharingComplete == type) {
-            const manifestEh = (notifLog[2] as FileShareNotificationVariantPublicSharingComplete).manifestEh;
+            const manifestEh = (notifLog[2] as FilesNotificationVariantPublicSharingComplete).manifestEh;
             const publicManifest = this.deliveryPerspective.localPublicManifests[manifestEh][0];
             variant = 'success';
             icon = "check2-circle";
@@ -374,7 +364,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
         }
         if (FilesNotificationType.PrivateCommitComplete == type) {
-            const manifestEh = (notifLog[2] as FileShareNotificationVariantPrivateCommitComplete).manifestEh;
+            const manifestEh = (notifLog[2] as FilesNotificationVariantPrivateCommitComplete).manifestEh;
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             variant = 'success';
             icon = "check2-circle";
@@ -382,9 +372,9 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             msg = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
         }
         if (FilesNotificationType.NewNoticeReceived == type) {
-            const noticeEh = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).noticeEh;
-            const description = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).description;
-            const recipient = (notifLog[2] as FileShareNotificationVariantNewNoticeReceived).sender;
+            const noticeEh = (notifLog[2] as FilesNotificationVariantNewNoticeReceived).noticeEh;
+            const description = (notifLog[2] as FilesNotificationVariantNewNoticeReceived).description;
+            const recipient = (notifLog[2] as FilesNotificationVariantNewNoticeReceived).sender;
             const maybeProfile = this._profilesZvm.getProfile(recipient);
             const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             title = "Incoming file request";
@@ -405,7 +395,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             `;
         }
         if (FilesNotificationType.ReplyReceived == type) {
-            const notif = notifLog[2] as FileShareNotificationVariantReplyReceived;
+            const notif = notifLog[2] as FilesNotificationVariantReplyReceived;
             const distrib = this.deliveryPerspective.distributions[notif.distribAh][0];
             const description = distrib.delivery_summary.parcel_reference.description;
             const maybeProfile = this._profilesZvm.getProfile(notif.recipient);
@@ -940,7 +930,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         /** Render all */
         return html`
         <div id="main">
-             <file-share-menu @selected=${(e) => {this._selectedMenuItem = e.detail; this._typeFilter = undefined;}}></file-share-menu>
+             <files-menu @selected=${(e) => {this._selectedMenuItem = e.detail; this._typeFilter = undefined;}}></files-menu>
              <div id="rhs">
                 <div id="topBar">
                     <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
@@ -1102,7 +1092,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 /*padding: 15px 10px 10px 15px;*/
               }
 
-              file-share-menu {
+              files-menu {
                 width: 400px;
                 border-radius: 5px;
               }

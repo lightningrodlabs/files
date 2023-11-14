@@ -1,5 +1,5 @@
 import {DevTestNames, setup} from "@ddd-qc/we-utils";
-import {createFileShareApplet} from "./createFileShareApplet";
+import {createFilesApplet} from "./createFilesApplet";
 import {AppletServices} from "@lightningrodlabs/we-applet";
 import {getEntryInfo} from "./appletServices/getEntryInfo";
 import {blockTypes} from "./appletServices/blockTypes";
@@ -43,7 +43,7 @@ async function setupFilesMainView() {
         search: async (appletClient, searchFilter) => {return []},
     };
 
-    return setup(appletServices, createFileShareApplet, devtestNames);
+    return setup(appletServices, createFilesApplet, devtestNames);
 }
 
 

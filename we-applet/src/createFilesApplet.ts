@@ -27,7 +27,7 @@ export interface ViewFileContext {
 
 
 /** */
-export async function createFileShareApplet(
+export async function createFilesApplet(
   renderInfo: RenderInfo,
   weServices: WeServices,
 ): Promise<FilesApp> {
@@ -39,12 +39,12 @@ export async function createFileShareApplet(
   const appletViewInfo = renderInfo as AppletViewInfo;
   const profilesClient = appletViewInfo.profilesClient;
 
-  console.log("createFileShareApplet() client", appletViewInfo.appletClient);
-  console.log("createFileShareApplet() thisAppletId", appletViewInfo.appletHash);
+  console.log("createFilesApplet() client", appletViewInfo.appletClient);
+  console.log("createFilesApplet() thisAppletId", appletViewInfo.appletHash);
 
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
 
-  console.log("createFileShareApplet() mainAppInfo", mainAppInfo);
+  console.log("createFilesApplet() mainAppInfo", mainAppInfo);
 
   //const showFileOnly = false; // FIXME
 
@@ -52,7 +52,7 @@ export async function createFileShareApplet(
   const mainAppAgentWs = appletViewInfo.appletClient as AppAgentWebsocket;
   const mainAppWs = mainAppAgentWs.appWebsocket;
   let profilesAppInfo = await profilesClient.client.appInfo();
-  console.log("createFileShareApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
+  console.log("createFilesApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
   /** Check if roleName is actually a cloneId */
   let maybeCloneId = undefined;
   let baseRoleName = profilesClient.roleName;
@@ -67,13 +67,13 @@ export async function createFileShareApplet(
   const profilesAppProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
   await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
   const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
-  console.log("createFileShareApplet() profilesCellProxy", profilesCellProxy);
-  /** Create FileShareApp */
+  console.log("createFilesApplet() profilesCellProxy", profilesCellProxy);
+  /** Create FilesApp */
   const app = await FilesApp.fromWe(
     mainAppWs, undefined, false, mainAppInfo.installed_app_id,
     profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
     weServices, appletViewInfo.appletHash, appletViewInfo.view, appletViewInfo.groupProfiles);
-  console.log("createFileShareApplet() app", app);
+  console.log("createFilesApplet() app", app);
   /** Done */
   return app;
 
