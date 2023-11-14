@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 serde.workspace = true
 hdk.workspace = true
 zome_utils.workspace = true
-path_explorer_types.workspace = true
+#path_explorer_types.workspace = true
 
 zome_tagging_integrity = {path = "../tagging_integrity" }
 
