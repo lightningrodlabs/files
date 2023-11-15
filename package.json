@@ -76,11 +76,11 @@
     "update-version"     : "bash scripts/update-version-number.sh $npm_package_version",
     "dl-test-release"    : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/files",
 
+    "ls"                 : "cross-env pwd && cross-env ls ../we-main/testings-applets",
     "clean"              : "bash scripts/clean.sh",
     "clean:npm"          : "bash scripts/clean-npm.sh",
     "clean:hc"           : "rm -rf .hc* && rm -rf we-applet/.hc*",
-    "ls"                 : "cross-env pwd && cross-env ls ../we-main/testings-applets",
-    "clean:all"          : "npm run clean:hc && npm run clean:npm && npm run clean"
+    "clean:all"          : "git clean -f -x -d -e .idea && rm -rf submodules"
 
   },
   "devDependencies": {
@@ -105,12 +105,12 @@
     "@ddd-qc/path-explorer": "=0.2.0",
     "@ddd-qc/delivery": "=0.8.3",
     "@holochain-open-dev/core-types": "0.6.3",
-    "@holochain-open-dev/profiles": "^0.16.1",
+    "@holochain-open-dev/profiles": "=0.17.2",
     "@holochain/client": "=0.16.2",
     "@lightningrodlabs/we-applet": "0.11.0",
-    "@lit-labs/context": "^0.2.0",
-    "@shoelace-style/shoelace": "2.4.0",
-    "lit": "2.6.0"
+    "@lit-labs/context": "=0.2.0",
+    "@shoelace-style/shoelace": "2.11.2",
+    "lit": "3.0.2"
   },
   "engines": {
     "npm": ">=7.0.0"

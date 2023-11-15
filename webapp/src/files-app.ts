@@ -25,7 +25,7 @@ import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES} from "./globals";
 import {AppletId, AppletView, GroupProfile, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
-import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
+import {DELIVERY_INTERGRITY_ZOME_NAME, DELIVERY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 import {buildBlock} from "./files-blocks";
 import {DEFAULT_FILES_DEF, DEFAULT_FILES_WE_DEF} from "./happDef";
 
@@ -167,9 +167,9 @@ export class FilesApp extends HappElement {
     console.log("FilesDvm.cell", this.filesDvm.cell);
     this._allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
     console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
-    console.warn(`${FILES_DEFAULT_COORDINATOR_ZOME_NAME} entries`, this._allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]);
-    if (this._allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
-      console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
+    console.warn(`${DELIVERY_ZOME_NAME} entries`, this._allAppEntryTypes[DELIVERY_ZOME_NAME]);
+    if (this._allAppEntryTypes[DELIVERY_ZOME_NAME].length == 0) {
+      console.warn(`No entries found for ${DELIVERY_ZOME_NAME}`);
     } else {
       this._hasHolochainFailed = false;
     }
