@@ -4,7 +4,7 @@ import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
 import {AppletInfo, GroupProfile, weClientContext, weLinkFromAppletHash, WeServices} from "@lightningrodlabs/we-applet";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 
 import {
     FilesDvm,
@@ -42,7 +42,7 @@ import {
 
 import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {columnBodyRenderer} from "@vaadin/grid/lit";
-import {ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {emptyAppletHash} from "@ddd-qc/we-utils";
 
 import {SlAlert, SlBadge, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
@@ -154,7 +154,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
      * Subscribe to ZVMs
      */
     protected async dvmUpdated(newDvm: FilesDvm, oldDvm?: FilesDvm): Promise<void> {
-        console.log("<file-view>.dvmUpdated()");
+        console.log("<files-main-view>.dvmUpdated()");
         if (oldDvm) {
             console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.filesZvm.cell.name)
             //oldDvm.filesZvm.unsubscribe(this);
@@ -162,6 +162,15 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
         console.log("\t Subscribed Zvms roleName = ", newDvm.filesZvm.cell.name);
+        /** Set myProfile */
+        this._myProfile = await this._profilesZvm.probeProfile(this.cell.agentPubKey);
+        console.log("<files-main-view>.dvmUpdated() this._myProfile", this._myProfile);
+        if (!this._myProfile) {
+            console.log("<files-main-view>.dvmUpdated() No profile found. Creating guest profile");
+            this._myProfile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
+            this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
+        }
+        /** Done */
         this._initialized = true;
     }
 
@@ -188,7 +197,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 "auth_token": "api:" + auth_token,
                 "domain": "mg.flowplace.org"
             }});
-        console.log("Config keys:", Object.keys(this._dvm.notificationsZvm.config));
+        console.log("Config keys:", this._dvm.notificationsZvm.config? Object.keys(this._dvm.notificationsZvm.config) : "none");
         this._dvm.notificationsZvm.serviceName = "Files Notification";
         await this._dvm.notificationsZvm.selectNotifier();
     }
@@ -360,7 +369,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 .map((agent) => encodeHashToBase64(agent))
                 .filter((agent) => agent != this.cell.agentPubKey); // exclude self
             console.log("sendNotification() recipients", recipients.map((agent) => this._profilesZvm.getProfile(agent).nickname));
-            console.log("Publish. Config keys:", Object.keys(this._dvm.notificationsZvm.config));
+            console.log("Publish. Config keys:", this._dvm.notificationsZvm.config? Object.keys(this._dvm.notificationsZvm.config) : "none");
             this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
         }
         if (FilesNotificationType.PrivateCommitComplete == type) {
@@ -416,14 +425,14 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     private async onSaveProfile(detail: any) {
-        console.log("onSavProfile()", this._myProfile)
+        console.log("onSavProfile()", this._myProfile, detail.profile);
         const profile: ProfileMat = detail.profile;
         try {
             await this._profilesZvm.updateMyProfile(profile);
         } catch(e) {
             await this._profilesZvm.createMyProfile(profile);
-            this._myProfile = profile;
         }
+        this._myProfile = profile;
         /** mailgun */
         if (detail.mailgun && detail.mailgun.length > 0) {
             await this.initializeNotifier(detail.mailgun);
@@ -523,12 +532,6 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
             return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
-        }
-
-        this._myProfile = this._profilesZvm.getMyProfile();
-        if (!this._myProfile) {
-            this._myProfile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
-            this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
         }
 
         /** This agent's profile info */
@@ -1071,9 +1074,6 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
               }
               
               #fab-publish {
-                //position: absolute;
-                //bottom: 30px;
-                //right: 30px;
               }
 
               #fab-publish::part(base) {
@@ -1088,7 +1088,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 display: flex;
                 height: 100%;
                 flex-direction: row;
-                //padding-left: 15px;
+                /*padding-left: 15px;*/
                 /*padding: 15px 10px 10px 15px;*/
               }
 

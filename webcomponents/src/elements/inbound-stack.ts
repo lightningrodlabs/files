@@ -4,7 +4,7 @@ import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
 import {
     encodeHashToBase64,
 } from "@holochain/client";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 import {globalProfilesContext} from "../contexts";
 import {DeliveryPerspective, DeliveryZvm} from "@ddd-qc/delivery";
 import {filesSharedStyles} from "../sharedStyles";
@@ -107,9 +107,7 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
               gap: 8px;
               padding: 8px 8px 7px 10px;
               width: 250px;
-              border-radius: 6px;              
-              //margin-botton: 10px;
-              //margin-left: 10px;
+              border-radius: 6px;
               background: #ffffff;
               box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
             }              

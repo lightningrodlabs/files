@@ -5,7 +5,7 @@ import {
     decodeHashFromBase64,
     EntryHashB64,
 } from "@holochain/client";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 import {FilesDvm} from "../viewModels/files.dvm";
 import {globalProfilesContext} from "../contexts";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery";

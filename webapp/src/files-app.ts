@@ -1,6 +1,6 @@
 import {html, css, render} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {ContextProvider} from "@lit-labs/context";
+import {ContextProvider} from "@lit/context";
 import {
   AdminWebsocket,
   AgentPubKeyB64,
@@ -119,11 +119,13 @@ export class FilesApp extends HappElement {
     await this.setupProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
   }
 
+
   /** */
   async setupProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
     this._profilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
     const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(agent);
+    console.log("maybeMyProfile", maybeMyProfile);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {

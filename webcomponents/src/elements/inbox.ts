@@ -1,7 +1,7 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 import {FilesDvm} from "../viewModels/files.dvm";
 import {
     DeliveryPerspective,

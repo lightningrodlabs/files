@@ -8,7 +8,7 @@ import {
 import {prettyFileSize, prettyTimestamp} from "../utils";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {DeliveryStateType, ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 import {globalProfilesContext} from "../contexts";
 import {filesSharedStyles} from "../sharedStyles";
 import {kind2Type} from "../fileTypeUtils";

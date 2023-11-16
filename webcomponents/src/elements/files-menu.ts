@@ -4,7 +4,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {FilesDvm} from "../viewModels/files.dvm";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {DeliveryPerspective} from "@ddd-qc/delivery";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 import {globalProfilesContext} from "../contexts";
 import {filesSharedStyles} from "../sharedStyles";
 import {SlDrawer, SlMenu, SlMenuItem} from "@shoelace-style/shoelace";

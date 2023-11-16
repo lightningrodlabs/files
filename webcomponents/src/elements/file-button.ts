@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {
     decodeHashFromBase64,
@@ -226,7 +226,6 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 border-width: 1px;
                 border-style: dashed;
                 border-color: rgb(179, 179, 179);
-                //font-size: 0.875rem;
                 font-weight: bold;
                 color: #2488e0;
                 background: #FAFAFA;

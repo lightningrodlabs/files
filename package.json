@@ -94,22 +94,22 @@
     "new-port-cli": "^1.0.0",
     "ts-jest": "^29.1.0",
     "tslib": "^2.4.0",
-    "typescript": "^4.9.5"
+    "typescript": "~5.2.0"
   },
   "dependencies": {
-    "@ddd-qc/cell-proxy": "=0.19.19",
-    "@ddd-qc/lit-happ": "=0.19.19",
-    "@ddd-qc/we-utils": "=0.19.29",
-    "@ddd-qc/profiles-dvm": "=0.19.20",
-    "@ddd-qc/notifications-dvm": "=0.19.30",
-    "@ddd-qc/path-explorer": "=0.2.0",
-    "@ddd-qc/delivery": "=0.8.3",
-    "@holochain-open-dev/core-types": "0.6.3",
+    "@ddd-qc/cell-proxy": "=0.20.1",
+    "@ddd-qc/lit-happ": "=0.20.1",
+    "@ddd-qc/we-utils": "=0.20.3",
+    "@ddd-qc/profiles-dvm": "=0.20.2",
+    "@ddd-qc/notifications-dvm": "=0.20.1",
+    "@ddd-qc/path-explorer": "=0.3.0",
+    "@ddd-qc/delivery": "=0.9.0",
+    "@holochain-open-dev/core-types": "0.7.0",
     "@holochain-open-dev/profiles": "=0.17.2",
     "@holochain/client": "=0.16.2",
     "@lightningrodlabs/we-applet": "0.11.0",
-    "@lit-labs/context": "=0.2.0",
     "@shoelace-style/shoelace": "2.11.2",
+    "@lit/context": "1.0.1",
     "lit": "3.0.2"
   },
   "engines": {

@@ -36,7 +36,7 @@ export async function createFilesApplet(
     throw Error("cross-applet-view not implemented by Files");
   }
 
-  const appletViewInfo = renderInfo as AppletViewInfo;
+  const appletViewInfo = renderInfo as unknown as AppletViewInfo;
   const profilesClient = appletViewInfo.profilesClient;
 
   console.log("createFilesApplet() client", appletViewInfo.appletClient);

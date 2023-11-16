@@ -4,7 +4,7 @@ import { localized, msg, str } from '@lit/localize';
 import { onSubmit, sharedStyles } from '@holochain-open-dev/elements';
 
 import '@holochain-open-dev/elements/dist/elements/select-avatar.js';
-import {ProfileMat} from "@ddd-qc/profiles-dvm";
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 
 
 const MIN_NICKNAME_LENGTH = 2
@@ -35,7 +35,8 @@ export class EditProfile extends LitElement {
     delete formFields['nickname'];
 
     const fields = {}
-      fields['email'] = formFields['email']
+    fields['email'] = formFields['email'];
+    fields['avatar'] = formFields['avatar'];
 
     const profile: ProfileMat = {
       fields,

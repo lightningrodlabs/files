@@ -2,7 +2,7 @@ import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {filesSharedStyles} from "../sharedStyles";
 import {AgentPubKeyB64} from "@holochain/client";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 import {globalProfilesContext} from "../contexts";
 import {ProfilesZvm, getInitials} from "@ddd-qc/profiles-dvm";
 
