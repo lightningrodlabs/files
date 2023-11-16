@@ -1,6 +1,6 @@
 {
   "name": "@ddd-qc/files",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "lit-happ elements for the Files DNA",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -35,6 +35,7 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
+    "@ddd-qc/notifications-dvm": "=0.20.1",
     "js-base64": "^3.7.3",
     "@msgpack/msgpack": "^2.7.2",
     "@shoelace-style/shoelace": "2.11.2",
