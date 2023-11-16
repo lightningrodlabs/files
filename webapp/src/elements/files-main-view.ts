@@ -162,14 +162,6 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         newDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
         console.log("\t Subscribed Zvms roleName = ", newDvm.filesZvm.cell.name);
-        /** Set myProfile */
-        this._myProfile = await this._profilesZvm.probeProfile(this.cell.agentPubKey);
-        console.log("<files-main-view>.dvmUpdated() this._myProfile", this._myProfile);
-        if (!this._myProfile) {
-            console.log("<files-main-view>.dvmUpdated() No profile found. Creating guest profile");
-            this._myProfile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
-            this._profilesZvm.createMyProfile(this._myProfile).then(() => this.requestUpdate());
-        }
         /** Done */
         this._initialized = true;
     }
@@ -526,30 +518,35 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     render() {
         const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
         //const isInDev = true;
-
         console.log("<files-main-view>.render()", isInDev, this._initialized, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
 
+
+        /** This agent's profile info */
         if (!this._profilesZvm) {
             console.error("this._profilesZvm not found");
             return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
         }
-
-        /** This agent's profile info */
-        let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-        let maybeAgent = this._myProfile;
-        if (maybeAgent) {
-            agent = maybeAgent;
+        let agent = this._myProfile;
+        if (!agent) {
+            agent = {nickname: "unknown", fields: {}} as ProfileMat;
         } else {
-            //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
-            this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey);
-            //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
+            console.log("Profile not found. Probing", this._dvm.cell.agentPubKey)
+            this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey).then((profile) => {
+                if (!profile) {
+                    console.log("Profile still not found after probing");
+                    return;
+                }
+                this._myProfile  = profile;
+                console.log("Found Profile", profile.nickname);
+                this.requestUpdate();
+            })
         }
-
         //const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
 
-        let searchResultItems = [];
+
         /** Search results */
+        let searchResultItems = [];
         if (this.searchInputElem) {
             const filter = this.searchInputElem.value.toLowerCase();
             const results = this._dvm.searchParcel(filter);
@@ -576,8 +573,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             this._notifCount = this.perspective.notificationLogs.length;
         }
 
-        /** -- -- */
 
+        /** -- -- */
 
         const agentOptions = Object.entries(this._profilesZvm.perspective.profiles).map(
             ([agentIdB64, profile]) => {

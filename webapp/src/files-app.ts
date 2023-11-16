@@ -122,16 +122,22 @@ export class FilesApp extends HappElement {
 
   /** */
   async setupProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
+    console.log("setupProfilesDvm() agent", agent);
     this._profilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
     const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(agent);
-    console.log("maybeMyProfile", maybeMyProfile);
+    console.log("setupProfilesDvm() maybeMyProfile", maybeMyProfile);
     if (maybeMyProfile) {
-      const maybeLang = maybeMyProfile.fields['lang'];
-      if (maybeLang) {
-        //setLocale(maybeLang);
-      }
+      // const maybeLang = maybeMyProfile.fields['lang'];
+      // if (maybeLang) {
+      //   setLocale(maybeLang);
+      // }
       this._hasStartingProfile = true;
+    } else {
+        /** Create Guest profile */
+        const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
+      console.log("setupProfilesDvm() createMyProfile", this._profilesDvm.profilesZvm.cell.agentPubKey);
+        await this._profilesDvm.profilesZvm.createMyProfile(profile);
     }
     /** Provide it as context */
     console.log(`\t\tProviding context "${globalProfilesContext}" | in host `, this);
