@@ -3,6 +3,7 @@ import {ParcelDescription, SignalProtocol, SignalProtocolType} from "@ddd-qc/del
 import {SplitObject} from "../utils";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 
+export type FilesCb = (manifestEh: EntryHashB64) => void;
 
 /** */
 interface UploadState {
@@ -12,6 +13,7 @@ interface UploadState {
     chunks: EntryHash[],
     index: number,
     written_chunks: number,
+    callback?: FilesCb,
 }
 
 

@@ -22,6 +22,7 @@ import {FilesZvm} from "./files.zvm";
 import {base64ToArrayBuffer, splitFile, SplitObject} from "../utils";
 import { decode } from "@msgpack/msgpack";
 import {
+    FilesCb,
     FilesDvmPerspective,
     FilesNotificationType,
     FilesNotificationVariantDistributionToRecipientComplete,
@@ -32,8 +33,6 @@ import {
 import {TaggingZvm} from "./tagging.zvm";
 import {FILES_DEFAULT_ROLE_NAME} from "../bindings/files.types";
 import {NotificationsZvm} from "@ddd-qc/notifications-dvm/dist/viewModels/notifications.zvm";
-
-
 
 
 /**
@@ -152,6 +151,7 @@ export class FilesDvm extends DnaViewModel {
                 this._mustAddTags = undefined;
             }
             /** Done */
+            this._perspective.uploadState.callback(manifestEh);
             this._perspective.uploadState = undefined;
             this.notifySubscribers();
         }
@@ -365,8 +365,9 @@ export class FilesDvm extends DnaViewModel {
     }
 
 
+
     /** */
-    async startPublishFile(file: File, tags: string[]): Promise<SplitObject> {
+    async startPublishFile(file: File, tags: string[], callback?: FilesCb): Promise<SplitObject> {
         console.log('dvm.startPublishFile: ', file, tags);
         if (this._perspective.uploadState) {
             return Promise.reject("File commit already in progress");
@@ -383,7 +384,8 @@ export class FilesDvm extends DnaViewModel {
             isPrivate: false,
             chunks: [],
             index: 0,
-            written_chunks: 0
+            written_chunks: 0,
+            callback,
         };
         this.notifySubscribers();
 
