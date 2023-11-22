@@ -170,6 +170,10 @@ export class FilesProxy extends ZomeProxy {
     return this.call('get_local_public_files', null);
   }
 
+  async getAh(eh: EntryHash): Promise<ActionHash | null> {
+    return this.call('get_ah', eh);
+  }
+
   async getPrivateFilesFrom(sender: AgentPubKey): Promise<EntryHash[]> {
     return this.call('get_private_files_from', sender);
   }

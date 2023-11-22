@@ -15,6 +15,7 @@ export const filesFunctionNames: FunctionName[] = [
 	"get_file_info",
 	"get_private_files",
 	"get_local_public_files",
+	"get_ah",
 	"get_private_files_from",
 	"get_unreplied_notices",
 	"probe_public_files",

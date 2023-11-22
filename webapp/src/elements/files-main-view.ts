@@ -508,7 +508,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <!-- Recent Activity -->
             <h2>Recent Activity</h2>
             <activity-timeline 
-                    @download=${(e) => this.downloadFile(e.detail)} @send=${(e) => this.sendDialogElem.open(e.detail)}
+                    @download=${(e) => this.downloadFile(e.detail)} 
+                    @send=${(e) => this.sendDialogElem.open(e.detail)}
                     @tag=${(e) => this._selectedMenuItem = e.detail}
             ></activity-timeline>`;
     }

@@ -86,7 +86,6 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         let content = html`<sl-spinner></sl-spinner>`;
         if (this._file) {
-
             let allTags;
             if (this._localOnly) {
                 allTags = this._dvm.taggingZvm.allPrivateTags;
@@ -94,7 +93,6 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 allTags = this._dvm.taggingZvm.allPublicTags;
             }
             allTags.filter((tag) => this._selectedTags.indexOf(tag) < 0);
-
             /** */
             content = html`
                 <div id="filename">
