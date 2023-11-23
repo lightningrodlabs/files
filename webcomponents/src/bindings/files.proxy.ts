@@ -158,6 +158,10 @@ export class FilesProxy extends ZomeProxy {
     return this.call('commit_private_file', input);
   }
 
+  async getAh(eh: EntryHash): Promise<ActionHash | null> {
+    return this.call('get_ah', eh);
+  }
+
   async getFileInfo(eh: EntryHash): Promise<ParcelManifest> {
     return this.call('get_file_info', eh);
   }
@@ -168,10 +172,6 @@ export class FilesProxy extends ZomeProxy {
 
   async getLocalPublicFiles(): Promise<[EntryHash, ParcelManifest][]> {
     return this.call('get_local_public_files', null);
-  }
-
-  async getAh(eh: EntryHash): Promise<ActionHash | null> {
-    return this.call('get_ah', eh);
   }
 
   async getPrivateFilesFrom(sender: AgentPubKey): Promise<EntryHash[]> {

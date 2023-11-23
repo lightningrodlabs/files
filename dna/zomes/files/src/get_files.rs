@@ -42,12 +42,3 @@ pub fn get_local_public_files(_:()) -> ExternResult<Vec<(EntryHash, ParcelManife
 }
 
 
-///
-#[hdk_extern]
-pub fn get_ah(eh: EntryHash) -> ExternResult<Option<ActionHash>> {
-    debug!("get_ah() {}", eh);
-    let maybe_record = get(eh, GetOptions::content())?;
-    let Some(record) = maybe_record
-        else {return Ok(None)};
-    Ok(Some(record.action_address().to_owned()))
-}
