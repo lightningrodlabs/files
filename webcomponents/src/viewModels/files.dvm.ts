@@ -150,9 +150,17 @@ export class FilesDvm extends DnaViewModel {
     async cacheFile(file: File) {
         const content = await file.arrayBuffer();
         const contentB64 = arrayBufferToBase64(content);
+        if (contentB64.length > 1 * 1024 * 1024) {
+            console.log("FilesDvm.cacheFile() Aborted. File is too big for caching", contentB64.length);
+            return;
+        }
         const hash = await sha256(contentB64);
-        console.log("FilesDvm.cacheFile() caching:", hash);
-        localStorage.setItem("filesDvm/" + hash, contentB64);
+        console.log("FilesDvm.cacheFile() caching:", hash, file.size);
+        try {
+            localStorage.setItem("filesDvm/" + hash, contentB64);
+        } catch(e) {
+            console.error("Failed to store in localStorage", localStorage);
+        }
     }
 
 
