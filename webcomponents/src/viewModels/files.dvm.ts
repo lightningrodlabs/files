@@ -374,8 +374,16 @@ export class FilesDvm extends DnaViewModel {
         }
         const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
         /** Check if file already present */
-        if (this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash]) {
+        const maybeExist = this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
+        if (maybeExist) {
             console.warn("File already stored locally");
+            if (maybeExist[1]) {
+                console.warn("Can't publish private file");
+            } else {
+                if (callback) {
+                    callback(maybeExist[0]);
+                }
+            }
             return;
         }
         this._perspective.uploadState = {
