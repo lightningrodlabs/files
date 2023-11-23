@@ -62,7 +62,7 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     open(hash?: EntryHashB64) {
         if (hash) {
-            this._dvm.localParcel2File(hash).then((file) => {
+            this._dvm.parcel2File(hash).then((file) => {
                 splitFile(file, this._dvm.dnaProperties.maxChunkSize).then((splitObj) => {
                     this._splitObj = splitObj;
                     this._file = file;

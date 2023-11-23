@@ -261,19 +261,6 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
     /** */
-    async downloadFile(manifestEh: EntryHashB64): Promise<void> {
-        console.log("downloadFile()", manifestEh);
-        const file = await this._dvm.localParcel2File(manifestEh);
-        const url = URL.createObjectURL(file);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = file.name || 'download';
-        a.addEventListener('click', () => {}, false);
-        a.click();
-    }
-
-
-    /** */
     printNoticeReceived() {
         for (const [distribAh, acks] of Object.entries(this.deliveryPerspective.noticeAcks)) {
             console.log(` - "${distribAh}": distrib = "${distribAh}"; recipients = "${Object.keys(acks)}"`)
@@ -508,7 +495,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <!-- Recent Activity -->
             <h2>Recent Activity</h2>
             <activity-timeline 
-                    @download=${(e) => this.downloadFile(e.detail)} 
+                    @download=${(e) => this._dvm.downloadFile(e.detail)} 
                     @send=${(e) => this.sendDialogElem.open(e.detail)}
                     @tag=${(e) => this._selectedMenuItem = e.detail}
             ></activity-timeline>`;
@@ -530,8 +517,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         let agent = this._myProfile;
         if (!agent) {
             agent = {nickname: "unknown", fields: {}} as ProfileMat;
-        } else {
-            console.log("Profile not found. Probing", this._dvm.cell.agentPubKey)
+            console.log("Profile not found. Probing", this._dvm.cell.agentPubKey);
             this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey).then((profile) => {
                 if (!profile) {
                     console.log("Profile still not found after probing");
@@ -554,7 +540,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             console.log("searchInputElem", filter, results);
             searchResultItems = results.map((ppEh) => html`
                 <file-button    hash="${ppEh}"
-                                @download=${(e) => this.downloadFile(e.detail)}
+                                @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                                 @tag=${(e) => {this._selectedMenuItem = e.detail; this.searchInputElem.value = ""}}
                 ></file-button>
@@ -798,7 +784,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 mainArea = html`
                     <h2>All Files${this._typeFilter? ": " + this._typeFilter : ""}</h2>
                     <file-table .items=${allItems}
-                                @download=${(e) => this.downloadFile(e.detail)}
+                                @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
                 `;
@@ -811,7 +797,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                 //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
                                 return {ppEh, description: pm.description, timestamp} as FileTableItem;
                             })}
-                            @download=${(e) => this.downloadFile(e.detail)}
+                            @download=${(e) => this._dvm.downloadFile(e.detail)}
                             @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
                 `;
@@ -832,7 +818,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 mainArea = html`
                     <h2>${SelectedType.GroupFiles}</h2>
                     <file-table .items=${dhtPublicItems}
-                                @download=${(e) => this.downloadFile(e.detail)}
+                                @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
                 `;
@@ -875,7 +861,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 mainArea = html`
                     <h2>Sent</h2>
                     <distribution-table .items=${distributionItems}
-                                        @download=${(e) => this.downloadFile(e.detail)}
+                                        @download=${(e) => this._dvm.downloadFile(e.detail)}
                                         @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></distribution-table>
                 `;
@@ -903,7 +889,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 mainArea = html`
                     <h2>Group Files: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
                     <file-table .items=${taggedItems}
-                                @download=${(e) => this.downloadFile(e.detail)}
+                                @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
                 `;
@@ -921,7 +907,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 mainArea = html`
                     <h2>Personal Files: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
                     <file-table .items=${taggedItems}
-                                @download=${(e) => this.downloadFile(e.detail)}
+                                @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
                 `;

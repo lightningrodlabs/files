@@ -19,7 +19,7 @@ import {
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 import {FilesZvm} from "./files.zvm";
-import {base64ToArrayBuffer, splitFile, SplitObject} from "../utils";
+import {arrayBufferToBase64, base64ToArrayBuffer, FileHash, sha256, splitFile, SplitObject} from "../utils";
 import { decode } from "@msgpack/msgpack";
 import {
     FilesCb,
@@ -124,6 +124,58 @@ export class FilesDvm extends DnaViewModel {
     }
 
 
+
+    /** */
+    async downloadFile(manifestEh: EntryHashB64): Promise<void> {
+        console.log("FilesDvm.downloadFile()", manifestEh);
+        const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(manifestEh));
+        const maybeCachedData = this.getFileFromCache(manifest.data_hash);
+        let file;
+        if (maybeCachedData == null) {
+            file = await this.parcel2File(manifestEh);
+            await this.cacheFile(file);
+        } else {
+            file = this.data2File(manifest, maybeCachedData);
+        }
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name || 'download';
+        a.addEventListener('click', () => {}, false);
+        a.click();
+    }
+
+
+    /** */
+    async cacheFile(file: File) {
+        const content = await file.arrayBuffer();
+        const contentB64 = arrayBufferToBase64(content);
+        const hash = await sha256(contentB64);
+        console.log("FilesDvm.cacheFile() caching:", hash);
+        localStorage.setItem("filesDvm/" + hash, contentB64);
+    }
+
+
+    // /** */
+    // cacheSplitObj(splitObj: SplitObject): void {
+    //     let dataB64 = "";
+    //     for (const chunk of splitObj.chunks) {
+    //         dataB64 += chunk;
+    //     }
+    //     localStorage.setItem("filesDvm/" + splitObj.dataHash, dataB64);
+    // }
+
+
+    /** */
+    getFileFromCache(dataHash: FileHash): string | null {
+        const dataB64 = localStorage.getItem("filesDvm/" + dataHash);
+        if (dataB64) {
+            console.log("FilesDvm.getFileFromCache() Found file in cache:", dataHash);
+        }
+        return dataB64;
+    }
+
+
     /** */
     mySignalHandler(signal: AppSignal): void {
         const now = Date.now();
@@ -152,6 +204,7 @@ export class FilesDvm extends DnaViewModel {
             }
             /** Done */
             this._perspective.uploadState.callback(manifestEh);
+            /*await*/this.cacheFile(this._perspective.uploadState.file);
             this._perspective.uploadState = undefined;
             this.notifySubscribers();
         }
@@ -454,7 +507,7 @@ export class FilesDvm extends DnaViewModel {
 
 
     /** */
-    async getLocalFile(ppEh: EntryHashB64): Promise<[ParcelManifest, string]> {
+    async getFile(ppEh: EntryHashB64): Promise<[ParcelManifest, string]> {
         const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh));
         //this.deliveryZvm.perspective.chunkCounts[manifest.data_hash] = 0;
         const dataB64 = await this.deliveryZvm.getParcelData(ppEh);
@@ -463,18 +516,16 @@ export class FilesDvm extends DnaViewModel {
 
 
     /** */
-    async localParcel2File(manifestEh: EntryHashB64): Promise<File> {
-        /** Get File on source chain */
-        const [manifest, data] = await this.getLocalFile(manifestEh);
+    async parcel2FileData(manifestEh: EntryHashB64): Promise<string> {
+        const [_manifest, data] = await this.getFile(manifestEh);
+        return data;
+    }
 
-        /** DEBUG - check if content is valid base64 */
-            // if (!base64regex.test(data)) {
-            //   const invalid_hash = sha256(data);
-            //   console.error("File '" + manifest.filename + "' is invalid base64. hash is: " + invalid_hash);
-            // }
 
+    /** */
+    data2File(manifest: ParcelManifest, data: string): File {
         let filetype = (manifest.description.kind_info as ParcelKindVariantManifest).Manifest;
-        console.log("downloadFile()", filetype);
+        console.log("data2File()", filetype);
         const fields = filetype.split(':');
         if (fields.length > 1) {
             const types = fields[1].split(';');
@@ -484,5 +535,17 @@ export class FilesDvm extends DnaViewModel {
         const blob = new Blob([byteArray], { type: filetype});
         const file = new File([blob], manifest.description.name);
         return file;
+    }
+
+
+    /** */
+    async parcel2File(manifestEh: EntryHashB64): Promise<File> {
+        const [manifest, data] = await this.getFile(manifestEh);
+        /** DEBUG - check if content is valid base64 */
+        // if (!base64regex.test(data)) {
+        //   const invalid_hash = sha256(data);
+        //   console.error("File '" + manifest.filename + "' is invalid base64. hash is: " + invalid_hash);
+        // }
+        return this.data2File(manifest, data);
     }
 }

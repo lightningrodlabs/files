@@ -1,7 +1,6 @@
-import {ActionHashB64, AgentPubKeyB64, Entry, EntryHash, EntryHashB64, Timestamp} from "@holochain/client";
-import {ParcelDescription, SignalProtocol, SignalProtocolType} from "@ddd-qc/delivery";
+import {ActionHashB64, AgentPubKeyB64, EntryHash, EntryHashB64, Timestamp} from "@holochain/client";
+import {ParcelDescription} from "@ddd-qc/delivery";
 import {SplitObject} from "../utils";
-import {Dictionary} from "@ddd-qc/cell-proxy";
 
 export type FilesCb = (manifestEh: EntryHashB64) => void;
 

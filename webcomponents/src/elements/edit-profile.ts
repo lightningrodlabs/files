@@ -36,7 +36,7 @@ export class EditProfile extends LitElement {
 
     const fields = {}
     fields['email'] = formFields['email'];
-    fields['avatar'] = formFields['avatar'];
+    fields['avatar'] = formFields['avatar']? formFields['avatar'] : "";
 
     const profile: ProfileMat = {
       fields,

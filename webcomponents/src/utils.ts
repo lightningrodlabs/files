@@ -50,7 +50,7 @@ export function base64ToArrayBuffer(base64: string): ArrayBufferLike {
 export type FileHash = string;
 
 /** */
-async function sha256(message: string): Promise<FileHash> {
+export async function sha256(message: string): Promise<FileHash> {
     const utf8 = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
