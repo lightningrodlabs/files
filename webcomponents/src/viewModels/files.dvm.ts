@@ -211,7 +211,7 @@ export class FilesDvm extends DnaViewModel {
                 this._mustAddTags = undefined;
             }
             /** Done */
-            this._perspective.uploadState.callback(manifestEh);
+            if (this._perspective.uploadState.callback) this._perspective.uploadState.callback(manifestEh);
             /*await*/this.cacheFile(this._perspective.uploadState.file);
             this._perspective.uploadState = undefined;
             this.notifySubscribers();
