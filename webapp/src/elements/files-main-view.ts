@@ -8,7 +8,6 @@ import {consume} from "@lit/context";
 
 import {
     FilesDvm,
-    globalProfilesContext,
     FilesMenu,
     SelectedEvent,
     SelectedType,
@@ -42,10 +41,9 @@ import {
 
 import {DistributionStateType} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {columnBodyRenderer} from "@vaadin/grid/lit";
-import {Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {emptyAppletHash} from "@ddd-qc/we-utils";
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 
-import {SlAlert, SlBadge, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
+import {SlAlert, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
@@ -62,6 +60,8 @@ import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import "@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js";
+import "@shoelace-style/shoelace/dist/components/radio/radio.js";
+import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
@@ -73,6 +73,7 @@ import '@vaadin/combo-box/theme/lumo/vaadin-combo-box.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
+import {setLocale} from "../localization";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/files/issues/new`;
@@ -103,11 +104,6 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @consume({ context: weClientContext, subscribe: true })
     weServices: WeServices;
-
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
-
-    private _myProfile: ProfileMat = {nickname: "unknown", fields: {}}
 
 
     /** AppletId -> AppletInfo */
@@ -170,6 +166,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** After first render only */
     async firstUpdated() {
         console.log("<files-main-view> firstUpdated()", this.appletId);
+
         /** Notifier */
         await this._dvm.notificationsZvm.selectNotifier();
         // /** Generate test data */
@@ -281,13 +278,15 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         let extraHtml;
         let id;
 
+        const myProfile = this._dvm.profilesZvm.getMyProfile();
+
         if (FilesNotificationType.DeliveryRequestSent == type) {
             const manifestEh = (notifLog[2] as FilesNotificationVariantDeliveryRequestSent).manifestEh;
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             const recipients = (notifLog[2] as FilesNotificationVariantDeliveryRequestSent).recipients;
             let recipientName = "" + recipients.length + " peers";
             if (recipients.length == 1) {
-                const maybeProfile = this._profilesZvm.getProfile(recipients[0]);
+                const maybeProfile = this._dvm.profilesZvm.getProfile(recipients[0]);
                 recipientName = maybeProfile ? maybeProfile.nickname : "unknown";
             }
             console.log("DeliveryRequestSent", notifLog, recipients, recipientName);
@@ -296,9 +295,9 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             title = "File delivery request sent";
             msg = `"${privateManifest.description.name}" to ${recipientName}`;
             /** Ext. Notification */
-            const subject = `${this._myProfile.nickname} wants to send you a file`;
+            const subject = `${myProfile.nickname} wants to send you a file`;
             const notifMsg = `
-            ${this._myProfile.nickname}${this.groupProfiles? "from " + this.groupProfiles[0].name : "" } would like to send you the file: "${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)}).
+            ${myProfile.nickname}${this.groupProfiles? "from " + this.groupProfiles[0].name : "" } would like to send you the file: "${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)}).
             Please go to the Files app to Accept or Decline the request${this.appletId? `: ${weLinkFromAppletHash(decodeHashFromBase64(this.appletId))}` : "." }
             `;
             this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
@@ -318,7 +317,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const recipient = (notifLog[2] as FilesNotificationVariantDistributionToRecipientComplete).recipient;
             const manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[distribAh][0].delivery_summary.parcel_reference.eh);
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
-            const maybeProfile = this._profilesZvm.getProfile(recipient);
+            const maybeProfile = this._dvm.profilesZvm.getProfile(recipient);
             const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             variant = 'success';
             icon = "check2-circle";
@@ -335,19 +334,19 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             /** Notify peers that we published something */
             const pr = {description: publicManifest.description, eh: decodeHashFromBase64(manifestEh)} as ParcelReference;
             const timestamp = notifLog[0];
-            const peers = this._profilesZvm.getAgents().map((peer) => decodeHashFromBase64(peer));
+            const peers = this._dvm.profilesZvm.getAgents().map((peer) => decodeHashFromBase64(peer));
             console.log("PublicSharingComplete. notifying...", peers);
             this._dvm.deliveryZvm.zomeProxy.notifyNewPublicParcel({peers, timestamp, pr});
             /** Ext. Notification */
-            const subject = `${this._myProfile.nickname} shared a file`;
+            const subject = `${myProfile.nickname} shared a file`;
             const notifMsg = `
-            ${this._myProfile.nickname} has shared the file "${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)}) with the group ${this._groupName}.
+            ${myProfile.nickname} has shared the file "${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)}) with the group ${this._groupName}.
             You can download this file by going to the Files app.
             `;
             const recipients = peers
                 .map((agent) => encodeHashToBase64(agent))
                 .filter((agent) => agent != this.cell.agentPubKey); // exclude self
-            console.log("sendNotification() recipients", recipients.map((agent) => this._profilesZvm.getProfile(agent).nickname));
+            console.log("sendNotification() recipients", recipients.map((agent) => this._dvm.profilesZvm.getProfile(agent).nickname));
             console.log("Publish. Config keys:", this._dvm.notificationsZvm.config? Object.keys(this._dvm.notificationsZvm.config) : "none");
             this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
         }
@@ -363,7 +362,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const noticeEh = (notifLog[2] as FilesNotificationVariantNewNoticeReceived).noticeEh;
             const description = (notifLog[2] as FilesNotificationVariantNewNoticeReceived).description;
             const recipient = (notifLog[2] as FilesNotificationVariantNewNoticeReceived).sender;
-            const maybeProfile = this._profilesZvm.getProfile(recipient);
+            const maybeProfile = this._dvm.profilesZvm.getProfile(recipient);
             const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             title = "Incoming file request";
             msg = `"${description.name}" (${prettyFileSize(description.size)}) from: ${recipientName}`;
@@ -386,7 +385,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const notif = notifLog[2] as FilesNotificationVariantReplyReceived;
             const distrib = this.deliveryPerspective.distributions[notif.distribAh][0];
             const description = distrib.delivery_summary.parcel_reference.description;
-            const maybeProfile = this._profilesZvm.getProfile(notif.recipient);
+            const maybeProfile = this._dvm.profilesZvm.getProfile(notif.recipient);
             const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             if (notif.hasAccepted) {
                 title = "File accepted";
@@ -404,14 +403,13 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     private async onSaveProfile(detail: any) {
-        console.log("onSavProfile()", this._myProfile, detail.profile);
+        console.log("onSaveProfile()", detail.profile);
         const profile: ProfileMat = detail.profile;
         try {
-            await this._profilesZvm.updateMyProfile(profile);
+            await this._dvm.profilesZvm.updateMyProfile(profile);
         } catch(e) {
-            await this._profilesZvm.createMyProfile(profile);
+            await this._dvm.profilesZvm.createMyProfile(profile);
         }
-        this._myProfile = profile;
         /** mailgun */
         if (detail.mailgun && detail.mailgun.length > 0) {
             await this.initializeNotifier(detail.mailgun);
@@ -428,7 +426,6 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         /** */
         this.profileDialogElem.open = false;
-        this._myProfile.fields.avatar = profile.fields.avatar;
         this.requestUpdate();
     }
 
@@ -506,30 +503,25 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     render() {
         const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
         //const isInDev = true;
-        console.log("<files-main-view>.render()", isInDev, this._initialized, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._profilesZvm.perspective);
+        console.log("<files-main-view>.render()", isInDev, this._initialized, this.deliveryPerspective.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._dvm.profilesZvm.perspective);
 
 
         /** This agent's profile info */
-        if (!this._profilesZvm) {
-            console.error("this._profilesZvm not found");
-            return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
-        }
-        let agent = this._myProfile;
-        if (!agent) {
-            agent = {nickname: "unknown", fields: {}} as ProfileMat;
+        let myProfile = this._dvm.profilesZvm.getMyProfile();
+        if (!myProfile) {
+            myProfile = {nickname: "unknown", fields: {}} as ProfileMat;
             console.log("Profile not found. Probing", this._dvm.cell.agentPubKey);
-            this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey).then((profile) => {
+            this._dvm.profilesZvm.probeProfile(this._dvm.cell.agentPubKey).then((profile) => {
                 if (!profile) {
                     console.log("Profile still not found after probing");
                     return;
                 }
-                this._myProfile  = profile;
                 console.log("Found Profile", profile.nickname);
                 this.requestUpdate();
             })
         }
         //const initials = getInitials(agent.nickname);
-        const avatarUrl = agent.fields['avatar'];
+        const avatarUrl = myProfile.fields['avatar'];
 
 
         /** Search results */
@@ -563,7 +555,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         /** -- -- */
 
-        const agentOptions = Object.entries(this._profilesZvm.perspective.profiles).map(
+        const agentOptions = Object.entries(this._dvm.profilesZvm.perspective.profiles).map(
             ([agentIdB64, profile]) => {
                 //console.log("" + index + ". " + agentIdB64)
                 return html `<option value="${agentIdB64}">${profile.nickname}</option>`
@@ -586,7 +578,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 .map(([noticeEh, [notice, _ts]]) => {
                 console.log("" + noticeEh, this.deliveryPerspective.notices[noticeEh]);
                 const senderKey = encodeHashToBase64(notice.sender);
-                const senderProfile = this._profilesZvm.getProfile(senderKey);
+                const senderProfile = this._dvm.profilesZvm.getProfile(senderKey);
                 let sender = senderKey;
                 if (senderProfile) {
                     sender = senderProfile.nickname;
@@ -638,7 +630,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         <vaadin-grid-column path="recipient" header="Recipient"
                                             ${columnBodyRenderer(
                                                     ({ recipient }) => {
-                                                        const maybeProfile = this._profilesZvm.perspective.profiles[recipient];
+                                                        const maybeProfile = this._dvm.profilesZvm.perspective.profiles[recipient];
                                                         return maybeProfile
                                                                 ? html`<span>${maybeProfile.nickname}</span>`
                                                                 : html`<sl-skeleton effect="sheen"></sl-skeleton>`
@@ -920,10 +912,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
              <files-menu @selected=${(e) => {this._selectedMenuItem = e.detail; this._typeFilter = undefined;}}></files-menu>
              <div id="rhs">
                 <div id="topBar">
-                    <sl-tooltip placement="bottom-end" content=${this._myProfile.nickname} style="--show-delay: 400;">
+                    <sl-tooltip placement="bottom-end" content=${myProfile.nickname} style="--show-delay: 400;">
                         <sl-avatar
                                 style="cursor:pointer"
-                                label=${this._myProfile.nickname}
+                                label=${myProfile.nickname}
                                 image=${avatarUrl}
                                 @click=${() => this.profileDialogElem.open = true}></sl-avatar>
                     </sl-tooltip>
@@ -937,7 +929,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         <button type="button" @click=${async () => {
                             this._dvm.dumpLogs(); 
                             await this._dvm.notificationsZvm.probeAll();
-                            await this._dvm.notificationsZvm.probeContacts(this._profilesZvm.getAgents());
+                            await this._dvm.notificationsZvm.probeContacts(this._dvm.profilesZvm.getAgents());
                             console.log("notificationsZvm.perspective", this._dvm.notificationsZvm.perspective);
                             console.log("myNotifier:", this._dvm.notificationsZvm.perspective.myNotifier? encodeHashToBase64(this._dvm.notificationsZvm.perspective.myNotifier) : "none");
                         }}>dump</button>
@@ -984,8 +976,12 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         <sl-dialog id="profile-dialog" label="Edit Profile">
             <files-edit-profile
                     allowCancel
-                    .profile="${this._myProfile}"
+                    .profile=${myProfile}
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
+                    @lang-selected=${(e: CustomEvent) => {
+                        console.log("set lang", e.detail);
+                        setLocale(e.detail)
+                    }}
             ></files-edit-profile>
         </sl-dialog>
         <action-overlay
@@ -1045,6 +1041,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
               :host {
                 display: block;
                 height: 100vh;
+                /*padding-top: 3px;*/
+                background: #F7FBFE;
               }
 
               #bottom-stack {

@@ -1,17 +1,14 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
-import {consume} from "@lit/context";
 import {FilesDvm} from "../viewModels/files.dvm";
 import {
     DeliveryPerspective,
 } from "@ddd-qc/delivery";
-import {globalProfilesContext} from "../contexts";
-import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
+import {encodeHashToBase64} from "@holochain/client";
 import {FileView} from "./file-view";
 import {filesSharedStyles} from "../sharedStyles";
-import {ProfilesZvm, agent2avatar} from "@ddd-qc/profiles-dvm";
-import {getCompletionPct, prettyFileSize} from "../utils";
+import {getCompletionPct} from "../utils";
 
 
 /**
@@ -25,10 +22,6 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     deliveryPerspective!: DeliveryPerspective;
-
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
-
 
 
     /** */
@@ -142,7 +135,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                 ([noticeEh, [notice, ts]]) => {
                     console.log("" + noticeEh, this.deliveryPerspective.notices[noticeEh]);
                     const senderKey = encodeHashToBase64(notice.sender);
-                    const senderProfile = this._profilesZvm.getProfile(senderKey);
+                    const senderProfile = this._dvm.profilesZvm.getProfile(senderKey);
                     let sender = senderKey;
                     if (senderProfile) {
                         sender = senderProfile.nickname;
@@ -173,7 +166,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                 ([noticeEh, [notice, ts, missingChunks]]) => {
                     console.log("" + noticeEh, this.deliveryPerspective.notices[noticeEh]);
                     const senderKey = encodeHashToBase64(notice.sender);
-                    const senderProfile = this._profilesZvm.getProfile(senderKey);
+                    const senderProfile = this._dvm.profilesZvm.getProfile(senderKey);
                     let sender = senderKey;
                     if (senderProfile) {
                         sender = senderProfile.nickname;

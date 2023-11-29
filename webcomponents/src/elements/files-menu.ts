@@ -4,12 +4,9 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {FilesDvm} from "../viewModels/files.dvm";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {DeliveryPerspective} from "@ddd-qc/delivery";
-import {consume} from "@lit/context";
-import {globalProfilesContext} from "../contexts";
 import {filesSharedStyles} from "../sharedStyles";
 import {SlDrawer, SlMenu, SlMenuItem} from "@shoelace-style/shoelace";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
-import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 /** */
@@ -43,10 +40,6 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     taggingPerspective!: TaggingPerspective;
-
-
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
 
 
     @state() private _initialized = false;

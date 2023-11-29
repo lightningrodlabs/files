@@ -8,7 +8,7 @@ import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery
 import {AppletView} from "@lightningrodlabs/we-applet";
 
 export const devtestNames: DevTestNames = {
-    installed_app_id: "files-we_applet",
+    installed_app_id: "Files",
     provisionedRoleName: FILES_DEFAULT_ROLE_NAME,
 }
 

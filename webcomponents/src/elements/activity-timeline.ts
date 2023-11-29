@@ -6,11 +6,11 @@ import {FilesDvm} from "../viewModels/files.dvm";
 import {
     DeliveryPerspective,
 } from "@ddd-qc/delivery";
-import {globalProfilesContext} from "../contexts";
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
 import {FileView} from "./file-view";
 import {filesSharedStyles} from "../sharedStyles";
 import {ProfilesZvm, agent2avatar} from "@ddd-qc/profiles-dvm";
+import {FilesDvmPerspective} from "../viewModels/files.perspective";
 
 
 /** */
@@ -42,17 +42,13 @@ export type ActivityLog = {timestamp: Timestamp, type: ActivityLogType, value: A
  * @element
  */
 @customElement("activity-timeline")
-export class ActivityTimeline extends DnaElement<unknown, FilesDvm> {
+export class ActivityTimeline extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @state() private _initialized = false;
 
     /** Observed perspective from zvm */
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     deliveryPerspective!: DeliveryPerspective;
-
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
-
 
 
     /** */
@@ -194,7 +190,7 @@ export class ActivityTimeline extends DnaElement<unknown, FilesDvm> {
         // }
         //const id = "activity-item__" + manifestEh;
 
-        const [profile, _avatar] = agent2avatar(peer, this._profilesZvm.perspective);
+        const [profile, _avatar] = agent2avatar(peer, this._dvm.profilesZvm.perspective);
         const authorSpan = peer == this.cell.agentPubKey
             ? html`<span style="font-weight: bold;">yourself</span>`
             : html`<span class="nickname">${profile.nickname}</span>`;

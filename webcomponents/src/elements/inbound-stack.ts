@@ -1,17 +1,16 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
+import {ZomeElement} from "@ddd-qc/lit-happ";
 import {
+    AgentPubKeyB64,
     encodeHashToBase64,
 } from "@holochain/client";
-import {consume} from "@lit/context";
-import {globalProfilesContext} from "../contexts";
 import {DeliveryPerspective, DeliveryZvm} from "@ddd-qc/delivery";
 import {filesSharedStyles} from "../sharedStyles";
-import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {kind2Icon} from "../fileTypeUtils";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {getCompletionPct} from "../utils";
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 
 /**
@@ -25,28 +24,21 @@ export class InboundStack extends ZomeElement<DeliveryPerspective, DeliveryZvm> 
         super(DeliveryZvm.DEFAULT_ZOME_NAME)
     }
 
-    @consume({context: globalProfilesContext, subscribe: true})
-    _profilesZvm!: ProfilesZvm;
-
-
     /** distribAh -> bool */
     @state() private _canDisplay: Dictionary<boolean> = {};
+    @property() profiles: Record<AgentPubKeyB64, ProfileMat> = {};
 
     /** */
     render() {
         const windowInnerWidth  = document.documentElement.clientWidth; // window.innerWidth;
         console.log("<inbound-stack>.render()", windowInnerWidth);
-        if (!this._profilesZvm) {
-            console.warn("profilesZvm missing in <inbound-stack>");
-            return html``;
-        }
 
         const incompletes = Object.values(this._zvm.inbounds()[1])
             .filter((tuple) => tuple[2].size >= 0);
 
         const items = incompletes
             .map(([notice, _ts, missingChunks]) => {
-                const maybeProfile = this._profilesZvm.getProfile(encodeHashToBase64(notice.sender));
+                const maybeProfile = this.profiles[encodeHashToBase64(notice.sender)];
                 const senderName = maybeProfile? maybeProfile.nickname : "unknown";
                 const distribAh = encodeHashToBase64(notice.distribution_ah);
                 if (this._canDisplay[distribAh] == undefined) {

@@ -5,12 +5,9 @@ import {
     decodeHashFromBase64,
     EntryHashB64,
 } from "@holochain/client";
-import {consume} from "@lit/context";
 import {FilesDvm} from "../viewModels/files.dvm";
-import {globalProfilesContext} from "../contexts";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
 import {filesSharedStyles} from "../sharedStyles";
-import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 
 
@@ -19,9 +16,6 @@ import {FilesDvmPerspective} from "../viewModels/files.perspective";
  */
 @customElement("file-view")
 export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
-
-    @consume({context: globalProfilesContext, subscribe: true})
-    _profilesZvm!: ProfilesZvm;
 
     /** -- Properties -- */
 

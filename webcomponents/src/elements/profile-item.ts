@@ -2,35 +2,37 @@ import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {filesSharedStyles} from "../sharedStyles";
 import {AgentPubKeyB64} from "@holochain/client";
-import {consume} from "@lit/context";
-import {globalProfilesContext} from "../contexts";
-import {ProfilesZvm, getInitials} from "@ddd-qc/profiles-dvm";
+import {ProfilesZvm, getInitials, ProfilesPerspective} from "@ddd-qc/profiles-dvm";
+import {ZomeElement} from "@ddd-qc/lit-happ";
 
 
 /**
  * @element
  */
 @customElement('profile-item')
-export class ProfileItem extends LitElement {
+export class ProfileItem extends ZomeElement<ProfilesPerspective, ProfilesZvm> {
+
+    /** */
+    constructor() {
+        super(ProfilesZvm.DEFAULT_ZOME_NAME)
+    }
 
     @property() key!: AgentPubKeyB64;
 
     @property() selectable?: string;
     @property() clearable?: string;
 
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
-
 
     /** */
     render() {
         console.log("<profile-item>.render()", this.clearable);
 
-        if (!this._profilesZvm || !this.key) {
-            return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
+        const profile = this.perspective.profiles[this.key];
+
+        if (!this.key || !profile) {
+            return html`<sl-spinner></sl-spinner>`;
         }
 
-        const profile = this._profilesZvm.perspective.profiles[this.key];
 
         // <sl-badge class="avatar-badge" type="${this.determineAgentStatus(keyB64)}" pill></sl-badge>
 

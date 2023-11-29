@@ -33,6 +33,7 @@ import {
 import {TaggingZvm} from "./tagging.zvm";
 import {FILES_DEFAULT_ROLE_NAME} from "../bindings/files.types";
 import {NotificationsZvm} from "@ddd-qc/notifications-dvm/dist/viewModels/notifications.zvm";
+import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 /**
@@ -53,6 +54,7 @@ export class FilesDvm extends DnaViewModel {
         TaggingZvm,
         [DeliveryZvm, "zDelivery"],
         [NotificationsZvm, "notifications"],
+        [ProfilesZvm, "profiles"],
     ];
 
     readonly signalHandler?: AppSignalCb = this.mySignalHandler;
@@ -65,6 +67,8 @@ export class FilesDvm extends DnaViewModel {
     get taggingZvm(): TaggingZvm {return this.getZomeViewModel("zTagging") as TaggingZvm}
 
     get notificationsZvm(): NotificationsZvm {return this.getZomeViewModel("notifications") as NotificationsZvm}
+
+    get profilesZvm(): ProfilesZvm {return this.getZomeViewModel("profiles") as ProfilesZvm}
 
     /** -- ViewModel Interface -- */
 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="fr-fr" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="se9f30e4492cee2cd">
+  <source>Nickname</source>
+  <target>Pseudonyme</target>
+</trans-unit>
+<trans-unit id="s3798c0344c399eb7">
+  <source>Min. <x id="0" equiv-text="${MIN_NICKNAME_LENGTH}"/> characters</source>
+  <target>Min. <x id="0" equiv-text="${MIN_NICKNAME_LENGTH}"/> caractères</target>
+</trans-unit>
+<trans-unit id="s123467b419acbc07">
+  <source>email</source>
+</trans-unit>
+<trans-unit id="scbf29ce484222325">
+  <source></source>
+</trans-unit>
+<trans-unit id="sd9bf6637bd7e4951">
+  <source>mailgun token</source>
+</trans-unit>
+<trans-unit id="sa435e072763f9f3f">
+  <source>Set this to become a Notifier Agent</source>
+  <target>Pour devenir un agent de Notification</target>
+</trans-unit>
+<trans-unit id="sc93a9aa3e5bcbf5d">
+  <source>Save Profile</source>
+  <target>Enregistrer Profile</target>
+</trans-unit>
+<trans-unit id="sefcf950b3cc4fc3b">
+  <source>Language</source>
+</trans-unit>
+</body>
+</file>
+</xliff>

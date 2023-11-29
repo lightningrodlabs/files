@@ -8,7 +8,6 @@ import {prettyFileSize, prettyTimestamp} from "../utils";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {consume} from "@lit/context";
-import {globalProfilesContext} from "../contexts";
 import {filesSharedStyles} from "../sharedStyles";
 import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
 import {TaggingPerspective, TaggingZvm} from "../viewModels/tagging.zvm";
@@ -16,6 +15,7 @@ import {TagList} from "./tag-list";
 import {kind2Type} from "../fileTypeUtils";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {GridActiveItemChangedEvent} from "@vaadin/grid";
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 
 export interface FileTableItem {
@@ -42,26 +42,22 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
     /** -- State variables -- */
 
     @property() items: FileTableItem[] = [];
+    @property() profiles: Record<AgentPubKeyB64, ProfileMat> = {};
 
     @property() selectable?: string;
 
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
+    @state() private _selectedItems: FileTableItem[] = [];
 
 
+    /** */
     get gridElem(): LitElement {
         return this.shadowRoot!.getElementById("grid") as LitElement;
     }
 
 
-    @state() private _selectedItems: FileTableItem[] = [];
-
     /** */
     render() {
         console.log("<file-table>.render()", this.items);
-        if (!this._profilesZvm) {
-            return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
-        }
         if (!this.items.length) {
             return html`No items found`;
         }
@@ -130,10 +126,10 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                 <vaadin-grid-column path="author" header="Author" .hidden="${!this.items[0].author}"
                                     ${columnBodyRenderer(
                                             ({ author }) => {
-                                                const maybeProfile = this._profilesZvm.perspective.profiles[author];
+                                                const maybeProfile = this.profiles[author];
                                                 return maybeProfile
                                                         ? html`<span>${maybeProfile.nickname}</span>`
-                                                        : html`<sl-skeleton effect="sheen"></sl-skeleton>`
+                                                        : html`<span>Unknown</span>`
                                             },
                                     [],
                                     )}

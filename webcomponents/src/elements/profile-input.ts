@@ -3,25 +3,24 @@ import {property, state, customElement} from "lit/decorators.js";
 import {filesSharedStyles} from "../sharedStyles";
 import {SlInput} from "@shoelace-style/shoelace";
 import {AgentPubKeyB64} from "@holochain/client";
-import {consume} from "@lit/context";
-import {globalProfilesContext} from "../contexts";
-import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {ZomeElement} from "@ddd-qc/lit-happ";
+import {ProfilesPerspective, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 /**
  * @element
  */
 @customElement('profile-input')
-export class ProfileInput extends LitElement {
+export class ProfileInput extends ZomeElement<ProfilesPerspective, ProfilesZvm> {
 
+    /** */
+    constructor() {
+        super(ProfilesZvm.DEFAULT_ZOME_NAME)
+    }
 
     @state() private _selectedAgents: AgentPubKeyB64[] = [];
 
     @state() private _canShowResults: boolean = true;  // FIXME
-
-
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
 
     get inputElem() : SlInput {
         return this.shadowRoot.getElementById("tag-input") as SlInput;
@@ -40,15 +39,11 @@ export class ProfileInput extends LitElement {
     render() {
         console.log("<profile-input>.render()", this._selectedAgents);
 
-        if (!this._profilesZvm) {
-            return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
-        }
-
-        const profiles = Object.entries(this._profilesZvm.perspective.profiles);
+        const profiles = Object.entries(this.perspective.profiles);
 
         const agentItems = this._selectedAgents
             .map((key) => {
-                const profile = this._profilesZvm.perspective.profiles[key];
+                const profile = this.perspective.profiles[key];
                 if (!profile) return html``;
                 //return html`<div>${profile.nickname}</div>`;
                 return html`<profile-item .key=${key} clearable @cleared=${(e) => {
@@ -67,7 +62,7 @@ export class ProfileInput extends LitElement {
         if (this.inputElem && this.inputElem.value) {
             const filter = this.inputElem.value.toLowerCase();
             agentResults = profiles
-                .filter(([key, _profile]) => key != this._profilesZvm.cell.agentPubKey) // exclude self
+                .filter(([key, _profile]) => key != this._zvm.cell.agentPubKey) // exclude self
                 .filter(([key, _profile]) => this._selectedAgents.indexOf(key) < 0) // Don't show already selected agents
                 .filter(([_key, profile]) => profile.nickname.toLowerCase().includes(filter)) // Must match filter
                 .map(([key, profile]) => {

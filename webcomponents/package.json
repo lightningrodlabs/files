@@ -14,6 +14,8 @@
     "build": "tsc",
     "build:watch": "tsc --watch --preserveWatchOutput",
     "analyze": "lit-analyzer src --failFast",
+    "localize:extract": "lit-localize extract",
+    "localize:build": "lit-localize build",
     "test": "jest"
   },
   "repository": {

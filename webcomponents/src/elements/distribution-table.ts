@@ -8,12 +8,9 @@ import {
 import {prettyFileSize, prettyTimestamp} from "../utils";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {DeliveryStateType, ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
-import {consume} from "@lit/context";
-import {globalProfilesContext} from "../contexts";
 import {filesSharedStyles} from "../sharedStyles";
 import {kind2Type} from "../fileTypeUtils";
-import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
-
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 
 export interface DistributionTableItem {
     distribAh: ActionHashB64,
@@ -35,17 +32,11 @@ export class DistributionTable extends LitElement {
     /** -- State variables -- */
 
     @property() items: DistributionTableItem[] = [];
-
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
-
+    @property() profiles: Record<AgentPubKeyB64, ProfileMat> = {};
 
     /** */
     render() {
         console.log("<distribution-table>.render()", this.items);
-        if (!this._profilesZvm) {
-            return html`<sl-spinner class="missing-profiles"></sl-spinner>`;
-        }
         // if (!this.items.length) {
         //     return html`No items found`;
         // }
@@ -84,10 +75,10 @@ export class DistributionTable extends LitElement {
                 <vaadin-grid-column path="recipient" header="Recipient"
                                     ${columnBodyRenderer(
                                             ({ recipient }) => {
-                                                const maybeProfile = this._profilesZvm.perspective.profiles[recipient];
+                                                const maybeProfile = this.profiles[recipient];
                                                 return maybeProfile
                                                         ? html`<span>${maybeProfile.nickname}</span>`
-                                                        : html`<sl-skeleton effect="sheen"></sl-skeleton>`
+                                                        : html`<span>Unknown</span>`
                                             },
                                     [],
                                     )}

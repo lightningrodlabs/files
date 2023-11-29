@@ -18,16 +18,17 @@ import {
 } from "@ddd-qc/lit-happ";
 import {
   FilesDvm,
-  globalProfilesContext,
-  FILES_DEFAULT_ROLE_NAME, FILES_DEFAULT_COORDINATOR_ZOME_NAME
+  FILES_DEFAULT_ROLE_NAME,
 } from "@ddd-qc/files";
-import {HC_ADMIN_PORT, HC_APP_PORT, CAN_ADD_PROFILES} from "./globals";
+import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
 import {AppletId, AppletView, GroupProfile, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DELIVERY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 import {buildBlock} from "./files-blocks";
-import {DEFAULT_FILES_DEF, DEFAULT_FILES_WE_DEF} from "./happDef";
+import {DEFAULT_FILES_DEF} from "./happDef";
+import {setLocale} from "./localization";
+import { localized, msg, str } from '@lit/localize';
 
 import "./elements/files-main-view"
 
@@ -39,7 +40,7 @@ export class FilesApp extends HappElement {
 
   /** -- Fields -- */
 
-  static readonly HVM_DEF: HvmDef = CAN_ADD_PROFILES? DEFAULT_FILES_DEF : DEFAULT_FILES_WE_DEF;
+  static readonly HVM_DEF: HvmDef = DEFAULT_FILES_DEF;
 
   @state() private _hasHolochainFailed = true;
   @state() private _loaded = false;
@@ -66,9 +67,9 @@ export class FilesApp extends HappElement {
 
   /** -- We-applet specifics -- */
 
-  private _profilesDvm?: ProfilesDvm;
-  protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+  private _weProfilesDvm?: ProfilesDvm;
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+
   public appletId?: AppletId;
   public groupProfiles?: GroupProfile[];
   // protected _attachmentsProvider?: unknown;
@@ -99,15 +100,15 @@ export class FilesApp extends HappElement {
     app.groupProfiles = groupProfiles;
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<files-app>.ctor()", profilesProxy);
-    await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
+    await app.createWeProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
     return app;
   }
 
 
   /** Create a Profiles DVM out of a different happ */
-  async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
-                          profilesCloneId: CloneId | undefined,
-                          _profilesZomeName: ZomeName): Promise<void> {
+  async createWeProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
+                            profilesCloneId: CloneId | undefined,
+                            _profilesZomeName: ZomeName): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
@@ -116,32 +117,29 @@ export class FilesApp extends HappElement {
         //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("createProfilesDvm() dvm", dvm);
-    await this.setupProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    await this.setupWeProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
   }
 
 
   /** */
-  async setupProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
+  async setupWeProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
     console.log("setupProfilesDvm() agent", agent);
-    this._profilesDvm = dvm as ProfilesDvm;
+    this._weProfilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
-    const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(agent);
+    const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(agent);
     console.log("setupProfilesDvm() maybeMyProfile", maybeMyProfile);
     if (maybeMyProfile) {
-      // const maybeLang = maybeMyProfile.fields['lang'];
-      // if (maybeLang) {
-      //   setLocale(maybeLang);
-      // }
+      const maybeLang = maybeMyProfile.fields['lang'];
+      if (maybeLang) {
+        setLocale(maybeLang);
+      }
       this._hasStartingProfile = true;
     } else {
-        /** Create Guest profile */
-        const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
-      console.log("setupProfilesDvm() createMyProfile", this._profilesDvm.profilesZvm.cell.agentPubKey);
-        await this._profilesDvm.profilesZvm.createMyProfile(profile);
+      /** Create Guest profile */
+      const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
+      console.log("setupProfilesDvm() createMyProfile", this.filesDvm.profilesZvm.cell.agentPubKey);
+      await this.filesDvm.profilesZvm.createMyProfile(profile);
     }
-    /** Provide it as context */
-    console.log(`\t\tProviding context "${globalProfilesContext}" | in host `, this);
-    this._profilesProvider = new ContextProvider(this, globalProfilesContext, this._profilesDvm.profilesZvm);
   }
 
 
@@ -182,10 +180,6 @@ export class FilesApp extends HappElement {
       this._hasHolochainFailed = false;
     }
 
-    if (CAN_ADD_PROFILES) {
-      await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this.filesDvm.cell.agentPubKey);
-    }
-
     /** Done */
     this._loaded = true;
   }
@@ -194,6 +188,12 @@ export class FilesApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<files-app>.perspectiveInitializedOffline()");
+    /** Set Locale */
+    const maybeMyProfile = this.filesDvm.profilesZvm.getMyProfile();
+    console.log("maybeMyProfile", maybeMyProfile);
+    if (maybeMyProfile && maybeMyProfile.fields['lang']) {
+      setLocale(maybeMyProfile.fields['lang'])
+    }
     /** Done */
     this._offlinePerspectiveloaded = true;
   }
@@ -274,11 +274,40 @@ export class FilesApp extends HappElement {
       }
     }
 
+
+    /** Import profile from We */
+    let guardedView = view;
+    if (this._weProfilesDvm && !this._hasStartingProfile) {
+      guardedView = html`
+        <div class="column"
+             style="align-items: center; justify-content: center; flex: 1; padding-bottom: 10px;"
+        >
+          <h1 style="font-family: arial;color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
+                                                              style="padding-left: 5px;padding-top: 5px;"/> Where</h1>
+          <div class="column" style="align-items: center;">
+            <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
+              <div class="title" style="margin-bottom: 24px; align-self: flex-start">
+                ${msg('Import Profile into Files applet')}
+              </div>
+              <edit-profile
+                  .saveProfileLabel=${msg('Import')}
+                  @save-profile=${(e: CustomEvent) => this.filesDvm.profilesZvm.createMyProfile(e.detail.profile)}
+                  @lang-selected=${(e: CustomEvent) => {
+                    console.log("set lang", e.detail);
+                    setLocale(e.detail)
+                  }}
+              ></edit-profile>
+            </sl-card>
+          </div>
+        </div>`;
+    }
+
+
     /* render all */
     return html`
       <cell-context .cell="${this.filesDvm.cell}">
         <!-- <view-cell-context></view-cell-context> -->
-        ${view}
+        ${guardedView}
       </cell-context>        
     `
   }

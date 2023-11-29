@@ -1,20 +1,18 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {consume} from "@lit/context";
 import {FilesDvm} from "../viewModels/files.dvm";
 import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
-import {SlDialog, SlInput, SlMenu, SlSelect} from "@shoelace-style/shoelace";
-import {arrayBufferToBase64, prettyFileSize, splitData, splitFile, SplitObject} from "../utils";
+import {SlDialog, SlInput,} from "@shoelace-style/shoelace";
+import {prettyFileSize, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
-import {AgentPubKeyB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
-import {globalProfilesContext} from "../contexts";
+import {AgentPubKeyB64, EntryHashB64} from "@holochain/client";
 import {ComboBoxFilterChangedEvent} from "@vaadin/combo-box";
-import {ComboBoxLitRenderer, comboBoxRenderer} from "@vaadin/combo-box/lit";
+import {ComboBoxLitRenderer} from "@vaadin/combo-box/lit";
 import {TagList} from "./tag-list";
 import {kind2Icon} from "../fileTypeUtils";
-import {ProfilesPerspective, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {ProfilesPerspective} from "@ddd-qc/profiles-dvm";
 
 
 interface AgentItem {
@@ -36,10 +34,6 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @state() private _file?: File;
     private _splitObj?: SplitObject;
-
-    @consume({ context: globalProfilesContext, subscribe: true })
-    _profilesZvm!: ProfilesZvm;
-
 
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     profilesPerspective!: ProfilesPerspective;
@@ -91,7 +85,7 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     protected async firstUpdated() {
-        const agentItems = Object.entries(await this._profilesZvm.probeAllProfiles()).map(
+        const agentItems = Object.entries(await this._dvm.profilesZvm.probeAllProfiles()).map(
             ([agentIdB64, profile]) => {return {key: agentIdB64, name: profile.nickname} as AgentItem});
         this._allAgents = agentItems;
         //console.log("_allAgents", this._allAgents);

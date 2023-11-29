@@ -27,6 +27,7 @@ export * from './elements/tag-list';
 
 export * from './fileTypeUtils';
 export * from './sharedStyles';
-export * from './contexts';
 export * from './toast';
 export * from './utils';
+
+export * from './generated/fr-fr.js';
