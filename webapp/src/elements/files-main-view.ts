@@ -979,7 +979,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     .profile=${myProfile}
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
                     @lang-selected=${(e: CustomEvent) => {
-                        console.log("set lang", e.detail);
+                        console.log("set locale", e.detail);
                         setLocale(e.detail)
                     }}
             ></files-edit-profile>

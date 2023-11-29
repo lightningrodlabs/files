@@ -4,9 +4,11 @@
 <body>
 <trans-unit id="s15e2ffb6e6776c4a">
   <source>Import Profile into Files applet</source>
+  <target>Importer le Profile dans l'application Files</target>
 </trans-unit>
 <trans-unit id="s3914cb410fca44d4">
   <source>Import</source>
+  <target>Importer</target>
 </trans-unit>
 </body>
 </file>

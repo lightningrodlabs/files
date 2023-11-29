@@ -2,6 +2,16 @@ import { css } from 'lit';
 
 export const filesSharedStyles = css`
 
+
+  .row {
+    display: flex;
+    flex-direction: row;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+  }
+  
   .hide {
     display: none;
   }

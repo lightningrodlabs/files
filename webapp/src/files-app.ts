@@ -31,6 +31,7 @@ import {setLocale} from "./localization";
 import { localized, msg, str } from '@lit/localize';
 
 import "./elements/files-main-view"
+import "@ddd-qc/files";
 
 /**
  *
@@ -45,7 +46,7 @@ export class FilesApp extends HappElement {
   @state() private _hasHolochainFailed = true;
   @state() private _loaded = false;
   @state() private _filesCell: Cell;
-  @state() private _hasStartingProfile = false;
+  @state() private _hasWeProfile = false;
   @state() private _offlinePerspectiveloaded = false;
 
   /** ZomeName -> (AppEntryDefName, isPublic) */
@@ -131,9 +132,10 @@ export class FilesApp extends HappElement {
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
+        console.log("Setting locale from We Profile", maybeLang);
         setLocale(maybeLang);
       }
-      this._hasStartingProfile = true;
+      this._hasWeProfile = true;
     } else {
       /** Create Guest profile */
       const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
@@ -190,8 +192,9 @@ export class FilesApp extends HappElement {
     console.log("<files-app>.perspectiveInitializedOffline()");
     /** Set Locale */
     const maybeMyProfile = this.filesDvm.profilesZvm.getMyProfile();
-    console.log("maybeMyProfile", maybeMyProfile);
+    console.log("perspectiveInitializedOffline() maybeMyProfile", maybeMyProfile);
     if (maybeMyProfile && maybeMyProfile.fields['lang']) {
+      console.log("Setting locale We Profile", maybeMyProfile.fields['lang']);
       setLocale(maybeMyProfile.fields['lang'])
     }
     /** Done */
@@ -204,6 +207,13 @@ export class FilesApp extends HappElement {
     console.log("<files-app>.perspectiveInitializedOnline()");
     if (this.appletView && this.appletView.type == "main") {
       await this.hvm.probeAll();
+      /** Set Locale */
+      const maybeMyProfile = this.filesDvm.profilesZvm.getMyProfile();
+      console.log("perspectiveInitializedOnline() maybeMyProfile", maybeMyProfile);
+      if (maybeMyProfile && maybeMyProfile.fields['lang']) {
+        console.log("Setting locale We Profile", maybeMyProfile.fields['lang']);
+        setLocale(maybeMyProfile.fields['lang'])
+      }
     }
   }
 
@@ -277,26 +287,29 @@ export class FilesApp extends HappElement {
 
     /** Import profile from We */
     let guardedView = view;
-    if (this._weProfilesDvm && !this._hasStartingProfile) {
+    const maybeMyProfile = this.filesDvm.profilesZvm.getMyProfile();
+    console.log("<files-app> Profile", this._hasWeProfile, maybeMyProfile);
+    if (this._hasWeProfile && !maybeMyProfile) {
       guardedView = html`
-        <div class="column"
-             style="align-items: center; justify-content: center; flex: 1; padding-bottom: 10px;"
-        >
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom: 10px;margin:auto: min-width:400px;">
           <h1 style="font-family: arial;color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
-                                                              style="padding-left: 5px;padding-top: 5px;"/> Where</h1>
+                                                              style="padding-left: 5px;padding-top: 5px;"/> Files</h1>
           <div class="column" style="align-items: center;">
             <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
-              <div class="title" style="margin-bottom: 24px; align-self: flex-start">
+              <div style="margin-bottom: 24px; align-self: flex-start; font-size: 20px;">
                 ${msg('Import Profile into Files applet')}
               </div>
-              <edit-profile
-                  .saveProfileLabel=${msg('Import')}
-                  @save-profile=${(e: CustomEvent) => this.filesDvm.profilesZvm.createMyProfile(e.detail.profile)}
+              <files-edit-profile
+                  .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
+                  @save-profile=${async (e: CustomEvent) => {
+                    await this.filesDvm.profilesZvm.createMyProfile(e.detail.profile);
+                    this.requestUpdate();
+                  }}
                   @lang-selected=${(e: CustomEvent) => {
-                    console.log("set lang", e.detail);
+                    console.log("set locale", e.detail);
                     setLocale(e.detail)
                   }}
-              ></edit-profile>
+              ></files-edit-profile>
             </sl-card>
           </div>
         </div>`;

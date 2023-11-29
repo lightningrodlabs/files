@@ -61,7 +61,6 @@ export class EditProfile extends LitElement {
     const langRadioGroup = this.shadowRoot!.getElementById("langRadioGroup") as any;
     console.log({langRadioGroup});
     const lang = langRadioGroup.value;
-    //const lang = frBtn.__checked? frBtn.value : "en";
     console.log("handleLangChange: lang =", lang);
     this.dispatchEvent(new CustomEvent('lang-selected', { detail: lang, bubbles: true, composed: true }));
 
@@ -97,8 +96,8 @@ export class EditProfile extends LitElement {
         <div class="row" style="justify-content: center; margin-bottom: 8px; align-self: start;" >
           <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
           <sl-radio-group id="langRadioGroup" @click="${this.handleLangChange}">
-            <sl-radio value="en" .checked=${this.profile.fields['lang'] == 'en'}>🇬🇧</sl-radio>
-            <sl-radio value="fr-fr" .checked=${this.profile.fields['lang'] == 'fr-fr'}>🇫🇷</sl-radio>
+            <sl-radio value="en" .checked=${this.profile.fields['lang'] == "en"}>🇬🇧</sl-radio>
+            <sl-radio value="fr-fr" .checked=${this.profile.fields['lang'] == "fr-fr"}>🇫🇷</sl-radio>
           </sl-radio-group>
         </div>
         
@@ -130,15 +129,6 @@ export class EditProfile extends LitElement {
 
     sl-radio {
       font-size: larger;
-    }
-
-    .row {
-      display: flex;
-      flex-direction: row;
-    }
-    .column {
-      display: flex;
-      flex-direction: column;
     }
     .small-margin {
       margin-top: 6px;
