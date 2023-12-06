@@ -13,6 +13,7 @@ import {ComboBoxLitRenderer} from "@vaadin/combo-box/lit";
 import {TagList} from "./tag-list";
 import {kind2Icon} from "../fileTypeUtils";
 import {ProfilesPerspective} from "@ddd-qc/profiles-dvm";
+import {msg} from "@lit/localize";
 
 
 interface AgentItem {
@@ -170,7 +171,7 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         div>Type: ${this._file.type}</div> 
                     <div>Hash: ${!this._splitObj? "" : this._splitObj.dataHash}</div>
                 </div> -->
-                To:
+                ${msg("To")}:
                 <profile-input
                         @selected=${(e) => {
                             console.log("profile selected:", e.detail);
@@ -219,7 +220,7 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 ></tag-input>
 
 
-                <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>Cancel</sl-button>
+                <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>${msg("Cancel")}</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${this._recipients.length <= 0} @click=${async (e) => {
                 this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipients: this._recipients}, bubbles: true, composed: true}));
                 //const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags.map((item) => item.value));
@@ -229,7 +230,7 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 this._recipients = [];
                 this.dialogElem.open = false;
             }}>
-                    Send
+                    ${msg("Send")}
                 </sl-button>
                 
             `;
@@ -242,44 +243,44 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <sl-dialog class="action-dialog"
                        @sl-request-close=${e => this._file = undefined}>
                 <div slot="label">
-                    <sl-icon class="prefixIcon" name="send"></sl-icon>   
-                    Sending
+                    <sl-icon class="prefixIcon" name="send"></sl-icon>
+                    ${msg("Sending")}
                 </div>
                 ${content}
             </sl-dialog>
         `;
-    }
+}
 
 
-    /** */
-    static get styles() {
-        return [
-            filesSharedStyles,
-            css`              
-              sl-dialog {
-                --width: 400px;
-              } 
-              sl-dialog::part(close-button) {
-                color:white;
-                font-size: 20px;
-              }
+/** */
+static get styles() {
+return [
+filesSharedStyles,
+css`              
+  sl-dialog {
+    --width: 400px;
+  } 
+  sl-dialog::part(close-button) {
+    color:white;
+    font-size: 20px;
+  }
 
-              sl-divider {
-                margin: 0px;
-                margin-top: 0px;
-                margin-top: 10px;
-                border-color: #6f6f6f;                
-              }
-              
-              #filename {
-                background: white;
-                color: #0089FF;
-                border-radius: 6px;
-                padding: 10px;
-                font-weight: bold;
-              }
+  sl-divider {
+    margin: 0px;
+    margin-top: 0px;
+    margin-top: 10px;
+    border-color: #6f6f6f;                
+  }
+  
+  #filename {
+    background: white;
+    color: #0089FF;
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: bold;
+  }
 
-            `
+`
         ];
     }
 }

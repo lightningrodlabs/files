@@ -10,6 +10,13 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 const MIN_NICKNAME_LENGTH = 2
 
 
+export interface ProfileInfo {
+  profile: ProfileMat,
+  mailgun_token: string,
+  mailgun_domain: string,
+  mailgun_email: string,
+}
+
 /**
  * @fires save-profile - Fired when the save profile button is clicked
  */
@@ -43,10 +50,12 @@ export class EditProfile extends LitElement {
     };
 
     this.dispatchEvent(
-      new CustomEvent('save-profile', {
+      new CustomEvent<ProfileInfo>('save-profile', {
         detail: {
           profile,
-          mailgun:  formFields["mailgun"],
+          mailgun_token:  formFields["mailgun_token"],
+          mailgun_domain:  formFields["mailgun_domain"],
+          mailgun_email:  formFields["mailgun_email"],
         },
         bubbles: true,
         composed: true,
@@ -69,7 +78,10 @@ export class EditProfile extends LitElement {
 
   /** */
   render() {
-    console.log("<edit-profile>.render()", this.profile);
+    const isEnglish = this.profile.fields['lang'] == "en";
+    const isFrench = this.profile.fields['lang'] == "fr-fr";
+    console.log("<edit-profile>.render()", this.profile, isEnglish, isFrench);
+
     return html`
       <form id="profile-form" class="column"
         ${onSubmit(fields => this.fireSaveProfile(fields))}>
@@ -95,9 +107,9 @@ export class EditProfile extends LitElement {
         
         <div class="row" style="justify-content: center; margin-bottom: 8px; align-self: start;" >
           <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
-          <sl-radio-group id="langRadioGroup" @click="${this.handleLangChange}">
-            <sl-radio value="en" .checked=${this.profile.fields['lang'] == "en"}>🇬🇧</sl-radio>
-            <sl-radio value="fr-fr" .checked=${this.profile.fields['lang'] == "fr-fr"}>🇫🇷</sl-radio>
+          <sl-radio-group id="langRadioGroup" @click="${this.handleLangChange}" .value=${this.profile.fields['lang']}>
+            <sl-radio value="en">🇬🇧</sl-radio>
+            <sl-radio value="fr-fr">🇫🇷</sl-radio>
           </sl-radio-group>
         </div>
         
@@ -108,10 +120,20 @@ export class EditProfile extends LitElement {
                 .helpText=${msg(str``)}
                 style="margin-left: 16px;"
         ></sl-input>
+        <h4>Mailgun</h4>
         <sl-input
-                name="mailgun"
-                .label=${msg('mailgun token')}
-                .helpText=${msg(str`Set this to become a Notifier Agent`)}
+            name="mailgun_domain"
+            .label=${msg('domain')}
+            style="margin-left: 16px;"
+        ></sl-input>
+        <sl-input
+            name="mailgun_email"
+            .label=${msg('email')}
+            style="margin-left: 16px;"
+        ></sl-input>
+        <sl-input
+                name="mailgun_token"
+                .label=${msg('token')}
                 style="margin-left: 16px;"
         ></sl-input>
 

@@ -12,16 +12,11 @@
 </trans-unit>
 <trans-unit id="s123467b419acbc07">
   <source>email</source>
+  <target>courriel</target>
 </trans-unit>
 <trans-unit id="scbf29ce484222325">
   <source></source>
-</trans-unit>
-<trans-unit id="sd9bf6637bd7e4951">
-  <source>mailgun token</source>
-</trans-unit>
-<trans-unit id="sa435e072763f9f3f">
-  <source>Set this to become a Notifier Agent</source>
-  <target>Pour devenir un agent de Notification</target>
+  <target></target>
 </trans-unit>
 <trans-unit id="sc93a9aa3e5bcbf5d">
   <source>Save Profile</source>
@@ -29,6 +24,207 @@
 </trans-unit>
 <trans-unit id="sefcf950b3cc4fc3b">
   <source>Language</source>
+  <target>Langue</target>
+</trans-unit>
+<trans-unit id="s57adf424d57c8a0f">
+  <source>Send</source>
+  <target>Envoyer</target>
+</trans-unit>
+<trans-unit id="sff903225f4387438">
+  <source>Share with the group</source>
+  <target>Partager avec le groupe</target>
+</trans-unit>
+<trans-unit id="sf5f2dde95fc26aa0">
+  <source>Add to my personal files</source>
+  <target>Ajouter à mes fichiers personels</target>
+</trans-unit>
+<trans-unit id="s2584e42103e83ab1">
+  <source>No file selected</source>
+  <target>Aucun fichier séléctionné</target>
+</trans-unit>
+<trans-unit id="s743e0754729e9146">
+  <source>File not found</source>
+  <target>Fichier introuvable</target>
+</trans-unit>
+<trans-unit id="scc9ca3fef9291e1d">
+  <source>was declined by</source>
+  <target>a été décliné par</target>
+</trans-unit>
+<trans-unit id="sb684648d16d0b6fa">
+  <source>was received by</source>
+  <target>a été reçu par</target>
+</trans-unit>
+<trans-unit id="s96aeb1a36b018d93">
+  <source>was sent to you by</source>
+  <target>vous a été envoyé par</target>
+</trans-unit>
+<trans-unit id="s39998e76aa573d71">
+  <source>has been shared by</source>
+  <target>a été partagé par</target>
+</trans-unit>
+<trans-unit id="s0fda85ff9e18687d">
+  <source>was added privately by</source>
+  <target>a été ajouté personnellement par</target>
+</trans-unit>
+<trans-unit id="s1f1b72f16a2de30c">
+  <source>yourself</source>
+  <target>moi</target>
+</trans-unit>
+<trans-unit id="s690714fde574c188">
+  <source>Filename</source>
+  <target>Nom</target>
+</trans-unit>
+<trans-unit id="s78789724e789221c">
+  <source>Size</source>
+  <target>Taille</target>
+</trans-unit>
+<trans-unit id="s2dcede7d543a4ffd">
+  <source>total</source>
+  <target>total</target>
+</trans-unit>
+<trans-unit id="sd2223afb7d6b100d">
+  <source>Type</source>
+  <target>Type</target>
+</trans-unit>
+<trans-unit id="s377cb3cf619060d8">
+  <source>Recipient</source>
+  <target>Destinataire</target>
+</trans-unit>
+<trans-unit id="s715b08db50013841">
+  <source>Sent Date</source>
+  <target>Date d'Envoi</target>
+</trans-unit>
+<trans-unit id="sa52c202611cfbae2">
+  <source>Received Date</source>
+  <target>Date de Réception</target>
+</trans-unit>
+<trans-unit id="s69f800801812a5f0">
+  <source>files</source>
+  <target>fichiers</target>
+</trans-unit>
+<trans-unit id="s32322dc45e502559">
+  <source>Decline</source>
+  <target>Décliner</target>
+</trans-unit>
+<trans-unit id="s13be1af9766661e9">
+  <source>Accept</source>
+  <target>Accepter</target>
+</trans-unit>
+<trans-unit id="s7f845078d7a5c0b5">
+  <source>from</source>
+  <target>de</target>
+</trans-unit>
+<trans-unit id="s1096addfe47ce1ed">
+  <source>Most Recent</source>
+  <target>Plus Récent</target>
+</trans-unit>
+<trans-unit id="s54c9b4e07e76e0ea">
+  <source>Personal Tags</source>
+  <target>Tags personnels</target>
+</trans-unit>
+<trans-unit id="s98e6006411643aed">
+  <source>Group Tags</source>
+  <target>Tags communs</target>
+</trans-unit>
+<trans-unit id="s6abb1cd87fe0114e">
+  <source>Home</source>
+  <target>Accueil</target>
+</trans-unit>
+<trans-unit id="sd5c9515a6044788b">
+  <source>All Files</source>
+  <target>Tous Fichiers</target>
+</trans-unit>
+<trans-unit id="s946baa219fa7bcce">
+  <source>Personal Files</source>
+  <target>Fichiers Personnels</target>
+</trans-unit>
+<trans-unit id="s636dbf26b4462793">
+  <source>Group Files</source>
+  <target>Fichiers Communs</target>
+</trans-unit>
+<trans-unit id="s55ddc7f60d3c09bb">
+  <source>Inbox</source>
+  <target>Boîte de Recéption</target>
+</trans-unit>
+<trans-unit id="s57ade424d57c6edf">
+  <source>Sent</source>
+  <target>Envoyé</target>
+</trans-unit>
+<trans-unit id="sce4f864763a12cc5">
+  <source>In Progress</source>
+  <target>En Cours</target>
+</trans-unit>
+<trans-unit id="se70bc3190530e654">
+  <source>add</source>
+  <target>ajouter</target>
+</trans-unit>
+<trans-unit id="sc592307ea80f16b9">
+  <source>Unknown</source>
+  <target>Inconnu</target>
+</trans-unit>
+<trans-unit id="scb489a1a173ac3f0">
+  <source>Yes</source>
+  <target>Oui</target>
+</trans-unit>
+<trans-unit id="s09205907b5b56cda">
+  <source>No</source>
+  <target>Non</target>
+</trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+  <target>Annuler</target>
+</trans-unit>
+<trans-unit id="s03aa3cfb08dff960">
+  <source>Tags</source>
+  <target>Tags</target>
+</trans-unit>
+<trans-unit id="s4891ce28f6cc2766">
+  <source>File already stored locally</source>
+  <target>Le fichier est déjà stocké localement</target>
+</trans-unit>
+<trans-unit id="s7f8adcc816254de6">
+  <source>File already shared to group or stored locally</source>
+  <target>Le fichier est déjà stocké localement ou partagé par le groupe</target>
+</trans-unit>
+<trans-unit id="sf9aee319a006c9b4">
+  <source>Add</source>
+  <target>Ajouter</target>
+</trans-unit>
+<trans-unit id="s0843b2fcef33fcc8">
+  <source>Publish</source>
+  <target>Publier</target>
+</trans-unit>
+<trans-unit id="sa933918eee4ff9a3">
+  <source>Share with group</source>
+  <target>Partager avec le groupe</target>
+</trans-unit>
+<trans-unit id="se591e3c5db7e2eb4">
+  <source>Add tag</source>
+  <target>Ajouter tag</target>
+</trans-unit>
+<trans-unit id="s669b18c6d2d9c95b">
+  <source>None</source>
+  <target>Aucun</target>
+</trans-unit>
+<trans-unit id="sfd2e9f676eec1711">
+  <source>domain</source>
+  <target>domaine</target>
+</trans-unit>
+<trans-unit id="s26c4b17d50b3c152">
+  <source>token</source>
+  <target>jeton</target>
+</trans-unit>
+<trans-unit id="s1e63fd9b893b416a">
+  <source>No items found</source>
+  <target>Aucun élément trouvé</target>
+</trans-unit>
+<trans-unit id="s09353907b5c79284">
+  <source>To</source>
+  <target>À</target>
+</trans-unit>
+<trans-unit id="s6d8b12f6a54b7bc9">
+  <source>Sending</source>
+  <target>En cours d'envoi</target>
 </trans-unit>
 </body>
 </file>

@@ -9,6 +9,7 @@ import {FilesDvm} from "../viewModels/files.dvm";
 import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
 import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -66,11 +67,11 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         console.log("<file-view>.render()", this.hash);
         if (this.hash == "") {
             return html`
-                <div style="color:#c10a0a">No file selected</div>`;
+                <div style="color:#c10a0a">${msg("No file selected")}</div>`;
         }
         if (!this._manifest) {
             return html`
-                <div style="color:#c10a0a">File not found</div>`;
+                <div style="color:#c10a0a">${msg("File not found")}</div>`;
         }
 
         /** render all */

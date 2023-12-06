@@ -23,7 +23,7 @@ import {
     type2Icon,
     FileTableItem,
     kind2Type,
-    DistributionTableItem, filesSharedStyles, kind2Icon
+    DistributionTableItem, filesSharedStyles, kind2Icon, ProfileInfo
 } from "@ddd-qc/files";
 import {DeliveryPerspective, DeliveryStateType, ParcelReference} from "@ddd-qc/delivery";
 import {
@@ -74,6 +74,7 @@ import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 import {setLocale} from "../localization";
+import {msg} from "@lit/localize";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/files/issues/new`;
@@ -178,13 +179,13 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
     /** */
-    async initializeNotifier(auth_token: string) {
+    async initializeMailgunNotifier(email: string, domain: string, auth_token: string) {
         console.log("initializeNotifier()", auth_token);
         await this._dvm.notificationsZvm.zomeProxy.claimNotifier(this.cell.agentPubKey);
         this._dvm.notificationsZvm.setConfig({"mailgun": {
-                "email_address": "whosin@mg.flowplace.org",
+                "email_address": email, //"whosin@mg.flowplace.org",
                 "auth_token": "api:" + auth_token,
-                "domain": "mg.flowplace.org"
+                "domain": domain, //"mg.flowplace.org"
             }});
         console.log("Config keys:", this._dvm.notificationsZvm.config? Object.keys(this._dvm.notificationsZvm.config) : "none");
         this._dvm.notificationsZvm.serviceName = "Files Notification";
@@ -270,7 +271,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     toastNotif(notifLog: [Timestamp, FilesNotificationType, FilesNotification]): void {
         const type = notifLog[1];
 
-        let msg = "";
+        let message = "";
         let title = "";
         let variant = "primary";
         let duration = 5000;
@@ -292,13 +293,13 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             console.log("DeliveryRequestSent", notifLog, recipients, recipientName);
             variant = 'success';
             icon = "check2-circle";
-            title = "File delivery request sent";
-            msg = `"${privateManifest.description.name}" to ${recipientName}`;
+            title = msg("File delivery request sent");
+            message = "" + privateManifest.description.name + " " + msg("to") + " " + recipientName;
             /** Ext. Notification */
-            const subject = `${myProfile.nickname} wants to send you a file`;
+            const subject = "" + myProfile.nickname + " " + msg("wants to send you a file");
             const notifMsg = `
-            ${myProfile.nickname}${this.groupProfiles? "from " + this.groupProfiles[0].name : "" } would like to send you the file: "${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)}).
-            Please go to the Files app to Accept or Decline the request${this.appletId? `: ${weLinkFromAppletHash(decodeHashFromBase64(this.appletId))}` : "." }
+            ${myProfile.nickname}${this.groupProfiles? msg("from") + " " + this.groupProfiles[0].name : "" } ${msg("would like to send you the file")}: "${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)}).
+            ${msg("Please go to the Files app to Accept or Decline the request")}${this.appletId? `: ${weLinkFromAppletHash(decodeHashFromBase64(this.appletId))}` : "." }
             `;
             this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
 
@@ -309,8 +310,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             variant = 'success';
             icon = "check2-circle";
-            title = "File succesfully received";
-            msg = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
+            title = msg("File succesfully received");
+            message = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
         }
         if (FilesNotificationType.DistributionToRecipientComplete == type) {
             const distribAh = (notifLog[2] as FilesNotificationVariantDistributionToRecipientComplete).distribAh;
@@ -318,19 +319,19 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[distribAh][0].delivery_summary.parcel_reference.eh);
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             const maybeProfile = this._dvm.profilesZvm.getProfile(recipient);
-            const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
+            const recipientName = maybeProfile? maybeProfile.nickname : msg("Unknown");
             variant = 'success';
             icon = "check2-circle";
-            title = "File successfully shared";
-            msg = `"${privateManifest.description.name}" to ${recipientName}`;
+            title = msg("File successfully shared");
+            message = `"${privateManifest.description.name}" to ${recipientName}`;
         }
         if (FilesNotificationType.PublicSharingComplete == type) {
             const manifestEh = (notifLog[2] as FilesNotificationVariantPublicSharingComplete).manifestEh;
             const publicManifest = this.deliveryPerspective.localPublicManifests[manifestEh][0];
             variant = 'success';
             icon = "check2-circle";
-            title = "File successfully published";
-            msg = `"${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)})`;
+            title = msg("File successfully published");
+            message = `"${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)})`;
             /** Notify peers that we published something */
             const pr = {description: publicManifest.description, eh: decodeHashFromBase64(manifestEh)} as ParcelReference;
             const timestamp = notifLog[0];
@@ -338,10 +339,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             console.log("PublicSharingComplete. notifying...", peers);
             this._dvm.deliveryZvm.zomeProxy.notifyNewPublicParcel({peers, timestamp, pr});
             /** Ext. Notification */
-            const subject = `${myProfile.nickname} shared a file`;
+            const subject = "" + myProfile.nickname + " " + msg("shared a file");
             const notifMsg = `
-            ${myProfile.nickname} has shared the file "${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)}) with the group ${this._groupName}.
-            You can download this file by going to the Files app.
+            ${myProfile.nickname} ${msg("has shared the file")} "${publicManifest.description.name}" (${prettyFileSize(publicManifest.description.size)}) ${msg("with the group")} ${this._groupName}.
+            ${msg("You can download this file by going to the Files app.")}
             `;
             const recipients = peers
                 .map((agent) => encodeHashToBase64(agent))
@@ -355,8 +356,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const privateManifest = this.deliveryPerspective.privateManifests[manifestEh][0];
             variant = 'success';
             icon = "check2-circle";
-            title = "File succesfully added";
-            msg = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
+            title = msg("File succesfully added");
+            message = `"${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)})`;
         }
         if (FilesNotificationType.NewNoticeReceived == type) {
             const noticeEh = (notifLog[2] as FilesNotificationVariantNewNoticeReceived).noticeEh;
@@ -364,20 +365,20 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const recipient = (notifLog[2] as FilesNotificationVariantNewNoticeReceived).sender;
             const maybeProfile = this._dvm.profilesZvm.getProfile(recipient);
             const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
-            title = "Incoming file request";
-            msg = `"${description.name}" (${prettyFileSize(description.size)}) from: ${recipientName}`;
+            title = msg("Incoming file request");
+            message = `"${description.name}" (${prettyFileSize(description.size)}) ${msg("from")}: ${recipientName}`;
             id = "new-notice-" + noticeEh
             duration = Infinity;
             extraHtml = `
                 <div>
                     <sl-button id="accept-notice-btn" variant="default" size="small" eh="${noticeEh}">
                       <sl-icon slot="prefix" name="check"></sl-icon>
-                      Accept
+                      ${msg("Accept")}
                     </sl-button>
                     <sl-button id="decline-notice-btn" variant="default" size="small" eh="${noticeEh}">
                       <sl-icon slot="prefix" name="x"></sl-icon>
-                      Decline
-                    </sl-button>                    
+                      ${msg("Decline")}
+                    </sl-button>
                 </div>
             `;
         }
@@ -388,31 +389,32 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const maybeProfile = this._dvm.profilesZvm.getProfile(notif.recipient);
             const recipientName = maybeProfile? maybeProfile.nickname : "unknown";
             if (notif.hasAccepted) {
-                title = "File accepted";
+                title = msg("File accepted");
             } else {
-                title = "File declined";
+                title = msg("File declined");
                 variant = 'danger';
                 icon = "x-octagon";
             }
-            msg = `For "${description.name}" from ${recipientName}`;
+            message = `${msg("For")} "${description.name}" ${msg("from")} ${recipientName}`;
         }
-        createAlert(title, msg, variant, icon, duration, extraHtml, id);
+        createAlert(title, message, variant, icon, duration, extraHtml, id);
     }
 
 
 
     /** */
-    private async onSaveProfile(detail: any) {
-        console.log("onSaveProfile()", detail.profile);
-        const profile: ProfileMat = detail.profile;
+    private async onSaveProfile(profileInfo: ProfileInfo) {
+        console.log("onSaveProfile()", profileInfo.profile);
+        const profile: ProfileMat = profileInfo.profile;
+        const previous_lang = this._dvm.profilesZvm.getMyProfile()? this._dvm.profilesZvm.getMyProfile().fields["lang"] : "" ;
         try {
             await this._dvm.profilesZvm.updateMyProfile(profile);
         } catch(e) {
             await this._dvm.profilesZvm.createMyProfile(profile);
         }
         /** mailgun */
-        if (detail.mailgun && detail.mailgun.length > 0) {
-            await this.initializeNotifier(detail.mailgun);
+        if (profileInfo.mailgun_token && profileInfo.mailgun_token.length > 0) {
+            await this.initializeMailgunNotifier(profileInfo.mailgun_email, profileInfo.mailgun_domain, profileInfo.mailgun_token);
         }
         /** email */
         if (profile.fields["email"] && profile.fields["email"].length > 0) {
@@ -426,6 +428,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         /** */
         this.profileDialogElem.open = false;
+        if (profile.fields["lang"] && profile.fields["lang"] != previous_lang) {
+            //setLocale(profile.fields["lang"])
+            location.reload();
+        }
         this.requestUpdate();
     }
 
@@ -456,41 +462,41 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         /** */
         return html`
-            <!-- File type cards -->            
+            <!-- File type cards -->
             <div id="card-row">
                 <div class="card" @click=${(e) => {this.onCardClick(FileType.Document)}}>
                     <sl-icon name=${type2Icon(FileType.Document)}></sl-icon>
-                    <div>Documents</div>
-                    ${initialized? html`<div class="subtext">${countMap[FileType.Document]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
+                    <div>${msg("Documents")}</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Document]} ${msg("file(s)")}</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>                
                 <div class="card" @click=${(e) => {this.onCardClick(FileType.Image)}}>
                     <sl-icon name=${type2Icon(FileType.Image)}></sl-icon>
-                    <div>Images</div>
-                    ${initialized? html`<div class="subtext">${countMap[FileType.Image]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
+                    <div>${msg("Images")}</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Image]} ${msg("file(s)")}</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>
                 <div class="card" @click=${(e) => {this.onCardClick(FileType.Video)}}>
                     <sl-icon name=${type2Icon(FileType.Video)}></sl-icon>
-                    <div>Video</div>
-                    ${initialized? html`<div class="subtext">${countMap[FileType.Video]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
+                    <div>${msg("Video")}</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Video]} ${msg("file(s)")}</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>
                 <div class="card" @click=${(e) => {this.onCardClick(FileType.Audio)}}>
                     <sl-icon name=${type2Icon(FileType.Audio)}></sl-icon>
-                    <div>Audio</div>
-                    ${initialized? html`<div class="subtext">${countMap[FileType.Audio]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
+                    <div>${msg("Audio")}</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Audio]} ${msg("file(s)")}</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>
                 <div class="card" @click=${(e) => {this.onCardClick(FileType.Zip)}}>
                     <sl-icon name=${type2Icon(FileType.Zip)}></sl-icon>
-                    <div>Zip Files</div>
-                    ${initialized? html`<div class="subtext">${countMap[FileType.Zip]} Files</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
+                    <div>${msg("Zip")}</div>
+                    ${initialized? html`<div class="subtext">${countMap[FileType.Zip]} ${msg("file(s)")}</div>`: html`<sl-skeleton effect="pulse"></sl-skeleton>`}
                 </div>                
             </div>
             <!-- Incoming file requests -->        
             ${unrepliedInbounds.length? html`
-                <h2>Incoming file requests</h2>
+                <h2>${msg("Incoming file requests")}</h2>
                 <ul>${unrepliedInbounds}</ul>
             ` : html``}
             <!-- Recent Activity -->
-            <h2>Recent Activity</h2>
+            <h2>${msg("Recent Activity")}</h2>
             <activity-timeline 
                     @download=${(e) => this._dvm.downloadFile(e.detail)} 
                     @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -509,7 +515,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         /** This agent's profile info */
         let myProfile = this._dvm.profilesZvm.getMyProfile();
         if (!myProfile) {
-            myProfile = {nickname: "unknown", fields: {}} as ProfileMat;
+            myProfile = {nickname: msg("unknown"), fields: { lang: "en"}} as ProfileMat;
             console.log("Profile not found. Probing", this._dvm.cell.agentPubKey);
             this._dvm.profilesZvm.probeProfile(this._dvm.cell.agentPubKey).then((profile) => {
                 if (!profile) {
@@ -586,17 +592,17 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 const unrepliedLi = html`
                     <li id="inbound_${noticeEh}">
                         <span class="nickname">${sender}</span>
-                        wants to send you 
+                        ${msg("wants to send you")} 
                         <span style="font-weight: bold">${notice.summary.parcel_reference.description.name}</span>
                         (${prettyFileSize(notice.summary.parcel_reference.description.size)})
                         <div style="margin: 10px 10px 20px 20px;">
                             <sl-button type="button" variant="default" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
                                 <sl-icon slot="prefix" name="check"></sl-icon>
-                                Accept
+                                ${msg("Accept")}
                             </sl-button>
                             <sl-button type="button" variant="default" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
                                 <sl-icon slot="prefix" name="x"></sl-icon>
-                                Decline
+                                ${msg("Decline")}
                             </sl-button>
                         </divstyle>
                     </li>`
@@ -621,13 +627,13 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         let outboundTable = html`
                     <vaadin-grid .items="${outboundList}">
-                        <vaadin-grid-column path="distribution" header="Filename"
+                        <vaadin-grid-column path="distribution" header=${msg("Filename")}
                                             ${columnBodyRenderer(
                                                     ({ distribution }) => html`<span>${distribution.delivery_summary.parcel_reference.description.name}</span>`,
                                                     [],
                                             )}>
                         </vaadin-grid-column>                        
-                        <vaadin-grid-column path="recipient" header="Recipient"
+                        <vaadin-grid-column path="recipient" header=${msg("Recipient")}
                                             ${columnBodyRenderer(
                                                     ({ recipient }) => {
                                                         const maybeProfile = this._dvm.profilesZvm.perspective.profiles[recipient];
@@ -638,24 +644,24 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                                     [],
                                             )}
                         ></vaadin-grid-column>                        
-                        <vaadin-grid-column path="state" header="State"
+                        <vaadin-grid-column path="state" header=${msg("State")}
                             ${columnBodyRenderer(
                             ({ state }) => {
                                 if (DeliveryStateType.Unsent in state) {
-                                    return html`<span>Delivery notice unsent</span>`
+                                    return html`<span>${msg("Delivery notice unsent")}</span>`
                                 }
                                 if (DeliveryStateType.PendingNotice in state) {
-                                    return html`<span>Delivery notice pending reception</span>`
+                                    return html`<span>${msg("Delivery notice pending reception")}</span>`
                                 }
                                 if (DeliveryStateType.NoticeDelivered in state) {
-                                    return html`<span>Waiting for reply</span>`
+                                    return html`<span>${msg("Waiting for reply")}</span>`
                                 }
-                                return html`<span>Unknown</span>`
+                                return html`<span>${msg("Unknown")}</span>`
                             },
                             [],
                         )}>
                         </vaadin-grid-column>
-                        <vaadin-grid-column path="timestamp" header="Sent Date"
+                        <vaadin-grid-column path="timestamp" header=${msg("Sent Date")}
                                             ${columnBodyRenderer(
                                                     ({ timestamp }) => html`<span>${prettyTimestamp(timestamp)}</span>`,
                                                     [],
@@ -726,7 +732,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         /** Choose what to display */
         let mainArea = html`
-            <h2>Recent Activity...</h2>
+            <h2>${msg("Recent Activity")}...</h2>
             <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
             <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
             <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
@@ -774,7 +780,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 });
                 const allItems = privateItems.concat(publicItems/*, myPublicItems*/);
                 mainArea = html`
-                    <h2>All Files${this._typeFilter? ": " + this._typeFilter : ""}</h2>
+                    <h2>${msg("All Files")}${this._typeFilter? ": " + this._typeFilter : ""}</h2>
                     <file-table .items=${allItems}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -783,7 +789,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             }
             if (this._selectedMenuItem.type == SelectedType.PersonalFiles) {
                 mainArea = html`
-                    <h2>${SelectedType.PersonalFiles}</h2>
+                    <h2>${msg("Personal Files")}</h2>
                     <file-table
                             .items=${Object.entries(this.deliveryPerspective.privateManifests).map(([ppEh, [pm, timestamp]]) => {
                                 //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
@@ -808,7 +814,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 //const publicItems = dhtPublicItems.concat(myPublicItems);
 
                 mainArea = html`
-                    <h2>${SelectedType.GroupFiles}</h2>
+                    <h2>${msg("Group Files")}</h2>
                     <file-table .items=${dhtPublicItems}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -851,7 +857,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     .flat()
                     .sort((a, b) => b.sentTs - a.sentTs);
                 mainArea = html`
-                    <h2>Sent</h2>
+                    <h2>${msg("Sent")}</h2>
                     <distribution-table .items=${distributionItems}
                                         @download=${(e) => this._dvm.downloadFile(e.detail)}
                                         @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -860,7 +866,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             }
             if (this._selectedMenuItem.type == SelectedType.InProgress) {
                 mainArea = html`
-                    <h2>Outbound Files</h2>
+                    <h2>${msg("Outbound Files")}</h2>
                     <div style="padding-bottom: 80px;padding-right: 10px;">
                         ${outboundTable}
                     </div>
@@ -879,7 +885,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         return publicTags && publicTags.includes(this._selectedMenuItem.tag);
                     });
                 mainArea = html`
-                    <h2>Group Files: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
+                    <h2>${msg("Group Files")}: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
                     <file-table .items=${taggedItems}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -897,7 +903,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 });
 
                 mainArea = html`
-                    <h2>Personal Files: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
+                    <h2>${msg("Personal Files")}: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
                     <file-table .items=${taggedItems}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
@@ -955,7 +961,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     `: html``
                     }
                     <sl-popup placement="bottom-start" sync="width" active>                    
-                    <sl-input id="search-input" placeholder="Search" size="large" clearable
+                    <sl-input id="search-input" placeholder=${msg("Search")} size="large" clearable
                               slot="anchor"
                               @sl-input=${(e) => {console.log("sl-change", this.searchInputElem.value);this.requestUpdate();}}
                               style="flex-grow: 2">
@@ -977,7 +983,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <files-edit-profile
                     allowCancel
                     .profile=${myProfile}
-                    @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
+                    @save-profile=${(e: CustomEvent<ProfileInfo>) => this.onSaveProfile(e.detail)}
                     @lang-selected=${(e: CustomEvent) => {
                         console.log("set locale", e.detail);
                         setLocale(e.detail)
@@ -985,6 +991,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             ></files-edit-profile>
         </sl-dialog>
         <action-overlay
+                .profile=${myProfile}
                 @sl-after-hide=${(e) => {this.fabElem.style.display = "block"}}
                 @selected=${(e) => {
             if (e.detail == "send") {

@@ -18,7 +18,7 @@ import {
 } from "@ddd-qc/lit-happ";
 import {
   FilesDvm,
-  FILES_DEFAULT_ROLE_NAME,
+  FILES_DEFAULT_ROLE_NAME, ProfileInfo,
 } from "@ddd-qc/files";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
 import {AppletId, AppletView, GroupProfile, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
@@ -229,9 +229,9 @@ export class FilesApp extends HappElement {
     if(this._hasHolochainFailed) {
       return html`
         <div style="width: auto; height: auto; font-size: 4rem;">
-          Failed to connect to <b>Files</b> cell.
+          ${msg("Failed to connect to <b>Files</b> cell.")}
           <br />
-          Holochain Conductor might not be running or the Files cell is missing.
+          ${msg("Holochain Conductor might not be running or the Files cell is missing.")}
         </div>`;
     }
 
@@ -301,7 +301,7 @@ export class FilesApp extends HappElement {
               </div>
               <files-edit-profile
                   .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
-                  @save-profile=${async (e: CustomEvent) => {
+                  @save-profile=${async (e: CustomEvent<ProfileInfo>) => {
                     await this.filesDvm.profilesZvm.createMyProfile(e.detail.profile);
                     this.requestUpdate();
                   }}

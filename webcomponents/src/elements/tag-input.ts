@@ -2,6 +2,7 @@ import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {filesSharedStyles} from "../sharedStyles";
 import {SlBlurEvent, SlInput} from "@shoelace-style/shoelace";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -75,7 +76,7 @@ export class TagInput extends LitElement {
 
         /** */
         return html`
-            <sl-input id="tag-input" placeholder="Add tag" clearable
+            <sl-input id="tag-input" placeholder=${msg("Add tag")} clearable
                       @keydown=${(e: KeyboardEvent) => {
                           console.log("sl-keydown", this.inputElem.value, e);
                           if (e.keyCode == 13) {

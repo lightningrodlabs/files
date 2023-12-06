@@ -1,7 +1,7 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
-import {consume} from "@lit/context";
+import {msg} from '@lit/localize';
 import {FilesDvm} from "../viewModels/files.dvm";
 import {
     DeliveryPerspective,
@@ -9,7 +9,7 @@ import {
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, EntryHashB64, Timestamp} from "@holochain/client";
 import {FileView} from "./file-view";
 import {filesSharedStyles} from "../sharedStyles";
-import {ProfilesZvm, agent2avatar} from "@ddd-qc/profiles-dvm";
+import {agent2avatar} from "@ddd-qc/profiles-dvm";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 
 
@@ -155,32 +155,32 @@ export class ActivityTimeline extends DnaElement<FilesDvmPerspective, FilesDvm> 
             case ActivityLogType.DeliveryDeclined: {
                 const variant = log.value as ActivityLogTypeVariantDeliveryDeclined;
                 manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[variant.distributionAh][0].delivery_summary.parcel_reference.eh);
-                message = `was declined by`;
+                message = msg(`was declined by`);
                 peer = variant.peer;
                 break;}
             case ActivityLogType.DeliveryReceived: {
                 const variant = log.value as ActivityLogTypeVariantDeliveryReceived;
                 manifestEh = encodeHashToBase64(this.deliveryPerspective.distributions[variant.distributionAh][0].delivery_summary.parcel_reference.eh);
-                message = `was received by`;
+                message = msg(`was received by`);
                 peer = variant.peer;
                 break;}
             case ActivityLogType.ReceivedFile: {
                 const variant = log.value as ActivityLogTypeVariantReceivedFile;
                 manifestEh = variant.manifestEh;
-                message = `was sent to you by`;
+                message = msg(`was sent to you by`);
                 peer = variant.peer;
                 break;}
             case ActivityLogType.NewGroupFile: {
                 const variant = log.value as ActivityLogTypeVariantNewGroupFile;
                 manifestEh = variant.manifestEh;
-                message = `has been shared by`;
+                message = msg(`has been shared by`);
                 peer = variant.peer;
                 break;}
             case ActivityLogType.NewPersonalFile: {
                 const variant = log.value as ActivityLogTypeVariantNewPersonalFile;
                 manifestEh = variant.manifestEh;
                 peer = this.cell.agentPubKey;
-                message = `was added privately by`;
+                message = msg(`was added privately by`);
                 break;}
         }
 
@@ -192,7 +192,7 @@ export class ActivityTimeline extends DnaElement<FilesDvmPerspective, FilesDvm> 
 
         const [profile, _avatar] = agent2avatar(peer, this._dvm.profilesZvm.perspective);
         const authorSpan = peer == this.cell.agentPubKey
-            ? html`<span style="font-weight: bold;">yourself</span>`
+            ? html`<span style="font-weight: bold;">${msg("yourself")}</span>`
             : html`<span class="nickname">${profile.nickname}</span>`;
 
         /** render */
@@ -235,7 +235,7 @@ export class ActivityTimeline extends DnaElement<FilesDvmPerspective, FilesDvm> 
             }
         )
         if (items.length == 0) {
-            items.push(html`None`);
+            items.push(html`${msg("None")}`);
         }
 
 

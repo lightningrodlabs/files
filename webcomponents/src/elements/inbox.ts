@@ -9,6 +9,7 @@ import {encodeHashToBase64} from "@holochain/client";
 import {FileView} from "./file-view";
 import {filesSharedStyles} from "../sharedStyles";
 import {getCompletionPct} from "../utils";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -151,10 +152,10 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                         <span class="nickname">${sender}</span>
                         <div class="gap"></div>
                         <sl-button id="decline-button" type="button" @click=${()=> {this._dvm.deliveryZvm.declineDelivery(noticeEh);}}>
-                            Decline
+                            ${msg("Decline")}
                         </sl-button>                            
                         <sl-button id="accept-button" type="button" @click=${() => {this._dvm.deliveryZvm.acceptDelivery(noticeEh);}}>
-                            Accept
+                            ${msg("Accept")}
                         </sl-button>
                         <div class="activityDate">${date_str}</div>
                     </div>`
@@ -179,7 +180,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                     const incompleteItem = html`
                         <div class="inboxLine">
                             <file-button .description=${notice.summary.parcel_reference.description}></file-button>
-                            from
+                            ${msg("from")}
                             <span class="nickname">${sender}</span>
                             <div class="gap"></div>
                             <div style="display:flex; flex-direction:row; width:100px;">
@@ -210,7 +211,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
             <div id="action-bar">
             <sl-button>
                 <sl-icon slot="prefix" name="sort-down"></sl-icon>
-                Most Recent
+                ${msg("Most Recent")}
             </sl-button>
             <div class="gap"></div>
             <sl-button><sl-icon name="sliders"></sl-icon></sl-button>

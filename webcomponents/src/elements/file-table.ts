@@ -16,6 +16,7 @@ import {kind2Type} from "../fileTypeUtils";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {GridActiveItemChangedEvent} from "@vaadin/grid";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+import {msg} from "@lit/localize";
 
 
 export interface FileTableItem {
@@ -59,7 +60,7 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
     render() {
         console.log("<file-table>.render()", this.items);
         if (!this.items.length) {
-            return html`No items found`;
+            return html`${msg("No items found")}`;
         }
 
         const totalSize = this.items.reduce((accumulator, item) => accumulator + item.description.size, 0);
@@ -80,32 +81,32 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                          .items="${this.items}"
             >
                 <vaadin-grid-selection-column></vaadin-grid-selection-column>
-                <vaadin-grid-column path="description" header="Filename"
+                <vaadin-grid-column path="description" header=${msg("Filename")}
                                     ${columnBodyRenderer(
                                             ({ description }) => html`<span>${description.name}</span>`,
                                             [],
                                     )}>
                 </vaadin-grid-column>
-                <vaadin-grid-column path="description" header="Size"
+                <vaadin-grid-column path="description" header=${msg("Size")}
                                     ${columnBodyRenderer(
                                 ({ description }) => html`<span>${prettyFileSize(description.size)}</span>`,
                             [],
                                     )}
-                                    ${columnFooterRenderer(() => html`<span>${prettyFileSize(totalSize)} total</span>`, [totalSize])}
+                                    ${columnFooterRenderer(() => html`<span>${prettyFileSize(totalSize)} ${msg("total")}</span>`, [totalSize])}
                 ></vaadin-grid-column>
-                <vaadin-grid-column path="description" header="Type"
+                <vaadin-grid-column path="description" header=${msg("Type")}
                                     ${columnBodyRenderer(
                                             ({ description }) => html`<span>${kind2Type(description.kind_info)}</span>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
-                <vaadin-grid-column path="ppEh" header="Group Tags"
+                <vaadin-grid-column path="ppEh" header=${msg("Group Tags")}
                                     ${columnBodyRenderer(
                                             ({ ppEh }) => html`<tag-list .tags=${this._zvm.getTargetPublicTags(ppEh)}></tag-list>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
-                <vaadin-grid-column path="ppEh" header="Personal Tags"
+                <vaadin-grid-column path="ppEh" header=${msg("Personal Tags")}
                                     ${columnBodyRenderer(
                                             ({ ppEh }) => html`
                                                 <div style="display:flex">
@@ -117,7 +118,7 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                                                                   tagList.requestUpdate();
                                                               }}
                                                     ></tag-list>
-                                                    <sl-icon-button class="add-tag" name="plus-circle-dotted" label="add"></sl-icon-button>
+                                                    <sl-icon-button class="add-tag" name="plus-circle-dotted" label=${msg("add")}></sl-icon-button>
                                                 </div>
                                             `,
                                             [],
@@ -129,7 +130,7 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                                                 const maybeProfile = this.profiles[author];
                                                 return maybeProfile
                                                         ? html`<span>${maybeProfile.nickname}</span>`
-                                                        : html`<span>Unknown</span>`
+                                                        : html`<span>${msg("Unknown")}</span>`
                                             },
                                     [],
                                     )}
@@ -142,13 +143,13 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                 ></vaadin-grid-column>
                 <vaadin-grid-column path="isLocal" header="Local" .hidden="${!("isLocal" in this.items[0])}"
                                     ${columnBodyRenderer(
-                                            ({ isLocal }) => html`<span>${isLocal? "Yes" : "No"}</span>`,
+                                            ({ isLocal }) => html`<span>${isLocal? msg("Yes") : msg("No")}</span>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
                 <vaadin-grid-column path="isPrivate" header="Private" .hidden="${!("isPrivate" in this.items[0])}"
                                     ${columnBodyRenderer(
-                                            ({ isPrivate }) => html`<span>${isPrivate? "Yes" : "No"}</span>`,
+                                            ({ isPrivate }) => html`<span>${isPrivate? msg("Yes") : msg("No")}</span>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
@@ -195,7 +196,7 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                                 },
                                 []
                         )}
-                        ${columnFooterRenderer(() => html`<span>${this.items.length} files</span>`, [this.items])}
+                        ${columnFooterRenderer(() => html`<span>${this.items.length} ${msg("files")}</span>`, [this.items])}
                 ></vaadin-grid-column>                
             </vaadin-grid>            
         `;

@@ -2,7 +2,8 @@ import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {SlDialog} from "@shoelace-style/shoelace";
 import {filesSharedStyles} from "../sharedStyles";
-
+import {msg} from '@lit/localize';
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 /**
  * @element
@@ -10,6 +11,10 @@ import {filesSharedStyles} from "../sharedStyles";
 @customElement("action-overlay")
 export class ActionOverlay extends LitElement {
 
+
+    /** Just for triggering updates */
+    @property({ type: Object })
+    profile: ProfileMat | undefined;
 
     /** */
     get dialogElem() : SlDialog {
@@ -38,15 +43,15 @@ export class ActionOverlay extends LitElement {
             <sl-dialog id="action-overlay" class="action-dialog" noHeader>
                 <sl-button variant="neutral" @click=${(e) => {this.onClick("send")}}>
                     <sl-icon slot="prefix" name="send"></sl-icon>
-                    Send
+                    ${msg("Send")}
                 </sl-button>
                 <sl-button variant="neutral" @click=${(e) => {this.onClick("publish")}}>
                     <sl-icon slot="prefix" name="people"></sl-icon>
-                    Share with the group
+                    ${msg("Share with the group")}
                 </sl-button>
                 <sl-button variant="neutral" @click=${(e) => {this.onClick("add")}}>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
-                    Add to my personal files
+                    ${msg("Add to my personal files")}
                 </sl-button>
             </sl-dialog>
         `;

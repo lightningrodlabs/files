@@ -7,6 +7,7 @@ import {DeliveryPerspective} from "@ddd-qc/delivery";
 import {filesSharedStyles} from "../sharedStyles";
 import {SlDrawer, SlMenu, SlMenuItem} from "@shoelace-style/shoelace";
 import {TaggingPerspective} from "../viewModels/tagging.zvm";
+import {msg} from "@lit/localize";
 
 
 /** */
@@ -118,7 +119,7 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 type: isPrivate == "true" ? SelectedType.PrivateTag : SelectedType.PublicTag,
                 tag: e.detail.item.getTextLabel().trim()
             } as SelectedEvent
-            : { type: e.detail.item.getTextLabel().trim() } as SelectedEvent;
+            : { type: e.detail.item.value } as SelectedEvent;
         console.log("<files-menu> event", event);
 
         /** Dispatch to main page */
@@ -156,7 +157,7 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         return html`
             <sl-divider></sl-divider>
-            <sl-menu-label>${isPrivate? "Personal Tags" : "Group Tags"}</sl-menu-label>
+            <sl-menu-label>${isPrivate? msg("Personal Tags") : msg("Group Tags")}</sl-menu-label>
             ${groupTags}
         `;
     }
@@ -197,38 +198,38 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 <span id="title"">Files</span>
             </div>
             <sl-menu id="lhs-menu" @sl-select=${this.onSelected}>
-                <sl-menu-item class="selectedItem">
+                <sl-menu-item class="selectedItem" value=${SelectedType.Home}>
                     <sl-icon slot="prefix" name="house"></sl-icon>
-                    ${SelectedType.Home}
+                    ${msg("Home")}
                 </sl-menu-item>
-                <sl-menu-item ?disabled=${!initialized}>                    
+                <sl-menu-item ?disabled=${!initialized} value=${SelectedType.AllFiles}>                    
                     <sl-icon slot="prefix" name="files"></sl-icon>
-                    ${SelectedType.AllFiles}
+                    ${msg("All Files")}
                     ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${dhtPublicCount + privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item ?disabled=${!initialized}>
+                <sl-menu-item ?disabled=${!initialized} value=${SelectedType.PersonalFiles}>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
-                    ${SelectedType.PersonalFiles}
+                    ${msg("Personal Files")}
                     ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${privateCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item ?disabled=${!initialized}>
+                <sl-menu-item ?disabled=${!initialized} value=${SelectedType.GroupFiles}>
                     <sl-icon slot="prefix" name="people"></sl-icon>
-                    ${SelectedType.GroupFiles}
+                    ${msg("Group Files")}
                     ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${dhtPublicCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item ?disabled=${!initialized}>
+                <sl-menu-item ?disabled=${!initialized} value=${SelectedType.Inbox}>
                     <sl-icon slot="prefix" name="download"></sl-icon>
-                    ${SelectedType.Inbox}
+                    ${msg("Inbox")}
                     ${initialized? html`<sl-badge slot="suffix" variant=${unrepliedCount > 0? "primary" : "neutral"} pill>${unrepliedCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item ?disabled=${!initialized}>
+                <sl-menu-item ?disabled=${!initialized} value=${SelectedType.Sent}>
                     <sl-icon slot="prefix" name="send"></sl-icon>
-                    ${SelectedType.Sent}
+                    ${msg("Sent")}
                     ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${distribCount - outboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
-                <sl-menu-item ?disabled=${!initialized}>
+                <sl-menu-item ?disabled=${!initialized} value=${SelectedType.InProgress}>
                     <sl-icon slot="prefix" name="arrow-left-right"></sl-icon>
-                    ${SelectedType.InProgress}
+                    ${msg("In Progress")}
                     ${initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount + inboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 ${this.renderTags(false)}
