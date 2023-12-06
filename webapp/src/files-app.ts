@@ -118,16 +118,16 @@ export class FilesApp extends HappElement {
         //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("createProfilesDvm() dvm", dvm);
-    await this.setupWeProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    console.log("createProfilesDvm() profilesAppInfo", profilesAppInfo);
+    await this.setupWeProfilesDvm(dvm as ProfilesDvm);
   }
 
 
   /** */
-  async setupWeProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
-    console.log("setupProfilesDvm() agent", agent);
+  async setupWeProfilesDvm(dvm: ProfilesDvm): Promise<void> {
     this._weProfilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
-    const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(agent);
+    const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(dvm.profilesZvm.cell.agentPubKey);
     console.log("setupProfilesDvm() maybeMyProfile", maybeMyProfile);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
