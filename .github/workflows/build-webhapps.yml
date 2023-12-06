@@ -37,11 +37,6 @@ jobs:
         shell: bash
         run: |
           npm run build:happ
-      # Build happ:we
-      - name: Build happ:we
-        shell: bash
-        run: |
-          npm run build:happ:we
       # Build webapp
       - name: Build webapp
         run: |
