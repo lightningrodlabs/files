@@ -21,7 +21,7 @@ import {
   FILES_DEFAULT_ROLE_NAME, ProfileInfo,
 } from "@ddd-qc/files";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
-import {AppletId, AppletView, GroupProfile, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletId, AppletView, GroupProfile, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DELIVERY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
@@ -32,6 +32,10 @@ import { localized, msg, str } from '@lit/localize';
 
 import "./elements/files-main-view"
 import "@ddd-qc/files";
+import {createContext} from "@lit/context";
+
+const weClientContext = createContext<WeServices>('we_client');
+
 
 /**
  *
@@ -127,8 +131,11 @@ export class FilesApp extends HappElement {
   async setupWeProfilesDvm(dvm: ProfilesDvm): Promise<void> {
     this._weProfilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
+    //const maybeProfiles = await this._weProfilesDvm.profilesZvm.zomeProxy.getAgentsWithProfile();
+    //const maybeAgents = maybeProfiles.map((eh) => encodeHashToBase64(eh));
+    //console.log("maybeAgents", maybeAgents);
     const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(dvm.profilesZvm.cell.agentPubKey);
-    console.log("setupProfilesDvm() maybeMyProfile", maybeMyProfile);
+    console.log("setupWeProfilesDvm() maybeMyProfile", maybeMyProfile);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
@@ -139,7 +146,7 @@ export class FilesApp extends HappElement {
     } else {
       /** Create Guest profile */
       const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
-      console.log("setupProfilesDvm() createMyProfile", this.filesDvm.profilesZvm.cell.agentPubKey);
+      console.log("setupWeProfilesDvm() createMyProfile", this.filesDvm.profilesZvm.cell.agentPubKey);
       await this.filesDvm.profilesZvm.createMyProfile(profile);
     }
   }

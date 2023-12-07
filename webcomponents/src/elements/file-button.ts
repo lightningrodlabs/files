@@ -14,8 +14,11 @@ import {kind2Icon} from "../fileTypeUtils";
 import {SelectedType} from "./files-menu";
 import {prettyFileSize} from "../utils";
 import {ParcelDescription} from "@ddd-qc/delivery";
-import {Hrl, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {Hrl, WeServices} from "@lightningrodlabs/we-applet";
+//import {weClientContext} from "@lightningrodlabs/we-applet/context";
+import {createContext} from "@lit/context";
 
+export const weClientContext = createContext<WeServices>('we_client');
 
 /**
  * @element

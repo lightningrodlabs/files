@@ -3,8 +3,10 @@ import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
-import {AppletInfo, GroupProfile, weClientContext, weLinkFromAppletHash, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletInfo, GroupProfile, weLinkFromAppletHash, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
+import {createContext} from "@lit/context";
+
 
 import {
     FilesDvm,
@@ -78,6 +80,7 @@ import {msg} from "@lit/localize";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/files/issues/new`;
+const weClientContext = createContext<WeServices>('we_client');
 
 
 /**
@@ -928,7 +931,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
                         <sl-icon name="bell" label="notifications"></sl-icon>
                     </sl-button>
-                    <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
+                    <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL} target="_blank">
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
                     ${isInDev? html`

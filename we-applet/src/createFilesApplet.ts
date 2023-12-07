@@ -1,5 +1,5 @@
 import {
-  AppAgentWebsocket,
+  AppAgentWebsocket, encodeHashToBase64,
 } from "@holochain/client";
 //import { msg } from "@lit/localize";
 
@@ -44,7 +44,7 @@ export async function createFilesApplet(
 
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
 
-  console.log("createFilesApplet() mainAppInfo", mainAppInfo);
+  console.log("createFilesApplet() mainAppInfo", mainAppInfo, encodeHashToBase64(mainAppInfo.agent_pub_key));
 
   //const showFileOnly = false; // FIXME
 
@@ -52,7 +52,7 @@ export async function createFilesApplet(
   const mainAppAgentWs = appletViewInfo.appletClient as AppAgentWebsocket;
   const mainAppWs = mainAppAgentWs.appWebsocket;
   let profilesAppInfo = await profilesClient.client.appInfo();
-  console.log("createFilesApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
+  console.log("createFilesApplet() profilesAppInfo", profilesAppInfo, encodeHashToBase64(mainAppInfo.agent_pub_key));
   /** Check if roleName is actually a cloneId */
   let maybeCloneId = undefined;
   let baseRoleName = profilesClient.roleName;
