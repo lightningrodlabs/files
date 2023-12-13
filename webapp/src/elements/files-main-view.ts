@@ -409,7 +409,6 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     private async onSaveProfile(profileInfo: ProfileInfo) {
         console.log("onSaveProfile()", profileInfo.profile);
         const profile: ProfileMat = profileInfo.profile;
-        const previous_lang = this._dvm.profilesZvm.getMyProfile()? this._dvm.profilesZvm.getMyProfile().fields["lang"] : "" ;
         try {
             await this._dvm.profilesZvm.updateMyProfile(profile);
         } catch(e) {
@@ -429,12 +428,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 //console.log("New notifier:" encomaybeNotifier);
             }
         }
-        /** */
+        /** Done */
         this.profileDialogElem.open = false;
-        if (profile.fields["lang"] && profile.fields["lang"] != previous_lang) {
-            //setLocale(profile.fields["lang"])
-            location.reload();
-        }
         this.requestUpdate();
     }
 
@@ -531,7 +526,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         //const initials = getInitials(agent.nickname);
         const avatarUrl = myProfile.fields['avatar'];
-
+        setLocale(myProfile.fields["lang"])
 
         /** Search results */
         let searchResultItems = [];

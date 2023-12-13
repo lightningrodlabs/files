@@ -197,13 +197,6 @@ export class FilesApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<files-app>.perspectiveInitializedOffline()");
-    /** Set Locale */
-    const maybeMyProfile = this.filesDvm.profilesZvm.getMyProfile();
-    console.log("perspectiveInitializedOffline() maybeMyProfile", maybeMyProfile);
-    if (maybeMyProfile && maybeMyProfile.fields['lang']) {
-      console.log("Setting locale We Profile", maybeMyProfile.fields['lang']);
-      setLocale(maybeMyProfile.fields['lang'])
-    }
     /** Done */
     this._offlinePerspectiveloaded = true;
   }
@@ -214,13 +207,6 @@ export class FilesApp extends HappElement {
     console.log("<files-app>.perspectiveInitializedOnline()");
     if (this.appletView && this.appletView.type == "main") {
       await this.hvm.probeAll();
-      /** Set Locale */
-      const maybeMyProfile = this.filesDvm.profilesZvm.getMyProfile();
-      console.log("perspectiveInitializedOnline() maybeMyProfile", maybeMyProfile);
-      if (maybeMyProfile && maybeMyProfile.fields['lang']) {
-        console.log("Setting locale We Profile", maybeMyProfile.fields['lang']);
-        setLocale(maybeMyProfile.fields['lang'])
-      }
     }
   }
 
