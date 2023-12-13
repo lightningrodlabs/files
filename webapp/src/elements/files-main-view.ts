@@ -524,9 +524,12 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 this.requestUpdate();
             })
         }
-        //const initials = getInitials(agent.nickname);
         const avatarUrl = myProfile.fields['avatar'];
-        setLocale(myProfile.fields["lang"])
+        let lang = myProfile.fields['lang'];
+        if (!lang || lang == "") {
+            lang = "en";
+        }
+        setLocale(lang);
 
         /** Search results */
         let searchResultItems = [];
