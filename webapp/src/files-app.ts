@@ -143,12 +143,13 @@ export class FilesApp extends HappElement {
         setLocale(maybeLang);
       }
       this._hasWeProfile = true;
-    } else {
-      /** Create Guest profile */
-      const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
-      console.log("setupWeProfilesDvm() createMyProfile", this.filesDvm.profilesZvm.cell.agentPubKey);
-      await this.filesDvm.profilesZvm.createMyProfile(profile);
     }
+    // else {
+    //   /** Create Guest profile */
+    //   const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
+    //   console.log("setupWeProfilesDvm() createMyProfile", this.filesDvm.profilesZvm.cell.agentPubKey);
+    //   await this.filesDvm.profilesZvm.createMyProfile(profile);
+    // }
   }
 
 
@@ -282,32 +283,40 @@ export class FilesApp extends HappElement {
     let guardedView = view;
     const maybeMyProfile = this.filesDvm.profilesZvm.getMyProfile();
     console.log("<files-app> Profile", this._hasWeProfile, maybeMyProfile);
-    if (this._hasWeProfile && !maybeMyProfile) {
-      guardedView = html`
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom: 10px;margin:auto: min-width:400px;">
-          <h1 style="font-family: arial;color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
-                                                              style="padding-left: 5px;padding-top: 5px;"/> Files</h1>
-          <div class="column" style="align-items: center;">
-            <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
-              <div style="margin-bottom: 24px; align-self: flex-start; font-size: 20px;">
-                ${msg('Import Profile into Files applet')}
-              </div>
-              <files-edit-profile
-                  .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
-                  @save-profile=${async (e: CustomEvent<ProfileInfo>) => {
-                    await this.filesDvm.profilesZvm.createMyProfile(e.detail.profile);
-                    this.requestUpdate();
-                  }}
-                  @lang-selected=${(e: CustomEvent) => {
-                    console.log("set locale", e.detail);
-                    setLocale(e.detail)
-                  }}
-              ></files-edit-profile>
-            </sl-card>
-          </div>
-        </div>`;
+    if(!maybeMyProfile) {
+      if (this._hasWeProfile) {
+        guardedView = html`
+          <div
+              style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom: 10px;margin:auto: min-width:400px;">
+            <h1 style="font-family: arial;color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
+                                                                style="padding-left: 5px;padding-top: 5px;"/> Files</h1>
+            <div class="column" style="align-items: center;">
+              <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
+                <div style="margin-bottom: 24px; align-self: flex-start; font-size: 20px;">
+                  ${msg('Import Profile into Files applet')}
+                </div>
+                <files-edit-profile
+                    .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
+                    @save-profile=${async (e: CustomEvent<ProfileInfo>) => {
+                      await this.filesDvm.profilesZvm.createMyProfile(e.detail.profile);
+                      this.requestUpdate();
+                    }}
+                    @lang-selected=${(e: CustomEvent) => {
+                      console.log("set locale", e.detail);
+                      setLocale(e.detail)
+                    }}
+                ></files-edit-profile>
+              </sl-card>
+            </div>
+          </div>`;
+      } else {
+        /** Create Guest profile */
+        const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
+        console.log("setupWeProfilesDvm() createMyProfile", this.filesDvm.profilesZvm.cell.agentPubKey);
+        this.filesDvm.profilesZvm.createMyProfile(profile).then(() => this.requestUpdate());
+        guardedView = html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;
+      }
     }
-
 
     /* render all */
     return html`

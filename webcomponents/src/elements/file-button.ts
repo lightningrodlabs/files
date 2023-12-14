@@ -62,7 +62,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     render() {
-        console.log("<file-view>.render()", this.hash, this.description);
+        console.log("<file-button>.render()", this.hash, this.description);
         if (this.hash == "" && !this.description) {
             return html`<sl-button class="fileButton" disabled>N/A</sl-button>`;
         }

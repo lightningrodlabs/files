@@ -25,7 +25,7 @@ import {
     type2Icon,
     FileTableItem,
     kind2Type,
-    DistributionTableItem, filesSharedStyles, kind2Icon, ProfileInfo
+    DistributionTableItem, filesSharedStyles, kind2Icon, ProfileInfo, FileView
 } from "@ddd-qc/files";
 import {DeliveryPerspective, DeliveryStateType, ParcelReference} from "@ddd-qc/delivery";
 import {
@@ -92,6 +92,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** -- Fields -- */
 
     @state() private _initialized = false;
+    @state() private _viewFileEh: EntryHashB64 = ''
 
     @property() appletId: string;
     @property() groupProfiles: GroupProfile[];
@@ -99,6 +100,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     private _typeFilter?: FileType;
 
     private _notifCount = 0;
+
 
     private _groupName = "";
 
@@ -117,6 +119,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
     /** -- Getters -- */
+
+    get viewFileDialogElem(): SlDialog {
+        return this.shadowRoot!.getElementById("view-file-dialog") as SlDialog;
+    }
 
     get profileDialogElem(): SlDialog {
         return this.shadowRoot!.getElementById("profile-dialog") as SlDialog;
@@ -172,7 +178,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         console.log("<files-main-view> firstUpdated()", this.appletId);
 
         /** Notifier */
-        await this._dvm.notificationsZvm.selectNotifier();
+        const maybeNotifier = await this._dvm.notificationsZvm.selectNotifier();
+        console.log("firstUpdated() maybeNotifier:", maybeNotifier? encodeHashToBase64(maybeNotifier) : "none");
         // /** Generate test data */
         // if (!this.appletId) {
         //     this.appletId = encodeHashToBase64(await emptyAppletHash());
@@ -192,7 +199,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             }});
         console.log("Config keys:", this._dvm.notificationsZvm.config? Object.keys(this._dvm.notificationsZvm.config) : "none");
         this._dvm.notificationsZvm.serviceName = "Files Notification";
-        await this._dvm.notificationsZvm.selectNotifier();
+        const maybeNotifier = await this._dvm.notificationsZvm.selectNotifier();
+        console.log("init maybeNotifier:", maybeNotifier? encodeHashToBase64(maybeNotifier) : "none");
     }
 
 
@@ -282,7 +290,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         let extraHtml;
         let id;
 
-        const myProfile = this._dvm.profilesZvm.getMyProfile();
+        let myProfile = this._dvm.profilesZvm.getMyProfile();
+        if (!myProfile) {
+            myProfile = {nickname: msg("unknown"), fields: {lang: "en"}} as ProfileMat;
+        }
 
         if (FilesNotificationType.DeliveryRequestSent == type) {
             const manifestEh = (notifLog[2] as FilesNotificationVariantDeliveryRequestSent).manifestEh;
@@ -425,7 +436,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             let maybeNotifier = this._dvm.notificationsZvm.perspective.myNotifier;
             if (!this._dvm.notificationsZvm.perspective.myNotifier) {
                 maybeNotifier = await this._dvm.notificationsZvm.selectNotifier();
-                //console.log("New notifier:" encomaybeNotifier);
+                console.log("New maybeNotifier:", maybeNotifier? encodeHashToBase64(maybeNotifier) : "none");
             }
         }
         /** Done */
@@ -785,6 +796,11 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     <file-table .items=${allItems}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
+                                @view=${(e) => {
+                                    //console.log("this._viewFileEh", this._viewFileEh);
+                                    this.viewFileDialogElem.open = true;
+                                    this._viewFileEh = e.detail;                                    
+                                }}
                     ></file-table>
                 `;
             }
@@ -980,7 +996,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             </div>
         </div>
         <!-- dialogs -->
-        <sl-dialog id="profile-dialog" label="Edit Profile">
+        <sl-dialog id="view-file-dialog" label=${msg("File Info")}>
+            <file-view .hash=${this._viewFileEh}></file-view>
+        </sl-dialog> 
+        <sl-dialog id="profile-dialog" label=${msg("Edit Profile")}>
             <files-edit-profile
                     allowCancel
                     .profile=${myProfile}

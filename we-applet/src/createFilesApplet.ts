@@ -4,14 +4,13 @@ import {
 //import { msg } from "@lit/localize";
 
 import {
-  AppletView,
   RenderInfo,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
-import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
-import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
-import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
+//import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
+//import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
+//import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
 
 import {FilesApp} from "@files/app";

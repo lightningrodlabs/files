@@ -51,7 +51,7 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
      * Subscribe to ZVMs
      */
     protected async dvmUpdated(newDvm: FilesDvm, oldDvm?: FilesDvm): Promise<void> {
-        console.log("<file-view>.dvmUpdated()");
+        console.log("<files-menu>.dvmUpdated()");
         if (oldDvm) {
             console.log("\t Unsubscribed to Zvms roleName = ", oldDvm.deliveryZvm.cell.name)
             oldDvm.taggingZvm.unsubscribe(this);

@@ -6,10 +6,11 @@ import {
     EntryHashB64,
 } from "@holochain/client";
 import {FilesDvm} from "../viewModels/files.dvm";
-import {ParcelKindVariantManifest} from "@ddd-qc/delivery";
+import {ParcelKindVariantManifest, ParcelManifest} from "@ddd-qc/delivery";
 import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {msg} from "@lit/localize";
+import {prettyFileSize} from "../utils";
 
 
 /**
@@ -24,7 +25,7 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     @property() hash: EntryHashB64 = ''
 
     /** Enable action bar */
-    @property() showActionBar: boolean = false
+    @property() showActionBar: boolean = true
 
     /** Observed perspective from zvm */
     // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -33,7 +34,7 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** -- State variables -- */
 
     @state() private _loading = true;
-    @state() private _manifest?;
+    @state() private _manifest?: ParcelManifest;
 
 
     /** -- Methods -- */
@@ -77,10 +78,10 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         /** render all */
         return html`
             <h4 style="margin-left: 5px;">${this._manifest.description.name}</h4>
-            <div>Size: ${this._manifest.description.size} bytes</div>
-            <div>type: ${(this._manifest.description.kind_info as ParcelKindVariantManifest).Manifest}</div>
+            <div>Size: ${prettyFileSize(this._manifest.description.size)}</div>
+            <div style="padding-bottom: 10px;">type: ${(this._manifest.description.kind_info as ParcelKindVariantManifest).Manifest}</div>
             ${this.showActionBar
-                    ? html`<input type="button" value="Download">`
+                    ? html`<input type="button" value="Download" @click=${(e) => {this._dvm.downloadFile(this.hash)}}>`
                     : html``
             }
         `;

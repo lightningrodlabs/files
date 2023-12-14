@@ -37,7 +37,7 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
-    "@ddd-qc/notifications-dvm": "=0.20.6",
+    "@ddd-qc/notifications-dvm": "=0.20.8",
     "js-base64": "^3.7.3",
     "@msgpack/msgpack": "^2.7.2",
     "@shoelace-style/shoelace": "2.11.2",

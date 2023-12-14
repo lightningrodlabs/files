@@ -191,6 +191,15 @@ export class FileTable extends ZomeElement<TaggingPerspective, TaggingZvm> {
                                         }}>
                                                 <sl-icon name="send"></sl-icon>
                                             </sl-button>
+                                            <sl-button size="small" variant="primary" @click=${async (e) => {
+                                                this.dispatchEvent(new CustomEvent('view', {
+                                                    detail: ppEh,
+                                                    bubbles: true,
+                                                    composed: true
+                                                }));
+                                            }}>
+                                                <sl-icon name="info-lg"></sl-icon>
+                                            </sl-button>                                            
                                         `
                                     }
                                 },

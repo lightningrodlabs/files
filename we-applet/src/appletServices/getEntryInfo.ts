@@ -1,9 +1,10 @@
 
-import {asCellProxy} from "@ddd-qc/we-utils";
+import {asCellProxy, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {encodeHashToBase64} from "@holochain/client";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 import {pascal} from "@ddd-qc/cell-proxy";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
+import {mdiFileOutline} from "@mdi/js";
 
 
 /** */
@@ -41,7 +42,7 @@ export async function getEntryInfo(
             const manifest = await proxy.getFileInfo(hrl[1]);
             console.log("Files/we-applet/getEntryInfo(): file", manifest.description);
             return {
-                icon_src: "",
+                icon_src: wrapPathInSvg(mdiFileOutline),
                 name: manifest.description.name,
             };
         break;
