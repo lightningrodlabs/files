@@ -198,6 +198,8 @@ export class FilesApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<files-app>.perspectiveInitializedOffline()");
+    const maybeProfile = await this.filesDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentPubKey);
+    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.filesDvm.cell.agentPubKey);
     /** Done */
     this._offlinePerspectiveloaded = true;
   }
@@ -231,8 +233,8 @@ export class FilesApp extends HappElement {
 
 
     //console.log({coordinator_zomes: this._dnaDef?.coordinator_zomes})
-    const zomeNames = this._dnaDef?.coordinator_zomes.map((zome) => { return zome[0]; });
-    console.log({zomeNames});
+    //const zomeNames = this._dnaDef?.coordinator_zomes.map((zome) => { return zome[0]; });
+    //console.log({zomeNames});
 
     let view = html`<files-main-view .appletId=${this.appletId} .groupProfiles=${this.groupProfiles}></files-main-view>`;
 
