@@ -19,7 +19,15 @@ import {
 import {AppSignal} from "@holochain/client/lib/api/app/types";
 
 import {FilesZvm} from "./files.zvm";
-import {arrayBufferToBase64, base64ToArrayBuffer, FileHash, sha256, splitFile, SplitObject} from "../utils";
+import {
+    arrayBufferToBase64,
+    base64ToArrayBuffer,
+    FileHashB64,
+    prettyFileSize,
+    sha256,
+    splitFile,
+    SplitObject
+} from "../utils";
 import { decode } from "@msgpack/msgpack";
 import {
     FilesCb,
@@ -159,11 +167,11 @@ export class FilesDvm extends DnaViewModel {
             return;
         }
         const hash = await sha256(contentB64);
-        console.log("FilesDvm.cacheFile() caching:", hash, file.size);
+        console.log("FilesDvm.cacheFile() caching:", hash, prettyFileSize(file.size));
         try {
             localStorage.setItem("filesDvm/" + hash, contentB64);
         } catch(e) {
-            console.error("Failed to store in localStorage", "filesDvm/" + hash);
+            console.error("Failed to store in localStorage", "filesDvm/" + hash, e);
         }
     }
 
@@ -179,7 +187,7 @@ export class FilesDvm extends DnaViewModel {
 
 
     /** */
-    getFileFromCache(dataHash: FileHash): string | null {
+    getFileFromCache(dataHash: FileHashB64): string | null {
         const dataB64 = localStorage.getItem("filesDvm/" + dataHash);
         if (dataB64) {
             console.log("FilesDvm.getFileFromCache() Found file in cache:", dataHash);

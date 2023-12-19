@@ -48,10 +48,10 @@ export function base64ToArrayBuffer(base64: string): ArrayBufferLike {
     return bytes.buffer;
 }
 
-export type FileHash = string;
+export type FileHashB64 = string;
 
 /** */
-export async function sha256(message: string): Promise<FileHash> {
+export async function sha256(message: string): Promise<FileHashB64> {
     const utf8 = new TextEncoder().encode(message);
     await _sodium.ready;
     const sodium = _sodium;
@@ -60,10 +60,10 @@ export async function sha256(message: string): Promise<FileHash> {
     //const hashBuffer0 = await crypto.subtle.digest('SHA-256', utf8);
     //const hashArray0 = Array.from(new Uint8Array(hashBuffer0));
     //console.log("hash compare", hashArray, hashArray0);
-    const hashHex = hashArray
-        .map((bytes) => bytes.toString(16).padStart(2, '0'))
-        .join('');
-    return hashHex;
+    // const hashHex = hashArray
+    //     .map((bytes) => bytes.toString(16).padStart(2, '0'))
+    //     .join('');
+    return encodeHashToBase64(hashArray);
 }
 
 
@@ -80,7 +80,7 @@ function chunkSubstr(str: string, size: number): Array<string> {
 
 /** */
 export interface SplitObject {
-    dataHash: FileHash,
+    dataHash: FileHashB64,
     numChunks: number,
     chunks: string[],
 }
