@@ -1,6 +1,6 @@
 {
   "name": "@ddd-qc/files",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "lit-happ elements for the Files DNA",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -37,6 +37,7 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
+    "libsodium-wrappers-sumo": "^0.7.13",
     "@ddd-qc/notifications-dvm": "=0.20.8",
     "js-base64": "^3.7.3",
     "@msgpack/msgpack": "^2.7.2",
