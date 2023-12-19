@@ -218,7 +218,7 @@ export class FilesApp extends HappElement {
   render() {
     console.log("*** <files-app> render()", this._loaded, this._hasHolochainFailed);
 
-    if (!this._loaded) {
+    if (!this._loaded || !this._offlinePerspectiveloaded) {
       //return html`<span>Loading...</span>`;
       return html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;
     }

@@ -946,7 +946,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                 image=${avatarUrl}
                                 @click=${() => this.profileDialogElem.open = true}></sl-avatar>
                     </sl-tooltip>
-                    <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL}>
+                    <sl-button class="top-btn" variant="default" size="medium" disabled>
                         <sl-icon name="bell" label="notifications"></sl-icon>
                     </sl-button>
                     <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL} target="_blank">
