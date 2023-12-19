@@ -163,7 +163,7 @@ export class FilesDvm extends DnaViewModel {
         try {
             localStorage.setItem("filesDvm/" + hash, contentB64);
         } catch(e) {
-            console.error("Failed to store in localStorage", localStorage);
+            console.error("Failed to store in localStorage", "filesDvm/" + hash);
         }
     }
 
