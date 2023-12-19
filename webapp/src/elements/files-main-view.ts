@@ -793,7 +793,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 const allItems = privateItems.concat(publicItems/*, myPublicItems*/);
                 mainArea = html`
                     <h2>${msg("All Files")}${this._typeFilter? ": " + this._typeFilter : ""}</h2>
-                    <file-table .items=${allItems}
+                    <file-table .items=${allItems} .profiles=${this._dvm.profilesZvm.perspective.profiles}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                                 @view=${(e) => {
@@ -812,6 +812,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                 //const timestamp = this.deliveryPerspective.privateManifests[ppEh][1];
                                 return {ppEh, description: pm.description, timestamp} as FileTableItem;
                             })}
+                            .profiles=${this._dvm.profilesZvm.perspective.profiles}
                             @download=${(e) => this._dvm.downloadFile(e.detail)}
                             @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
@@ -833,6 +834,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 mainArea = html`
                     <h2>${msg("Group Files")}</h2>
                     <file-table .items=${dhtPublicItems}
+                                .profiles=${this._dvm.profilesZvm.perspective.profiles}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
@@ -904,6 +906,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 mainArea = html`
                     <h2>${msg("Group Files")}: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
                     <file-table .items=${taggedItems}
+                                .profiles=${this._dvm.profilesZvm.perspective.profiles}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
@@ -922,6 +925,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 mainArea = html`
                     <h2>${msg("Personal Files")}: <span class="tag" style="display:inline; font-size: inherit">${this._selectedMenuItem.tag}</span></h2>
                     <file-table .items=${taggedItems}
+                                .profiles=${this._dvm.profilesZvm.perspective.profiles}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                     ></file-table>
@@ -1125,6 +1129,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 display: flex;
                 flex-direction: row-reverse;
                 gap: 5px;
+                margin-top: 3px;
               }
 
               .top-btn::part(base) {

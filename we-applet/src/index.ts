@@ -5,6 +5,7 @@ import {getEntryInfo} from "./appletServices/getEntryInfo";
 import {blockTypes} from "./appletServices/blockTypes";
 import {DeliveryEntryType} from "@ddd-qc/delivery";
 import {devtestNames, setupFilesBlockView, setupFilesEntryView} from "./devtest";
+import {search} from "./appletServices/search";
 
 
 
@@ -39,8 +40,7 @@ async function setupFilesMainView() {
         attachmentTypes: async (_appletClient) => ({}),
         getEntryInfo,
         blockTypes,
-        //blockTypes: {},
-        search: async (appletClient, searchFilter) => {return []},
+        search,
     };
 
     return setup(appletServices, createFilesApplet, devtestNames);

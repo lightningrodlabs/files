@@ -1,5 +1,6 @@
 import {DeliveryNotice, DeliveryZvm} from "@ddd-qc/delivery";
 import {encodeHashToBase64, EntryHashB64} from "@holochain/client";
+import _sodium from 'libsodium-wrappers';
 
 /** */
 export function prettyFileSize(size: number): string {
@@ -52,8 +53,12 @@ export type FileHash = string;
 /** */
 export async function sha256(message: string): Promise<FileHash> {
     const utf8 = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    await _sodium.ready;
+    const sodium = _sodium;
+    //const hashBuffer0 = await crypto.subtle.digest('SHA-256', utf8);
+    //const hashArray0 = Array.from(new Uint8Array(hashBuffer0));
+    let hashArray = await sodium.crypto_hash(utf8);
+    //console.log("hash compare", hashArray, hashBuffer)
     const hashHex = hashArray
         .map((bytes) => bytes.toString(16).padStart(2, '0'))
         .join('');

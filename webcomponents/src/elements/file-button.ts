@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {consume} from "@lit/context";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {
     decodeHashFromBase64,
     EntryHashB64,
@@ -17,6 +17,9 @@ import {ParcelDescription} from "@ddd-qc/delivery";
 import {Hrl, WeServices} from "@lightningrodlabs/we-applet";
 //import {weClientContext} from "@lightningrodlabs/we-applet/context";
 import {createContext} from "@lit/context";
+import {HrlWithContext} from "@lightningrodlabs/we-applet/dist/types";
+import {msg} from "@lit/localize";
+import {SlTooltip} from "@shoelace-style/shoelace";
 
 export const weClientContext = createContext<WeServices>('we_client');
 
@@ -121,23 +124,26 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
             });
             /** action bar */
             actionButtons.push(html`
+                <sl-tooltip placement="top" content=${msg("Download")} style="--show-delay: 200;">
                 <sl-button class="hide pop action" size="small" variant="primary" style="margin-left:5px" @click=${async (e) => {
                     this.dispatchEvent(new CustomEvent('download', {detail: this.hash, bubbles: true, composed: true}));
                 }}>
                     <sl-icon name="download"></sl-icon>
-                </sl-button>`);
+                </sl-button></sl-tooltip>`);
             actionButtons.push(html`
+                <sl-tooltip placement="top" content=${msg("Send")} style="--show-delay: 200;">
                 <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
                     this.dispatchEvent(new CustomEvent('send', {detail: this.hash, bubbles: true, composed: true}));
                 }}>
                     <sl-icon name="send"></sl-icon>
-                </sl-button>`);
+                </sl-button></sl-tooltip>`);
             /** Add button for each attachment type */
             if (this.weServices && this.weServices.attachmentTypes && this.hash != '') {
                 console.log("weServices.attachmentTypes", this.weServices.attachmentTypes);
                 this.weServices.attachmentTypes.forEach((attDict, _appletHash, _map) => {
-                    for (const [_attName, attType] of Object.entries(attDict)) {
+                    for (const [attName, attType] of Object.entries(attDict)) {
                         actionButtons.push(html`
+                            <sl-tooltip placement="top" content=${attName} style="--show-delay: 200;">
                 <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
                         const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
                         const res = await attType.create(hrl);
@@ -145,7 +151,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         this.weServices.openHrl(res.hrl, res.context);
                     }}>
                     <sl-icon .src=${attType.icon_src}></sl-icon>
-                </sl-button>`);
+                </sl-button></sl-tooltip>`);
                     }
                 });
             }
@@ -157,10 +163,26 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <sl-popup class="fileButton" placement="bottom-start" skidding="-4" active>
                 <div slot="anchor">
                     <sl-popup class="fileButton" placement="right" active>
-                        <div slot="anchor" class="fileName">
-                            <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
-                            <files-filename .filename=${fileDescription.name}></files-filename>
-                            <span class="filesize">${prettyFileSize(fileDescription.size)}</span>
+                        
+                        <div slot="anchor" @click=${async (e) => {
+                            const obj: HrlWithContext = {
+                                hrl: [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)],
+                                context: {},
+                            }
+                            console.log("Copied to HrlClipboard", obj);
+                            if (this.weServices) this.weServices.hrlToClipboard(obj);
+                            await delay(1200);
+                            const tt = this.shadowRoot.getElementById("file-tip") as SlTooltip;
+                            tt.hide();
+                            //this.requestUpdate();
+                        }}>
+                            <sl-tooltip id="file-tip" placement="top" trigger="click" content="Copied!">
+                                <div class="fileName">
+                                <sl-icon class="prefixIcon" name=${kind2Icon(fileDescription.kind_info)}></sl-icon>
+                                <files-filename .filename=${fileDescription.name}></files-filename>                                 
+                                <span class="filesize">${prettyFileSize(fileDescription.size)}</span>
+                                </div>
+                            </sl-tooltip>
                         </div>
                         ${actionButtons}
                     </sl-popup>
@@ -224,6 +246,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
               }
               
               .fileName {
+                cursor: copy;
                 display: flex;
                 border-radius: 6px;
                 border-width: 1px;

@@ -1,20 +1,21 @@
 
 import {asCellProxy, wrapPathInSvg} from "@ddd-qc/we-utils";
-import {encodeHashToBase64} from "@holochain/client";
+import {AppAgentClient, encodeHashToBase64, RoleName, ZomeName} from "@holochain/client";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 import {pascal} from "@ddd-qc/cell-proxy";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 import {mdiFileOutline} from "@mdi/js";
+import {EntryInfo, Hrl} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */
 export async function getEntryInfo(
-    appletClient,
-    roleName,
-    integrityZomeName,
-    entryType,
-    hrl
-) {
+    appletClient: AppAgentClient,
+    roleName: RoleName,
+    integrityZomeName: ZomeName,
+    entryType: string,
+    hrl: Hrl,
+): Promise<EntryInfo | undefined> {
     console.log("Files/we-applet/getEntryInfo():", roleName, integrityZomeName, hrl);
     if (roleName != FILES_DEFAULT_ROLE_NAME) {
         throw new Error(`Files/we-applet/getEntryInfo(): Unknown role name '${roleName}'.`);

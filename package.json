@@ -98,7 +98,7 @@
   "dependencies": {
     "@ddd-qc/cell-proxy": "=0.20.8",
     "@ddd-qc/lit-happ": "=0.20.8",
-    "@ddd-qc/we-utils": "=0.20.8",
+    "@ddd-qc/we-utils": "=0.20.9",
     "@ddd-qc/profiles-dvm": "^0.20.7",
     "@ddd-qc/path-explorer": "=0.3.0",
     "@ddd-qc/delivery": "=0.9.1",
