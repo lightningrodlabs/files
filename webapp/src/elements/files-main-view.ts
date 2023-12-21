@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
-import {AppletInfo, GroupProfile, weLinkFromAppletHash, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletInfo, GroupProfile, weLinkFromAppletHash, WeNotification, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
 import {createContext} from "@lit/context";
 
@@ -78,6 +78,8 @@ import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 import {setLocale} from "../localization";
 import {msg} from "@lit/localize";
 import {Base64} from "js-base64";
+import {wrapPathInSvg} from "@ddd-qc/we-utils";
+import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/files/issues/new`;
@@ -284,6 +286,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     toastNotif(notifLog: [Timestamp, FilesNotificationType, FilesNotification]): void {
         const type = notifLog[1];
+        const ts = notifLog[0];
 
         let message = "";
         let title = "";
@@ -415,8 +418,32 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             message = `${msg("For")} "${description.name}" ${msg("from")} ${recipientName}`;
         }
         createAlert(title, message, variant, icon, duration, extraHtml, id);
+
+        if (this.weServices) {
+            const myNotif: WeNotification  = {
+                title,
+                body: message,
+                notification_type: type,
+                icon_src: this.variant2Icon(variant),
+                urgency: 'medium',
+                timestamp: ts,
+            }
+            this.weServices.notifyWe([myNotif]);
+        }
     }
 
+
+    /** */
+    variant2Icon(variant: string): string {
+        switch(variant) {
+            case "primary": return wrapPathInSvg(mdiInformationOutline);
+            case "success": return wrapPathInSvg(mdiCheckCircleOutline);
+            case "neutral": return wrapPathInSvg(mdiCog);
+            case "warning": return wrapPathInSvg(mdiAlertOutline);
+            case "danger": return wrapPathInSvg(mdiAlertOctagonOutline);
+            default: return "";
+        }
+    }
 
     /** */
     async initializeMailgunNotifierFromProfile() {
@@ -1000,7 +1027,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         <button type="button" @click=${() => {
                             console.log("Send. Config keys:", this._dvm.notificationsZvm.config? Object.keys(this._dvm.notificationsZvm.config) : "none");
                             const groupName = this.groupProfiles? this.groupProfiles[0].name : "No WeGroup";
-                            this._dvm.notificationsZvm.sendNotification(`This is a notif. ${this.appletId? weLinkFromAppletHash(decodeHashFromBase64(this.appletId)): ""}` ,  `Testing ${groupName}`, [this.cell.agentPubKey]);}}>send</button>
+                            this._dvm.notificationsZvm.sendNotification(`This is a notif. ${this.appletId? weLinkFromAppletHash(decodeHashFromBase64(this.appletId)): ""}` ,  `Testing ${groupName}`, [this.cell.agentPubKey]);
+                        }}>send</button>
                     `: html``
                     }
                     <sl-popup placement="bottom-start" sync="width" active>                    
