@@ -5,6 +5,10 @@
 #![allow(unused_attributes)]
 
 
+pub mod priv_enc_key;
+//pub use priv_enc_key::*;
+
+
 ///--------------------------------------------------------------------------------------------------
 /// Global consts
 ///--------------------------------------------------------------------------------------------------
@@ -26,12 +30,15 @@ pub const ATTACHMENTS_ROOT: &str = "public_attachments";
 /// does not support well a zome that does not have one.
 
 use hdi::prelude::*;
+use crate::priv_enc_key::PrivEncKey;
 
 #[hdk_entry_defs]
 #[unit_enum(FilesEntryTypes)]
 pub enum FilesEntry {
    #[entry_def(required_validations = 2, visibility = "private")]
    FileShare(FileShare),
+   #[entry_def(required_validations = 1, visibility = "private")]
+   PrivEncKey(PrivEncKey),
 }
 
 

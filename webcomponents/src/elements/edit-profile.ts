@@ -1,10 +1,13 @@
-import { css, html, LitElement } from 'lit';
+import { css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import { onSubmit, sharedStyles } from '@holochain-open-dev/elements';
 
 import '@holochain-open-dev/elements/dist/elements/select-avatar.js';
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
+import {ZomeElement} from "@ddd-qc/lit-happ";
+import {FilesZvm} from "../viewModels/files.zvm";
+import {Base64} from "js-base64";
 
 
 const MIN_NICKNAME_LENGTH = 2
@@ -13,8 +16,6 @@ const MIN_NICKNAME_LENGTH = 2
 export interface ProfileInfo {
   profile: ProfileMat,
   mailgun_token: string,
-  mailgun_domain: string,
-  mailgun_email: string,
 }
 
 /**
@@ -22,11 +23,19 @@ export interface ProfileInfo {
  */
 @localized()
 @customElement('files-edit-profile')
-export class EditProfile extends LitElement {
+export class EditProfile extends ZomeElement<unknown, FilesZvm> {
+
+  /** */
+  constructor() {
+    super(FilesZvm.DEFAULT_ZOME_NAME)
+  }
 
   /** The profile to be edited. */
   @property({ type: Object })
   profile: ProfileMat | undefined;
+
+
+  @state() _mailgun_token = '';
 
 
   /** -- Methods -- */
@@ -34,7 +43,7 @@ export class EditProfile extends LitElement {
   /**
    * Seperate Mailgun token from other fields as we don't want it to be saved in Profiles
    */
-  fireSaveProfile(formFields: Record<string, string>) {
+  async fireSaveProfile(formFields: Record<string, string>) {
     console.log("fireSaveProfile()", formFields);
     const nickname = formFields['nickname'];
     delete formFields['nickname'];
@@ -43,24 +52,41 @@ export class EditProfile extends LitElement {
     fields['email'] = formFields['email'];
     fields['avatar'] = formFields['avatar']? formFields['avatar'] : "";
     fields['lang'] = formFields['option']? formFields['option'] : "";
+    fields['mailgun_domain'] = formFields['mailgun_domain']? formFields['mailgun_domain'] : "";
+    fields['mailgun_email'] = formFields['mailgun_email']? formFields['mailgun_email'] : "";
+
+    /** encrypt mailgun_token */
+    let mailgun_token = '';
+    if (formFields['mailgun_token'] && formFields['mailgun_token'] != "") {
+      console.log("fireSaveProfile() encrypting mailgun token");
+      mailgun_token = formFields['mailgun_token'];
+      const utf8 = new TextEncoder().encode(formFields['mailgun_token']);
+      const encrypt = await this._zvm.zomeProxy.encryptData(utf8) as any;
+      const mailgun_token_b64 = Base64.fromUint8Array(encrypt.encrypted_data, true);
+      fields['mailgun_token'] = mailgun_token_b64;
+      fields['mailgun_token_nonce'] = Base64.fromUint8Array(encrypt.nonce, true);
+      console.log("fireSaveProfile() encrypting mailgun token done", fields['mailgun_token_nonce'], encrypt.nonce);
+      const unnonce = Base64.toUint8Array(fields['mailgun_token_nonce']);
+      console.log("fireSaveProfile() encrypting mailgun token done", unnonce);
+    }
 
     const profile: ProfileMat = {
       fields,
       nickname,
     };
 
+    /** */
     this.dispatchEvent(
       new CustomEvent<ProfileInfo>('save-profile', {
         detail: {
           profile,
-          mailgun_token:  formFields["mailgun_token"],
-          mailgun_domain:  formFields["mailgun_domain"],
-          mailgun_email:  formFields["mailgun_email"],
+          mailgun_token,
         },
         bubbles: true,
         composed: true,
       })
     );
+
   }
 
 
@@ -77,13 +103,24 @@ export class EditProfile extends LitElement {
 
   /** */
   render() {
-    const isEnglish = this.profile.fields['lang'] == "en";
-    const isFrench = this.profile.fields['lang'] == "fr-fr";
-    console.log("<edit-profile>.render()", this.profile, isEnglish, isFrench);
+    console.log("<edit-profile>.render()", this.profile);
 
+    /** decrypt token */
+    if (this.profile.fields['mailgun_token'] && this.profile.fields['mailgun_token'] != "" && this._mailgun_token == '') {
+      console.log("<edit-profile>.render() decrypt mailgun token", this.profile.fields['mailgun_token_nonce'])
+      const encrypted_data = Base64.toUint8Array(this.profile.fields['mailgun_token']);
+      let nonce = Base64.toUint8Array(this.profile.fields['mailgun_token_nonce']);
+      console.log("<edit-profile>.render() decrypt mailgun token nonce", nonce);
+      const wtf = { nonce, encrypted_data }
+      this._zvm.zomeProxy.decryptData(wtf).then((data) => {
+        this._mailgun_token = new TextDecoder().decode(data)
+      })
+    }
+
+    /** */
     return html`
       <form id="profile-form" class="column"
-        ${onSubmit(fields => this.fireSaveProfile(fields))}>
+        ${onSubmit(fields => /*await*/ this.fireSaveProfile(fields))}>
         
         <div class="row"
           style="justify-content: center; align-self: start; margin-bottom: 16px">
@@ -117,22 +154,26 @@ export class EditProfile extends LitElement {
                 name="email"
                 .label=${msg('email')}
                 .helpText=${msg(str``)}
+                .value=${this.profile.fields['email']? this.profile.fields['email'] : ''}
                 style="margin-left: 16px;"
         ></sl-input>
         <h4>Mailgun</h4>
         <sl-input
             name="mailgun_domain"
             .label=${msg('domain')}
+            .value=${this.profile.fields['mailgun_domain']? this.profile.fields['mailgun_domain'] : ''}
             style="margin-left: 16px;"
         ></sl-input>
         <sl-input
             name="mailgun_email"
             .label=${msg('email')}
+            .value=${this.profile.fields['mailgun_email']? this.profile.fields['mailgun_email'] : ''}
             style="margin-left: 16px;"
         ></sl-input>
         <sl-input
                 name="mailgun_token"
                 .label=${msg('token')}
+                .value=${this._mailgun_token}
                 style="margin-left: 16px;"
         ></sl-input>
 

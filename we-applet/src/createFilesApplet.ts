@@ -2,22 +2,14 @@ import {
   AppAgentWebsocket, encodeHashToBase64,
 } from "@holochain/client";
 //import { msg } from "@lit/localize";
-
 import {
   RenderInfo,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-
-//import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
-//import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
-//import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
-
-
 import {FilesApp} from "@files/app";
 import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
-
 
 
 export interface ViewFileContext {

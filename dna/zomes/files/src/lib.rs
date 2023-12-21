@@ -20,3 +20,4 @@ mod respond_to_file_notice;
 mod get_file_info;
 mod attach_to_hrl;
 mod get_any_record;
+mod encrypt;

@@ -32,6 +32,7 @@ NetworkInfo,
 FetchPoolInfo,
 /** hdk/action.ts */
 SignedActionHashed,
+RegisterAgentActivity,
 ActionHashed,
 ActionType,
 Action,
@@ -52,6 +53,7 @@ CapClaim,
 GrantedFunctionsType,
 GrantedFunctions,
 ZomeCallCapGrant,
+CapAccessType,
 CapAccess,
 CapGrant,
 ///** hdk/countersigning.ts */
@@ -79,6 +81,15 @@ Entry,
 /** hdk/record.ts */
 Record as HcRecord,
 RecordEntry as HcRecordEntry,
+/** hdk/link.ts */
+AnyLinkableHash,
+ZomeIndex,
+LinkType,
+LinkTag,
+RateWeight,
+RateBucketId,
+RateUnits,
+Link,
 /** api/admin/types.ts */
 InstalledAppInfoStatus,
 DeactivationReason,
@@ -114,6 +125,8 @@ ZomeLocation,
 import {
 /** Common */
 DhtOpHashB64,
+//DnaHashB64, (duplicate)
+//AnyDhtHashB64, (duplicate)
 DhtOpHash,
 /** DnaFile */
 DnaFile,
@@ -171,10 +184,12 @@ export const ATTACHMENTS_ROOT = "public_attachments";
 
 export enum FilesEntryType {
 	FileShare = 'FileShare',
+	PrivEncKey = 'PrivEncKey',
 }
 export type FilesEntryVariantFileShare = {FileShare: FileShare}
+export type FilesEntryVariantPrivEncKey = {PrivEncKey: PrivEncKey}
 export type FilesEntry = 
- | FilesEntryVariantFileShare;
+ | FilesEntryVariantFileShare | FilesEntryVariantPrivEncKey;
 
 export type FilesLinkTypes =
   | {Attachment: null};
@@ -185,4 +200,9 @@ export enum FilesLinkTypesType {
 /** Bogus Entry */
 export interface FileShare {
   value: string
+}
+
+/** Entry representing the Private Encryption Key of an Agent */
+export interface PrivEncKey {
+  value: unknown
 }

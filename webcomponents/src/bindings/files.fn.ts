@@ -11,7 +11,10 @@ export const filesFunctionNames: FunctionName[] = [
 	"attach_to_hrl",
 	"get_files_from_hrl",
 
+
 	"commit_private_file",
+	"encrypt_data",
+	"decrypt_data",
 	"get_ah",
 	"get_file_info",
 	"get_private_files",

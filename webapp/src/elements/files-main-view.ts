@@ -427,7 +427,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         /** mailgun */
         if (profileInfo.mailgun_token && profileInfo.mailgun_token.length > 0) {
-            await this.initializeMailgunNotifier(profileInfo.mailgun_email, profileInfo.mailgun_domain, profileInfo.mailgun_token);
+            await this.initializeMailgunNotifier(profileInfo.profile.fields['mailgun_email'], profileInfo.profile.fields['mailgun_domain'], profileInfo.mailgun_token);
         }
         /** email */
         if (profile.fields["email"] && profile.fields["email"].length > 0) {

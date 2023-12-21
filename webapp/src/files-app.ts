@@ -52,6 +52,7 @@ export class FilesApp extends HappElement {
   @state() private _filesCell: Cell;
   @state() private _hasWeProfile = false;
   @state() private _offlinePerspectiveloaded = false;
+  @state() private _onlinePerspectiveloaded = false;
 
   /** ZomeName -> (AppEntryDefName, isPublic) */
   private _allAppEntryTypes: Record<string, [string, boolean][]> = {};
@@ -211,6 +212,7 @@ export class FilesApp extends HappElement {
     if (this.appletView && this.appletView.type == "main") {
       await this.hvm.probeAll();
     }
+    this._onlinePerspectiveloaded = true;
   }
 
 
@@ -218,7 +220,7 @@ export class FilesApp extends HappElement {
   render() {
     console.log("*** <files-app> render()", this._loaded, this._hasHolochainFailed);
 
-    if (!this._loaded || !this._offlinePerspectiveloaded) {
+    if (!this._loaded || !this._offlinePerspectiveloaded || !this._onlinePerspectiveloaded) {
       //return html`<span>Loading...</span>`;
       return html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;
     }
@@ -313,7 +315,8 @@ export class FilesApp extends HappElement {
           </div>`;
       } else {
         /** Create Guest profile */
-        const profile = { nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}};
+        const profile = { nickname: "guest_" + Math.floor(Math.random() * 100),
+          fields: {lang: 'en', email: 'guest@ac.me', mailgun_domain: "mg.flowplace.org", mailgun_email: "whosin@mg.flowplace.org"}};
         console.log("setupWeProfilesDvm() createMyProfile", this.filesDvm.profilesZvm.cell.agentPubKey);
         this.filesDvm.profilesZvm.createMyProfile(profile).then(() => this.requestUpdate());
         guardedView = html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;

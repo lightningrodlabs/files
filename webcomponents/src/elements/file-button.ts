@@ -140,7 +140,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
             /** Add button for each attachment type */
             if (this.weServices && this.weServices.attachmentTypes && this.hash != '') {
                 console.log("weServices.attachmentTypes", this.weServices.attachmentTypes);
-                this.weServices.attachmentTypes.forEach((attDict, _appletHash, _map) => {
+                this.weServices.attachmentTypes.forEach((attDict, appletHash, _map) => {
                     for (const [attName, attType] of Object.entries(attDict)) {
                         actionButtons.push(html`
                             <sl-tooltip placement="top" content=${attName} style="--show-delay: 200;">
