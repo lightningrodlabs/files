@@ -112,9 +112,13 @@ export class EditProfile extends ZomeElement<unknown, FilesZvm> {
       let nonce = Base64.toUint8Array(this.profile.fields['mailgun_token_nonce']);
       console.log("<edit-profile>.render() decrypt mailgun token nonce", nonce);
       const wtf = { nonce, encrypted_data }
-      this._zvm.zomeProxy.decryptData(wtf).then((data) => {
-        this._mailgun_token = new TextDecoder().decode(data)
-      })
+      try {
+        this._zvm.zomeProxy.decryptData(wtf).then((data) => {
+          this._mailgun_token = new TextDecoder().decode(data)
+        });
+      } catch(e) {
+        console.error("Failed to decryptData()", e);
+      }
     }
 
     /** */

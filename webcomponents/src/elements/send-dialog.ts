@@ -7,7 +7,7 @@ import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput,} from "@shoelace-style/shoelace";
 import {prettyFileSize, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
-import {AgentPubKeyB64, EntryHashB64} from "@holochain/client";
+import {AgentPubKeyB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
 import {ComboBoxFilterChangedEvent} from "@vaadin/combo-box";
 import {ComboBoxLitRenderer} from "@vaadin/combo-box/lit";
 import {TagList} from "./tag-list";
@@ -153,6 +153,14 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
     render() {
         console.log("<send-dialog>.render()", this._recipients.length, this._file, this._allAgents, this._selectedTags);
 
+        const maybeNotifier = this._dvm.notificationsZvm.perspective.myNotifier;
+        let myNotifier = html`<div slot="footer" style="color:red;">${msg('No notifier')}</div>`;
+        if (maybeNotifier) {
+            //myNotifier = html`<div slot="footer" style="color:darkorange;">${msg('notifier selected')}</div>`;
+            myNotifier = html``;
+        }
+
+
         let content = html`<sl-spinner></sl-spinner>`;
         if (this._file) {
             // ${comboBoxRenderer(this.agentRenderer, [])}
@@ -219,7 +227,7 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                            @selected=${(e) => {this._selectedTags.push(e.detail); this.requestUpdate(); if (this.tagListElem) this.tagListElem.requestUpdate();}}
                 ></tag-input>
 
-
+                ${myNotifier}
                 <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>${msg("Cancel")}</sl-button>
                 <sl-button slot="footer" variant="primary" ?disabled=${this._recipients.length <= 0} @click=${async (e) => {
                 this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipients: this._recipients}, bubbles: true, composed: true}));

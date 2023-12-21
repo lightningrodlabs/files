@@ -77,6 +77,7 @@ import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 import {setLocale} from "../localization";
 import {msg} from "@lit/localize";
+import {Base64} from "js-base64";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/files/issues/new`;
@@ -180,6 +181,8 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         /** Notifier */
         const maybeNotifier = await this._dvm.notificationsZvm.selectNotifier();
         console.log("firstUpdated() maybeNotifier:", maybeNotifier? encodeHashToBase64(maybeNotifier) : "none");
+        await this.initializeMailgunNotifierFromProfile();
+
         // /** Generate test data */
         // if (!this.appletId) {
         //     this.appletId = encodeHashToBase64(await emptyAppletHash());
@@ -415,6 +418,25 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     }
 
 
+    /** */
+    async initializeMailgunNotifierFromProfile() {
+        const profile = this._dvm.profilesZvm.getMyProfile();
+        console.log("initializeMailgunNotifierFromProfile() profile", profile);
+        if (profile.fields['mailgun_email'] && profile.fields['mailgun_domain'] && profile.fields['mailgun_token'] && profile.fields['mailgun_token_nonce']) {
+            console.log("initializeMailgunNotifierFromProfile() has mailgun token", profile.fields['mailgun_token_nonce']);
+            const encrypted_data = Base64.toUint8Array(profile.fields['mailgun_token']);
+            let nonce = Base64.toUint8Array(profile.fields['mailgun_token_nonce']);
+            console.log("<edit-profile>.render() decrypt mailgun token nonce", nonce);
+            const wtf = { nonce, encrypted_data }
+            try {
+                const data = await this._dvm.filesZvm.zomeProxy.decryptData(wtf);
+                const mailgun_token = new TextDecoder().decode(data);
+                await this.initializeMailgunNotifier(profile.fields['mailgun_email'], profile.fields['mailgun_domain'], mailgun_token);
+            } catch(e) {
+                console.error("Failed to initializeMailgunNotifier()", e);
+            }
+        }
+    }
 
     /** */
     private async onSaveProfile(profileInfo: ProfileInfo) {
