@@ -32,7 +32,7 @@ export async function search(appletClient: AppAgentClient, appletHash: AppletHas
         undefined,
         mainAppInfo.installed_app_id,
         FILES_DEFAULT_ROLE_NAME);
-    console.log("Files/we-applet/search(): cellProxy", cellProxy);
+    console.log("Files/we-applet/search(): cellProxy", !!cellProxy);
     const proxy/*: FilesProxy */ = new FilesProxy(cellProxy);
     const dnaHash = decodeHashFromBase64(proxy.cell.dnaHash);
 
@@ -42,11 +42,17 @@ export async function search(appletClient: AppAgentClient, appletHash: AppletHas
         .filter(([_eh, manifest]) => manifest.description.name.toLowerCase().includes(searchLC))
         .map(([eh, manifest]) => [eh, manifest.description, proxy.cell.agentPubKey, true]);
 
+    //console.log("Files/we-applet/search(): privateFiles", matchingPrivate.length, privateFiles.length);
+
+
     /** Search Public Files */
     const publicFiles: [ParcelReference, Timestamp, AgentPubKey][] = await proxy.probePublicFiles();
     const matchingPublic: [Uint8Array, ParcelDescription, AgentPubKeyB64, boolean][] = publicFiles
         .filter(([ref, _, author]) => ref.description.name.toLowerCase().includes(searchLC))
         .map(([ref, _, author]) => [ref.eh, ref.description, encodeHashToBase64(author), false]);
+
+    //console.log("Files/we-applet/search(): publicFiles", matchingPublic.length, publicFiles.length);
+
 
     /** Merge the two lists */
     const concat = matchingPublic.concat(matchingPrivate);
@@ -57,6 +63,8 @@ export async function search(appletClient: AppAgentClient, appletHash: AppletHas
             hrl: [dnaHash, eh],
             context: {isPrivate, author, description} as FilesSearchContext,
         }})
+
+    console.log("Files/we-applet/search(): results", results.length);
 
     /** Done */
     return results;

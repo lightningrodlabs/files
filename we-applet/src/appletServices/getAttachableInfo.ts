@@ -37,10 +37,10 @@ export async function getAttachableInfo(
                 undefined, // hrl[0],
                 mainAppInfo.installed_app_id,
                 FILES_DEFAULT_ROLE_NAME);
-            console.log("Files/we-applet/getAttachableInfo(): cellProxy", cellProxy);
+            console.log("Files/we-applet/getAttachableInfo(): cellProxy?", !!cellProxy);
             const proxy/*: FilesProxy */ = new FilesProxy(cellProxy);
-            console.log("Files/we-applet/getAttachableInfo(): getFile()", encodeHashToBase64(hrlc[1]), proxy);
-            const manifest = await proxy.getFileInfo(hrlc[1]);
+            console.log("Files/we-applet/getAttachableInfo(): getFile()", encodeHashToBase64(hrlc.hrl[1]), proxy);
+            const manifest = await proxy.getFileInfo(hrlc.hrl[1]);
             console.log("Files/we-applet/getAttachableInfo(): file", manifest.description);
             return {
                 icon_src: wrapPathInSvg(mdiFileOutline),
