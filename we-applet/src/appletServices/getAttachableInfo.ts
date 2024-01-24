@@ -5,50 +5,50 @@ import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 import {pascal} from "@ddd-qc/cell-proxy";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 import {mdiFileOutline} from "@mdi/js";
-import {EntryInfo, Hrl} from "@lightningrodlabs/we-applet/dist/types";
+import {AttachableInfo, Hrl, HrlWithContext} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */
-export async function getEntryInfo(
+export async function getAttachableInfo(
     appletClient: AppAgentClient,
     roleName: RoleName,
     integrityZomeName: ZomeName,
     entryType: string,
-    hrl: Hrl,
-): Promise<EntryInfo | undefined> {
-    console.log("Files/we-applet/getEntryInfo():", roleName, integrityZomeName, hrl);
+    hrlc: HrlWithContext,
+): Promise<AttachableInfo | undefined> {
+    console.log("Files/we-applet/getAttachableInfo():", roleName, integrityZomeName, hrlc);
     if (roleName != FILES_DEFAULT_ROLE_NAME) {
-        throw new Error(`Files/we-applet/getEntryInfo(): Unknown role name '${roleName}'.`);
+        throw new Error(`Files/we-applet/getAttachableInfo(): Unknown role name '${roleName}'.`);
     }
     if (integrityZomeName != DELIVERY_INTERGRITY_ZOME_NAME) {
-        throw new Error(`Files/we-applet/getEntryInfo(): Unknown zome '${integrityZomeName}'.`);
+        throw new Error(`Files/we-applet/getAttachableInfo(): Unknown zome '${integrityZomeName}'.`);
     }
 
     const mainAppInfo = await appletClient.appInfo();
     const pEntryType = pascal(entryType);
 
-    console.log("Files/we-applet/getEntryInfo(): pEntryType", pEntryType);
+    console.log("Files/we-applet/getAttachableInfo(): pEntryType", pEntryType);
     switch (pEntryType) {
         case DeliveryEntryType.PrivateManifest:
         case DeliveryEntryType.PublicManifest:
-            console.log("Files/we-applet/getEntryInfo(): pp info", hrl);
+            console.log("Files/we-applet/getAttachableInfo(): pp info", hrlc);
             const cellProxy = await asCellProxy(
                 appletClient,
                 undefined, // hrl[0],
                 mainAppInfo.installed_app_id,
                 FILES_DEFAULT_ROLE_NAME);
-            console.log("Files/we-applet/getEntryInfo(): cellProxy", cellProxy);
+            console.log("Files/we-applet/getAttachableInfo(): cellProxy", cellProxy);
             const proxy/*: FilesProxy */ = new FilesProxy(cellProxy);
-            console.log("Files/we-applet/getEntryInfo(): getFile()", encodeHashToBase64(hrl[1]), proxy);
-            const manifest = await proxy.getFileInfo(hrl[1]);
-            console.log("Files/we-applet/getEntryInfo(): file", manifest.description);
+            console.log("Files/we-applet/getAttachableInfo(): getFile()", encodeHashToBase64(hrlc[1]), proxy);
+            const manifest = await proxy.getFileInfo(hrlc[1]);
+            console.log("Files/we-applet/getAttachableInfo(): file", manifest.description);
             return {
                 icon_src: wrapPathInSvg(mdiFileOutline),
                 name: manifest.description.name,
             };
         break;
         default:
-            throw new Error(`Files/we-applet/getEntryInfo(): Unknown entry type ${entryType}.`);
+            throw new Error(`Files/we-applet/getAttachableInfo(): Unknown entry type ${entryType}.`);
     }
 }
 

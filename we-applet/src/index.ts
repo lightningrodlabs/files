@@ -1,13 +1,11 @@
-import {DevTestNames, setup} from "@ddd-qc/we-utils";
+import {setup} from "@ddd-qc/we-utils";
 import {createFilesApplet} from "./createFilesApplet";
 import {AppletServices} from "@lightningrodlabs/we-applet";
-import {getEntryInfo} from "./appletServices/getEntryInfo";
+import {getAttachableInfo} from "./appletServices/getAttachableInfo";
 import {blockTypes} from "./appletServices/blockTypes";
 import {DeliveryEntryType} from "@ddd-qc/delivery";
-import {devtestNames, setupFilesBlockView, setupFilesEntryView} from "./devtest";
+import {devtestNames, setupFilesEntryView} from "./devtest";
 import {search} from "./appletServices/search";
-
-
 
 
 /** */
@@ -38,7 +36,7 @@ export async function setupFilesApplet() {
 async function setupFilesMainView() {
     const appletServices: AppletServices = {
         attachmentTypes: async (_appletClient) => ({}),
-        getEntryInfo,
+        getAttachableInfo,
         blockTypes,
         search,
     };

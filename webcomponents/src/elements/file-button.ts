@@ -146,9 +146,9 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             <sl-tooltip placement="top" content=${attName} style="--show-delay: 200;">
                 <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
                         const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
-                        const res = await attType.create(hrl);
+                        const res = await attType.create({hrl});
                         console.log("Create attachment result:", res);
-                        this.weServices.openHrl(res.hrl, res.context);
+                        this.weServices.openHrl({hrl: res.hrl, context: res.context});
                     }}>
                     <sl-icon .src=${attType.icon_src}></sl-icon>
                 </sl-button></sl-tooltip>`);

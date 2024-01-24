@@ -23,7 +23,7 @@ import {
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
 import {AppletId, AppletView, GroupProfile, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
-import {EntryViewInfo} from "@ddd-qc/we-utils";
+import {AttachableViewInfo} from "@ddd-qc/we-utils";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DELIVERY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 import {buildBlock} from "./files-blocks";
 import {DEFAULT_FILES_DEF} from "./happDef";
@@ -248,20 +248,20 @@ export class FilesApp extends HappElement {
           const blockViewInfo = this.appletView as any;
           view = buildBlock(this, blockViewInfo);
           break;
-        case "entry":
-          const entryViewInfo = this.appletView as EntryViewInfo;
-          if (entryViewInfo.roleName != FILES_DEFAULT_ROLE_NAME) {
-            throw new Error(`Files/we-applet: Unknown role name '${entryViewInfo.roleName}'.`);
+        case "attachable":
+          const attachableViewInfo = this.appletView as AttachableViewInfo;
+          if (attachableViewInfo.roleName != FILES_DEFAULT_ROLE_NAME) {
+            throw new Error(`Files/we-applet: Unknown role name '${attachableViewInfo.roleName}'.`);
           }
-          if (entryViewInfo.integrityZomeName != DELIVERY_INTERGRITY_ZOME_NAME) {
-            throw new Error(`Files/we-applet: Unknown zome '${entryViewInfo.integrityZomeName}'.`);
+          if (attachableViewInfo.integrityZomeName != DELIVERY_INTERGRITY_ZOME_NAME) {
+            throw new Error(`Files/we-applet: Unknown zome '${attachableViewInfo.integrityZomeName}'.`);
           }
-          const entryType = pascal(entryViewInfo.entryType);
+          const entryType = pascal(attachableViewInfo.entryType);
           console.log("pascal entryType", entryType);
           switch (entryType) {
             case DeliveryEntryType.PrivateManifest:
             case DeliveryEntryType.PublicManifest:
-              console.log("File entry:", encodeHashToBase64(this.appletView.hrl[1]));
+              console.log("File entry:", encodeHashToBase64(this.appletView.hrlWithContext.hrl[1]));
 
               // // TODO: Figure out why cell-context doesn't propagate normally via FilesApp and has to be inserted again within the slot
               // view = html`
@@ -270,7 +270,7 @@ export class FilesApp extends HappElement {
               //   </cell-context>
               // `;
 
-              view = html`<file-view .hash=${encodeHashToBase64(this.appletView.hrl[1])}></file-view>`;
+              view = html`<file-view .hash=${encodeHashToBase64(this.appletView.hrlWithContext.hrl[1])}></file-view>`;
             break;
             default:
               throw new Error(`Unknown entry type ${this.appletView.entryType}.`);

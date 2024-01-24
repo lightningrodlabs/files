@@ -1,4 +1,4 @@
-import {createDefaultWeServicesMock, DevTestNames, EntryViewInfo, setupDevtest} from "@ddd-qc/we-utils";
+import {createDefaultWeServicesMock, DevTestNames, AttachableViewInfo, setupDevtest} from "@ddd-qc/we-utils";
 import {FILES_DEFAULT_ROLE_NAME} from "@ddd-qc/files";
 import {ActionHash, EntryHash, fakeActionHash} from "@holochain/client";
 import {emptyEntryAppletView} from "@ddd-qc/we-utils/dist/mocks/renderInfoMock";
@@ -42,7 +42,7 @@ export function setupFilesBlockView(blockName: string) {
 
 /** */
 export async function setupFilesEntryView() {
-    console.log("setupThreadsEntryView()");
+    console.log("setupFilesEntryView()");
     const context: ViewFileContext = {
         detail: "none",
     }
@@ -52,13 +52,13 @@ export async function setupFilesEntryView() {
 
 
 /** */
-function createManifestEntryRenderInfo(eh: EntryHash, context: ViewFileContext): EntryViewInfo {
-    const entryInfo = emptyEntryAppletView as EntryViewInfo;
+function createManifestEntryRenderInfo(eh: EntryHash, context: ViewFileContext): AttachableViewInfo {
+    const entryInfo = emptyEntryAppletView as AttachableViewInfo;
     entryInfo.roleName = FILES_DEFAULT_ROLE_NAME;
     entryInfo.integrityZomeName = DELIVERY_INTERGRITY_ZOME_NAME;
     entryInfo.entryType = snake(DeliveryEntryType.PublicManifest);
-    entryInfo.hrl[1] = eh;
-    entryInfo.context = context;
+    entryInfo.hrlWithContext.hrl[1] = eh;
+    entryInfo.hrlWithContext.context = context;
 
     return entryInfo;
 }
