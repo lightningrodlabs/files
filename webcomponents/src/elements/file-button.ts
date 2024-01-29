@@ -157,8 +157,9 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             size: fileDescription.size,
                             subjectAuthor: author,
                         };
-                        const res = await attType.create({hrl});
-                        console.log("Create attachment result:", res);
+                        console.log("Create attachmentTypes request:", context);
+                        const res = await attType.create({hrl, context});
+                        console.log("Create attachmentTypes result:", res);
                         this.weServices.openHrl({hrl: res.hrl, context: res.context});
                     }}>
                     <sl-icon .src=${attType.icon_src}></sl-icon>

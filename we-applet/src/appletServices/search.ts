@@ -12,12 +12,12 @@ import {asCellProxy} from "@ddd-qc/we-utils";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 import {ParcelDescription, ParcelManifest, ParcelReference} from "@ddd-qc/delivery";
 
-/** */
-export interface FilesSearchContext {
-    isPrivate: boolean
-    author: AgentPubKeyB64,
-    description: ParcelDescription,
-}
+// /** */
+// export interface FilesSearchContext {
+//     isPrivate: boolean
+//     author: AgentPubKeyB64,
+//     description: ParcelDescription,
+// }
 
 
 /** Return EntryHashs of Manifests whose name match the search filter */
@@ -61,7 +61,13 @@ export async function search(appletClient: AppAgentClient, appletHash: AppletHas
     const results: Array<HrlWithContext> = concat
         .map(([eh, description, author, isPrivate]) => { return {
             hrl: [dnaHash, eh],
-            context: {isPrivate, author, description} as FilesSearchContext,
+            context: {
+                subjectName: description.name,
+                subjectType: "File",
+                subjectAuthor: author,
+                size: description.size,
+                isPrivate,
+            }
         }})
 
     console.log("Files/we-applet/search(): results", results.length);

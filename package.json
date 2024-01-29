@@ -36,9 +36,9 @@
     "devtest:we"         : "npm run build:devtest && npm run devtest -w we-applet",
     "devtest:we:block"   : "npm run build:devtest && npm run devtest:block -w we-applet",
 
-
-
     "prodtest"           : "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) ADD_PROFILES=1 concurrently \"npm run dev:components\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
+
+    "prodtestfull:we"    : "npm run build:devtest && npm run dist:we && npm run prodtest:we",
 
     "prodtest:we"        : "cross-env BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run prodtest:we-launch\"",
     "prodtest:we-launch" : "/c/Users/damien/AppData/Local/Programs/org.lightningrodlabs.we-electron-alpha/lightningrodlabs-we \"-b http://127.0.0.1:$BOOTSTRAP_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config we.prodtest.config.json --agent-num 1",
