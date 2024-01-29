@@ -598,7 +598,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const results = this._dvm.searchParcel(filter);
             console.log("searchInputElem", filter, results);
             searchResultItems = results.map((ppEh) => html`
-                <file-button    hash="${ppEh}"
+                <file-button    hash=${ppEh}
                                 @download=${(e) => this._dvm.downloadFile(e.detail)}
                                 @send=${(e) => this.sendDialogElem.open(e.detail)}
                                 @tag=${(e) => {this._selectedMenuItem = e.detail; this.searchInputElem.value = ""}}

@@ -147,7 +147,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                     /** */
                     const unrepliedLi = html`
                     <div class="inboxLine unreplied">
-                        <file-button .description=${notice.summary.parcel_reference.description}></file-button>
+                        <file-button .description=${notice.summary.parcel_reference.description} .author=${notice.sender}></file-button>
                         is being sent by
                         <span class="nickname">${sender}</span>
                         <div class="gap"></div>
@@ -179,7 +179,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                     const pct = getCompletionPct(this._dvm.deliveryZvm, notice, missingChunks);
                     const incompleteItem = html`
                         <div class="inboxLine">
-                            <file-button .description=${notice.summary.parcel_reference.description}></file-button>
+                            <file-button .description=${notice.summary.parcel_reference.description} .author=${notice.sender}></file-button>
                             ${msg("from")}
                             <span class="nickname">${sender}</span>
                             <div class="gap"></div>

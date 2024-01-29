@@ -200,7 +200,7 @@ export class ActivityTimeline extends DnaElement<FilesDvmPerspective, FilesDvm> 
         <div class="activityItem">
             <div class="activityDate"> ${date_str}</div>            
             <div class="activityLine">
-                <file-button .hash="${manifestEh}"></file-button>
+                <file-button .hash=${manifestEh} .author=${peer}></file-button>
                 <div class="activityMsg">
                     ${message}
                     ${authorSpan}

@@ -3,6 +3,7 @@ import {property, state, customElement} from "lit/decorators.js";
 import {consume} from "@lit/context";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {
+    AgentPubKeyB64,
     decodeHashFromBase64,
     EntryHashB64,
 } from "@holochain/client";
@@ -33,6 +34,8 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** Hash of ParcelManifest to display */
     @property() hash: EntryHashB64 = ''
+
+    @property() author?: AgentPubKeyB64;
 
     @property() description?: ParcelDescription;
 
@@ -65,7 +68,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     render() {
-        console.log("<file-button>.render()", this.hash, this.description);
+        console.log("<file-button>.render()", this.hash, this.description, this.author);
         if (this.hash == "" && !this.description) {
             return html`<sl-button class="fileButton" disabled>N/A</sl-button>`;
         }
@@ -73,6 +76,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
         /** Retrieve File description */
         let fileDescription = this.description;
         let isPrivate = true;
+        let author = this.author? this.author : this.cell.agentPubKey;
         if (this.hash != "") {
             const tuple = this._dvm.deliveryZvm.perspective.privateManifests[this.hash];
             isPrivate = false;
@@ -85,6 +89,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     fileDescription = tuple[0].description;
                 } else {
                     const tuple = this._dvm.deliveryZvm.perspective.publicParcels[this.hash];
+                    author = tuple[2];
                     if (tuple) {
                         fileDescription = tuple[0];
                     } else {
@@ -146,6 +151,12 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             <sl-tooltip placement="top" content=${attName} style="--show-delay: 200;">
                 <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
                         const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+                        const context = {
+                            subjectType: "File",
+                            subjectName: fileDescription.name,
+                            size: fileDescription.size,
+                            subjectAuthor: author,
+                        };
                         const res = await attType.create({hrl});
                         console.log("Create attachment result:", res);
                         this.weServices.openHrl({hrl: res.hrl, context: res.context});
@@ -167,7 +178,11 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         <div slot="anchor" @click=${async (e) => {
                             const obj: HrlWithContext = {
                                 hrl: [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)],
-                                context: {},
+                                context: {
+                                    subjectName: fileDescription.name,
+                                    subjectType: "File",
+                                    size: fileDescription.size,
+                                },
                             }
                             console.log("Copied to HrlClipboard", obj);
                             if (this.weServices) this.weServices.hrlToClipboard(obj);
