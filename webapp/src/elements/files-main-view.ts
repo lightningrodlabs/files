@@ -504,6 +504,18 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
     /** */
+    downloadTextFile(filename: string, content: string): void {
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+
+    /** */
     renderHome(unrepliedInbounds) {
         const initialized = !!(this._initialized && this.deliveryPerspective.probeDhtCount);
 
@@ -1001,6 +1013,12 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     <sl-button class="top-btn" variant="default" size="medium" href=${REPORT_BUG_URL} target="_blank">
                         <sl-icon name="bug" label="Report bug"></sl-icon>
                     </sl-button>
+                    <sl-button class="top-btn" variant="default" size="medium" @click=${async (e) => {
+                        const json = await this._dvm.exportPerspective();
+                        this.downloadTextFile("files_dump.json", json);
+                    }}>
+                        <sl-icon name="download" label="Export to JSON"></sl-icon>
+                    </sl-button>                    
                     ${isInDev? html`
                         <button type="button" @click=${async () => {
                             this._dvm.dumpLogs(); 

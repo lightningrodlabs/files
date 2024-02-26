@@ -6,7 +6,7 @@ integrity:
   # WARN: properties might be overridden in the happ.yaml
   properties:
     maxChunkSize: 524288
-    maxParcelSize: 104857600
+    maxParcelSize: 1048576000
     maxParcelNameLength: 256
     minParcelNameLength: 1
     maxTagNameLength: 32

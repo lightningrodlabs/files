@@ -140,7 +140,7 @@ export class FilesDvm extends DnaViewModel {
     /** */
     async downloadFile(manifestEh: EntryHashB64): Promise<void> {
         console.log("FilesDvm.downloadFile()", manifestEh);
-        const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(manifestEh));
+        const [manifest, _ts] = await this.deliveryZvm.getManifest(manifestEh);
         const maybeCachedData = this.getFileFromCache(manifest.data_hash);
         let file;
         if (maybeCachedData == null) {
@@ -528,7 +528,7 @@ export class FilesDvm extends DnaViewModel {
 
     /** */
     async getFile(ppEh: EntryHashB64): Promise<[ParcelManifest, string]> {
-        const manifest = await this.deliveryZvm.zomeProxy.getManifest(decodeHashFromBase64(ppEh));
+        const [manifest, ts] = await this.deliveryZvm.getManifest(ppEh);
         //this.deliveryZvm.perspective.chunkCounts[manifest.data_hash] = 0;
         const dataB64 = await this.deliveryZvm.getParcelData(ppEh);
         return [manifest, dataB64];
@@ -568,4 +568,31 @@ export class FilesDvm extends DnaViewModel {
         // }
         return this.data2File(manifest, data);
     }
+
+
+    /** -- Import & Export -- */
+
+    /** Dump perspective as JSON */
+    async exportPerspective(): Promise<string> {
+        //console.log("Dvm.exportPerspective()", name)
+        const dvmExport = {};
+
+        await this.deliveryZvm.getAllPublicManifest();
+        const dJson = this.deliveryZvm.exportPerspective();
+        dvmExport[DeliveryZvm.DEFAULT_ZOME_NAME] = JSON.parse(dJson);
+
+        const pJson = this.profilesZvm.exportPerspective(/*this.originalsZvm*/);
+        dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = JSON.parse(pJson);
+
+        // TODO
+        //const tJson = this.taggingZvm.exportPerspective();
+        //dvmExport[TaggingZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);
+
+        // const oJson = this.originalsZvm.exportPerspective();
+        // dvmExport[AuthorshipZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
+
+        return JSON.stringify(dvmExport, null, 2);
+    }
+
+
 }
