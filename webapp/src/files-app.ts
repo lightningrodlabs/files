@@ -221,8 +221,7 @@ export class FilesApp extends HappElement {
     console.log("*** <files-app> render()", this._loaded, this._hasHolochainFailed);
 
     if (!this._loaded || !this._offlinePerspectiveloaded || !this._onlinePerspectiveloaded) {
-      //return html`<span>Loading...</span>`;
-      return html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;
+      return html`<sl-spinner></sl-spinner>`;
     }
     if(this._hasHolochainFailed) {
       return html`
@@ -261,7 +260,7 @@ export class FilesApp extends HappElement {
           switch (entryType) {
             case DeliveryEntryType.PrivateManifest:
             case DeliveryEntryType.PublicManifest:
-              console.log("File entry:", encodeHashToBase64(this.appletView.hrlWithContext.hrl[1]));
+              console.log("File entry:", encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]));
 
               // // TODO: Figure out why cell-context doesn't propagate normally via FilesApp and has to be inserted again within the slot
               // view = html`
@@ -270,10 +269,10 @@ export class FilesApp extends HappElement {
               //   </cell-context>
               // `;
 
-              view = html`<file-view .hash=${encodeHashToBase64(this.appletView.hrlWithContext.hrl[1])}></file-view>`;
+              view = html`<file-view .hash=${encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1])}></file-view>`;
             break;
             default:
-              throw new Error(`Unknown entry type ${this.appletView.entryType}.`);
+              throw new Error(`Unknown entry type ${entryType}.`);
             }
           break;
         default:
@@ -319,7 +318,7 @@ export class FilesApp extends HappElement {
           fields: {lang: 'en', email: 'guest@ac.me', mailgun_domain: "mg.flowplace.org", mailgun_email: "whosin@mg.flowplace.org"}};
         console.log("setupWeProfilesDvm() createMyProfile", this.filesDvm.profilesZvm.cell.agentPubKey);
         this.filesDvm.profilesZvm.createMyProfile(profile).then(() => this.requestUpdate());
-        guardedView = html`<sl-spinner style="width: auto; height: auto"></sl-spinner>`;
+        guardedView = html`<sl-spinner></sl-spinner>`;
       }
     }
 
@@ -339,6 +338,16 @@ export class FilesApp extends HappElement {
         :host {
           display: block;
           height: inherit;
-        }`]
+        }
+          
+        sl-spinner {
+            font-size: 3rem;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            --track-width: 4px;
+        }
+      `]
+
   }
 }

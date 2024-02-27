@@ -54,7 +54,6 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
       'process.env.HAPP_ENV': JSON.stringify("Devtest"),
       'process.env.HC_APP_PORT': JSON.stringify(process.env.HC_APP_PORT || 8888),
       'process.env.HC_ADMIN_PORT': JSON.stringify(process.env.HC_ADMIN_PORT || 8889),
-      'process.env.ADD_PROFILES': JSON.stringify(process.env.ADD_PROFILES || false),
       '  COMB =': 'window.COMB =',
       delimiters: ['', ''],
     }),

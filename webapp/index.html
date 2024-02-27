@@ -9,19 +9,30 @@
     />
     <base href="." />
   </head>
-  <body style="margin:0px;background: #faf9ea;height:100vh;">
+  <body style="margin:0px; background:#ececec; height:100vh;">
     <files-app></files-app>
+    <script>
+      console.log("FILES APP START");
+    </script>
     <!-- Wait for Shoelace script -->
-    <script type="module">
-      console.log("Waiting for Shoelace...")
+    <script id="shoelace" type="module">
+      console.log("Waiting for Shoelace...");
+      import {SlAlert, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
       await Promise.allSettled([
         customElements.whenDefined('sl-dialog'),
+        customElements.whenDefined('sl-button'),
+        customElements.whenDefined('sl-icon'),
+        customElements.whenDefined('sl-skeleton'),
+        customElements.whenDefined('sl-input'),
+        customElements.whenDefined('sl-radio'),
+        customElements.whenDefined('sl-spinner'),
       ]);
       console.log("Shoelace READY!");
     </script>
     <!-- main script -->
     <script type="module">
       import { FilesApp } from "./";
+
       import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
       setBasePath('../node_modules/@shoelace-style/shoelace/dist');
       console.log("shoelace basePath", getBasePath());
