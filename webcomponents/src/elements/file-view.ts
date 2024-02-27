@@ -155,7 +155,7 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         /** render all */
         return html`
-            <h4 style="margin-left: 5px;">${this._manifest.description.name}</h4>
+            <h3 id="title"><files-filename .filename=${this._manifest.description.name}></files-filename></h3>
             <div>Size: ${prettyFileSize(this._manifest.description.size)}</div>
             <div style="padding-bottom: 10px;">MIME: ${mime}</div>
             ${preview}
@@ -174,8 +174,12 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
               :host {
                   display: flex;
                   flex-direction: column;
+                  margin-left:7px;
               }
               
+              #title {
+                  font-size: 1.5rem;
+              }
               #preview {
                   background: #dadada;
                   min-height: 40px;
