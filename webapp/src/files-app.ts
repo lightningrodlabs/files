@@ -14,7 +14,7 @@ import {
   BaseRoleName,
   CloneId,
   AppProxy,
-  DvmDef, DnaViewModel, pascal
+  DvmDef, DnaViewModel, pascal, delay
 } from "@ddd-qc/lit-happ";
 import {
   FilesDvm,
@@ -49,14 +49,13 @@ export class FilesApp extends HappElement {
 
   @state() private _hasHolochainFailed = true;
   @state() private _loaded = false;
-  @state() private _filesCell: Cell;
   @state() private _hasWeProfile = false;
   @state() private _offlinePerspectiveloaded = false;
   @state() private _onlinePerspectiveloaded = false;
-
+  //@state() private _filesCell: Cell;
   /** ZomeName -> (AppEntryDefName, isPublic) */
-  private _allAppEntryTypes: Record<string, [string, boolean][]> = {};
-  private _dnaDef?: DnaDefinition;
+  //private _allAppEntryTypes: Record<string, [string, boolean][]> = {};
+  //private _dnaDef?: DnaDefinition;
 
 
   /** All arguments should be provided when constructed explicity */
@@ -180,15 +179,20 @@ export class FilesApp extends HappElement {
       }
     }
 
-    /** Probe EntryDefs */
-    console.log("FilesDvm.cell", this.filesDvm.cell);
-    this._allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
-    console.log("happInitialized(), _allAppEntryTypes", this._allAppEntryTypes);
-    console.warn(`${DELIVERY_ZOME_NAME} entries`, this._allAppEntryTypes[DELIVERY_ZOME_NAME]);
-    if (this._allAppEntryTypes[DELIVERY_ZOME_NAME].length == 0) {
-      console.warn(`No entries found for ${DELIVERY_ZOME_NAME}`);
-    } else {
-      this._hasHolochainFailed = false;
+    /** Attempt Probe EntryDefs */
+    let attempts = 5;
+    while(this._hasHolochainFailed && attempts > 0) {
+      attempts -= 1;
+      const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
+      console.log("happInitialized(), allAppEntryTypes", allAppEntryTypes);
+      console.log(`${DELIVERY_ZOME_NAME} entries`, allAppEntryTypes[DELIVERY_ZOME_NAME]);
+      if (allAppEntryTypes[DELIVERY_ZOME_NAME].length == 0) {
+        console.warn(`No entries found for ${DELIVERY_ZOME_NAME}`);
+        await delay(1000);
+      } else {
+        this._hasHolochainFailed = false;
+        break;
+      }
     }
 
     /** Done */
@@ -224,12 +228,9 @@ export class FilesApp extends HappElement {
       return html`<sl-spinner></sl-spinner>`;
     }
     if(this._hasHolochainFailed) {
-      return html`
-        <div style="width: auto; height: auto; font-size: 4rem;">
-          ${msg("Failed to connect to <b>Files</b> cell.")}
-          <br />
-          ${msg("Holochain Conductor might not be running or the Files cell is missing.")}
-        </div>`;
+      return html`<div style="width: auto; height: auto; font-size: 4rem;">
+          ${msg("Failed to connect to Holochain Conductor and/or \"Files\" cell.")};
+      </div>`;
     }
 
 
