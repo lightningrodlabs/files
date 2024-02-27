@@ -75,6 +75,9 @@ export function kind2Type(kindInfo: ParcelKind): FileType {
         if (fields[1] == "pdf") {
             return FileType.Pdf;
         }
+        if (fields[1] == "json") {
+            return FileType.Text;
+        }
         if (fields[1] == "x-zip-compressed") {
             return FileType.Zip;
         }
