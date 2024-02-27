@@ -18,9 +18,10 @@ export class Filename extends LitElement {
             fileExt = fields[fields.length - 1];
         }
         const fileBase = this.filename.slice(0, -(fileExt.length + 1))
+          //<sl-tooltip content=${this.filename} distance="10">
         return html`
             <div class="filename">
-                <span class="filename__base">${fileBase}</span><span class="filename__extension">.${fileExt}</span>
+                    <span class="filename__base">${fileBase}</span><span class="filename__extension">.${fileExt}</span>
             </div>            
         `;
     }
@@ -38,16 +39,22 @@ export class Filename extends LitElement {
                 display: flex;
                 min-width: 0;
               }
-
+                
               .filename__base {
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow: hidden;
               }
-
+                
+                
               .filename__extension {
                 flex-shrink: 0;
               }              
+              
+                sl-tooltip {
+                    --show-delay: 1000;
+                    
+                }
             `,
         ];
     }

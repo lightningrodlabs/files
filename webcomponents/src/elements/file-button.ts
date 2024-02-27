@@ -273,6 +273,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 background: #FAFAFA;
                 padding: 8px;
                 max-width: 250px;
+                transition: max-width 2s cubic-bezier(.22,.61,.36,1);
               }
 
               .fileButton:hover .fileName {
@@ -280,6 +281,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
                 background: white;
                 border: none;
+                max-width: 100vw;
               }
 
               .fileButton:hover sl-button.hide {

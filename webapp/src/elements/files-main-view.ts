@@ -1144,6 +1144,10 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 background: #F7FBFE;
               }
 
+              #view-file-dialog::part(body) {
+                padding-top: 0px;
+              }
+                
               #bottom-stack {
                 position: fixed;
                 right: 15px;
@@ -1266,6 +1270,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 display: flex;
                 gap: 15px;
                 flex-wrap: wrap;
+                width: fit-content;
               }
             `,];
     }

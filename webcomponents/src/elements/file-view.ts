@@ -131,15 +131,16 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 //     break;
                 case FileType.Audio:
                     preview = html`
-                        <audio id="preview" controls>
+                        <audio id="preview" class="Audio" controls>
                             <source src=${this._maybeBlobUrl} type=${mime}>
                             Your browser does not support the audio element.
                         </audio>
                     `;
                     break;
                 case FileType.Video:
+                    //  width="440" height="320"
                     preview = html`
-                        <video id="preview" class="Video" controls width="440" height="320">
+                        <video id="preview" class="Video" controls>
                             <source src=${this._maybeBlobUrl} type=${mime}>
                             Your browser does not support the video element.
                         </video>
@@ -174,38 +175,49 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
               :host {
                   display: flex;
                   flex-direction: column;
-                  margin-left:7px;
+                  gap: 5px;
+                  padding-left: 7px;
+                  padding-right: 5px;
               }
               
               #title {
                   font-size: 1.5rem;
               }
+              
               #preview {
+                  flex-grow: 1;                  
                   background: #dadada;
                   min-height: 40px;
                   min-width: 40px;
                   max-height: 400px;
-                  max-width: 440px;
-                  overflow: auto;
+                  /*width:100%;*/
+                  /*max-width: 440px;*/
+                  /*overflow: auto;*/
                   padding: 5px;                  
               }
 
+              .Audio {
+                  max-height: 50px !important;
+              }
               .Image,
               .Video {
-                  height: 300px;
-                  width: 440px;
+                  /*height: 300px;*/
+                  /*width: 440px;*/
+                  min-height: 120px !important;
               }
               
               .PDF,
               .Document,
               .Text {
-                  height: 300px;
+                  /*height: 300px;*/
+                  min-height: 250px !important;
                   white-space: pre;
+                  max-height: 100vh !important;
                   box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px inset;
               }
 
               sl-button {
-                  margin-top: 10px;
+                  margin-top: 5px;
                   max-width: 120px;
               }
 

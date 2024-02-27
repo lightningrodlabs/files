@@ -270,7 +270,7 @@ export class FilesApp extends HappElement {
               //   </cell-context>
               // `;
 
-              view = html`<file-view .hash=${encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1])}></file-view>`;
+              view = html`<file-view .hash=${encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1])} style="height: 100vh;"></file-view>`;
             break;
             default:
               throw new Error(`Unknown entry type ${entryType}.`);
