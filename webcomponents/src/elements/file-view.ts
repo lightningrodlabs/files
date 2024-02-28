@@ -8,7 +8,7 @@ import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {msg} from "@lit/localize";
 import {prettyFileSize} from "../utils";
-import {FileType, kind2mime, kind2Type} from "../fileTypeUtils";
+import {kind2mime} from "../fileTypeUtils";
 
 
 /**
@@ -33,24 +33,9 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @state() private _loading = true;
     @state() private _manifest?: ParcelManifest;
-             private _maybeFile?: File;
-             private _maybeDataUrl?: string | ArrayBuffer;
-             private _maybeBlobUrl?: string;
+
 
     /** -- Methods -- */
-
-
-    /** FOR DEBUGGING */
-    shouldUpdate(changedProperties: PropertyValues<this>) {
-        console.log("<file-view>.shouldUpdate()", changedProperties, this._dvm);
-        if (changedProperties.has("_cell_via_context")) {
-            this._cell = this._cell_via_context;
-        }
-        if (!this._dvm) {
-            this.requestDvm();
-        }
-        return !!this._dvm;
-    }
 
 
     /** */
@@ -61,40 +46,14 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             console.log("<file-view>.willUpdate()", this.hash);
             this._loading = true;
             this._manifest = await this._dvm.filesZvm.zomeProxy.getFileInfo(decodeHashFromBase64(this.hash));
-            //console.log(`<file-view>.willUpdate() ${this._manifest.description.size} < ${this._dvm.dnaProperties.maxChunkSize}?`);
-            if (this._manifest.description.size < this._dvm.dnaProperties.maxChunkSize) {
-                const mime = kind2mime(this._manifest.description.kind_info);
-                //const fileType = kind2Type(this._manifest.description.kind_info);
-                const data = await this._dvm.deliveryZvm.getParcelData(this.hash);
-                this._maybeFile = this._dvm.data2File(this._manifest, data);
-
-                const reader = new FileReader();
-                if (this._maybeBlobUrl) {
-                    URL.revokeObjectURL(this._maybeBlobUrl);
-                    this._maybeBlobUrl = undefined;
-                }
-                //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
-                reader.onload = (event) => {
-                    console.log("FileReader onload", event, mime)
-                    //this._maybeDataUrl = event.target.result;
-                    const blob = new Blob([event.target.result], { type: mime });
-                    this._maybeBlobUrl = URL.createObjectURL(blob);
-                    console.log("FileReader blob", blob, this._maybeBlobUrl)
-                    //this.requestUpdate();
-                    this._loading = false;
-                };
-                //reader.readAsDataURL(this._maybeFile);
-                reader.readAsArrayBuffer(this._maybeFile);
-            } else {
-                this._loading = false;
-            }
+            this._loading = false;
         }
     }
 
 
     /** */
     render() {
-        console.log("<file-view>.render()", this.hash, this._maybeBlobUrl);
+        console.log("<file-view>.render()", this.hash);
         if (this.hash == "") {
             return html`
                 <div style="color:#c10a0a">${msg("No file selected")}</div>`;
@@ -107,59 +66,12 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             return html`<sl-spinner></sl-spinner>`;
         }
 
-        //const file_type = (this._manifest.description.kind_info as ParcelKindVariantManifest).Manifest;
-        const mime = kind2mime(this._manifest.description.kind_info);
-
-        const fileType = kind2Type(this._manifest.description.kind_info);
-
-        let preview = html`<div id="preview">File too big for preview</div>`;
-        if (this._maybeFile) {
-            switch (fileType) {
-                // case FileType.Text:
-                //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);
-                //     // //const text = decodeURIComponent(escape(tt)));
-                //     // console.log("FileType.Text", this._maybeDataUrl)
-                //     // preview = html`<div id="preview" class="text">${tt}</div>`;
-                //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
-                //     break;
-                // case FileType.Pdf:
-                //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
-                //     //preview = html`<embed id="preview" src=${this._maybeBlobUrl} type="application/pdf" width="100%" height="600px" />`;
-                //     break;
-                // case FileType.Image:
-                //     preview = html`<img id="preview" src=${this._maybeBlobUrl} alt="Preview Image" />`;
-                //     break;
-                case FileType.Audio:
-                    preview = html`
-                        <audio id="preview" class="Audio" controls>
-                            <source src=${this._maybeBlobUrl} type=${mime}>
-                            Your browser does not support the audio element.
-                        </audio>
-                    `;
-                    break;
-                case FileType.Video:
-                    //  width="440" height="320"
-                    preview = html`
-                        <video id="preview" class="Video" controls>
-                            <source src=${this._maybeBlobUrl} type=${mime}>
-                            Your browser does not support the video element.
-                        </video>
-                    `;
-                    break;
-                default:
-                    //preview = html`<div id="preview">Preview not available for this type</div>`;
-                    preview = html`<embed id="preview" class="${fileType}" src=${this._maybeBlobUrl} type=${mime} />`;
-                    break;
-            }
-        }
-
-
         /** render all */
         return html`
             <h3 id="title"><files-filename .filename=${this._manifest.description.name}></files-filename></h3>
             <div>Size: ${prettyFileSize(this._manifest.description.size)}</div>
-            <div style="padding-bottom: 10px;">MIME: ${mime}</div>
-            ${preview}
+            <div style="padding-bottom: 10px;">MIME: ${kind2mime(this._manifest.description.kind_info)}</div>
+            <file-preview .hash=${this.hash}></file-preview>
             ${this.showActionBar
                     ? html`<sl-button variant="primary" @click=${(e) => {this._dvm.downloadFile(this.hash)}}>Download</sl-button>`
                     : html``
@@ -184,37 +96,6 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                   font-size: 1.5rem;
               }
               
-              #preview {
-                  flex-grow: 1;                  
-                  background: #dadada;
-                  min-height: 40px;
-                  min-width: 40px;
-                  max-height: 400px;
-                  /*width:100%;*/
-                  /*max-width: 440px;*/
-                  /*overflow: auto;*/
-                  padding: 5px;                  
-              }
-
-              .Audio {
-                  max-height: 50px !important;
-              }
-              .Image,
-              .Video {
-                  /*height: 300px;*/
-                  /*width: 440px;*/
-                  min-height: 120px !important;
-              }
-              
-              .PDF,
-              .Document,
-              .Text {
-                  /*height: 300px;*/
-                  min-height: 250px !important;
-                  white-space: pre;
-                  max-height: 100vh !important;
-                  box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px inset;
-              }
 
               sl-button {
                   margin-top: 5px;
