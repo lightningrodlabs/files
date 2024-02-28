@@ -40,13 +40,13 @@ export class FilePreview extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     protected async willUpdate(changedProperties: PropertyValues<this>) {
         super.willUpdate(changedProperties);
-        //console.log("<file-view>.willUpdate()", changedProperties, !!this._dvm, this.hash);
+        //console.log("<file-preview>.willUpdate()", changedProperties, !!this._dvm, this.hash);
         if (this._dvm && (changedProperties.has("hash") || (!this._manifest && this.hash))) {
-            console.log("<file-view>.willUpdate()", this.hash);
+            console.log("<file-preview>.willUpdate()", this.hash);
             this._loading = true;
             this._manifest = await this._dvm.filesZvm.zomeProxy.getFileInfo(decodeHashFromBase64(this.hash));
-            //console.log(`<file-view>.willUpdate() ${this._manifest.description.size} < ${this._dvm.dnaProperties.maxChunkSize}?`);
-            if (this._manifest.description.size < this._dvm.dnaProperties.maxChunkSize) {
+            //console.log(`<file-preview>.willUpdate() ${this._manifest.description.size} < ${this._dvm.dnaProperties.maxChunkSize}?`);
+            if (this._manifest && this._manifest.description.size < this._dvm.dnaProperties.maxChunkSize) {
                 const mime = kind2mime(this._manifest.description.kind_info);
                 //const fileType = kind2Type(this._manifest.description.kind_info);
                 const data = await this._dvm.deliveryZvm.getParcelData(this.hash);
