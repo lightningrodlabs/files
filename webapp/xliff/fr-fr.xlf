@@ -66,14 +66,6 @@
   <source>Search</source>
   <target>Rechercher</target>
 </trans-unit>
-<trans-unit id="sa5ab4a9aca5873fc">
-  <source>Failed to connect to &lt;b&gt;Files&lt;/b&gt; cell.</source>
-  <target>Echec de connection à la cell &lt;b&gt;Files&lt;/b&gt;</target>
-</trans-unit>
-<trans-unit id="sdee81715f9370168">
-  <source>Holochain Conductor might not be running or the Files cell is missing.</source>
-  <target>Le Conductor Holochain n'est peut-être pas en marche ou la cell Files est manquante.</target>
-</trans-unit>
 <trans-unit id="sbff06c1c63fda09a">
   <source>File delivery request sent</source>
   <target>Demande d'envoi de fichier a été envoyé</target>
@@ -189,6 +181,15 @@
 <trans-unit id="s57ade424d57c6edf">
   <source>Sent</source>
   <target>Envoyé</target>
+</trans-unit>
+<trans-unit id="s776051c2e6506aa1">
+  <source>File Info</source>
+</trans-unit>
+<trans-unit id="s8641b6c3688a0cec">
+  <source>Edit Profile</source>
+</trans-unit>
+<trans-unit id="s28f5c83a86c3ea50">
+  <source>Failed to connect to Holochain Conductor and/or "Files" cell.</source>
 </trans-unit>
 </body>
 </file>

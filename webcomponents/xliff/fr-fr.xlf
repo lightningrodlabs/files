@@ -16,7 +16,7 @@
 </trans-unit>
 <trans-unit id="scbf29ce484222325">
   <source></source>
-  <target></target>
+  <target/>
 </trans-unit>
 <trans-unit id="sc93a9aa3e5bcbf5d">
   <source>Save Profile</source>
@@ -225,6 +225,12 @@
 <trans-unit id="s6d8b12f6a54b7bc9">
   <source>Sending</source>
   <target>En cours d'envoi</target>
+</trans-unit>
+<trans-unit id="sd3386a2ef42e80b9">
+  <source>Download</source>
+</trans-unit>
+<trans-unit id="s06be75a0b4237688">
+  <source>No notifier</source>
 </trans-unit>
 </body>
 </file>
