@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
-import {AppletInfo, GroupProfile, weLinkFromAppletHash, WeNotification, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletInfo, GroupProfile, weaveUrlFromAppletHash, WeNotification, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
 import {createContext} from "@lit/context";
 
@@ -319,7 +319,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const subject = "" + myProfile.nickname + " " + msg("wants to send you a file");
             const notifMsg = `
             ${myProfile.nickname}${this.groupProfiles? msg("from") + " " + this.groupProfiles[0].name : "" } ${msg("would like to send you the file")}: "${privateManifest.description.name}" (${prettyFileSize(privateManifest.description.size)}).
-            ${msg("Please go to the Files app to Accept or Decline the request")}${this.appletId? `: ${weLinkFromAppletHash(decodeHashFromBase64(this.appletId))}` : "." }
+            ${msg("Please go to the Files app to Accept or Decline the request")}${this.appletId? `: ${weaveUrlFromAppletHash(decodeHashFromBase64(this.appletId))}` : "." }
             `;
             this._dvm.notificationsZvm.sendNotification(notifMsg, subject, recipients);
 
@@ -1045,7 +1045,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         <button type="button" @click=${() => {
                             console.log("Send. Config keys:", this._dvm.notificationsZvm.config? Object.keys(this._dvm.notificationsZvm.config) : "none");
                             const groupName = this.groupProfiles? this.groupProfiles[0].name : "No WeGroup";
-                            this._dvm.notificationsZvm.sendNotification(`This is a notif. ${this.appletId? weLinkFromAppletHash(decodeHashFromBase64(this.appletId)): ""}` ,  `Testing ${groupName}`, [this.cell.agentPubKey]);
+                            this._dvm.notificationsZvm.sendNotification(`This is a notif. ${this.appletId? weaveUrlFromAppletHash(decodeHashFromBase64(this.appletId)): ""}` ,  `Testing ${groupName}`, [this.cell.agentPubKey]);
                         }}>send</button>
                     `: html``
                     }

@@ -143,30 +143,31 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     <sl-icon name="send"></sl-icon>
                 </sl-button></sl-tooltip>`);
             /** Add button for each attachment type */
-            if (this.weServices && this.weServices.attachmentTypes && this.hash != '') {
-                console.log("weServices.attachmentTypes", this.weServices.attachmentTypes);
-                this.weServices.attachmentTypes.forEach((attDict, appletHash, _map) => {
-                    for (const [attName, attType] of Object.entries(attDict)) {
-                        actionButtons.push(html`
-                            <sl-tooltip placement="top" content=${attName} style="--show-delay: 200;">
-                <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
-                        const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
-                        const context = {
-                            subjectType: "File",
-                            subjectName: fileDescription.name,
-                            size: fileDescription.size,
-                            subjectAuthor: author,
-                        };
-                        console.log("Create attachmentTypes request:", context);
-                        const res = await attType.create({hrl, context});
-                        console.log("Create attachmentTypes result:", res);
-                        this.weServices.openHrl({hrl: res.hrl, context: res.context});
-                    }}>
-                    <sl-icon .src=${attType.icon_src}></sl-icon>
-                </sl-button></sl-tooltip>`);
-                    }
-                });
-            }
+            // FIXME: use creatables API instead
+            // if (this.weServices && this.weServices.attachmentTypes && this.hash != '') {
+            //     console.log("weServices.attachmentTypes", this.weServices.attachmentTypes);
+            //     this.weServices.attachmentTypes.forEach((attDict, appletHash, _map) => {
+            //         for (const [attName, attType] of Object.entries(attDict)) {
+            //             actionButtons.push(html`
+            //                 <sl-tooltip placement="top" content=${attName} style="--show-delay: 200;">
+            //     <sl-button class="hide pop action" size="small" variant="primary" @click=${async (e) => {
+            //             const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+            //             const context = {
+            //                 subjectType: "File",
+            //                 subjectName: fileDescription.name,
+            //                 size: fileDescription.size,
+            //                 subjectAuthor: author,
+            //             };
+            //             console.log("Create attachmentTypes request:", context);
+            //             const res = await attType.create({hrl, context});
+            //             console.log("Create attachmentTypes result:", res);
+            //             this.weServices.openHrl({hrl: res.hrl, context: res.context});
+            //         }}>
+            //         <sl-icon .src=${attType.icon_src}></sl-icon>
+            //     </sl-button></sl-tooltip>`);
+            //         }
+            //     });
+            // }
         }
 
 

@@ -6,6 +6,8 @@ import {blockTypes} from "./appletServices/blockTypes";
 import {DeliveryEntryType} from "@ddd-qc/delivery";
 import {devtestNames, setupFilesEntryView} from "./devtest";
 import {search} from "./appletServices/search";
+import {AppAgentClient, RoleName, ZomeName} from "@holochain/client";
+import {HrlWithContext} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */
@@ -35,14 +37,28 @@ export async function setupFilesApplet() {
 /** */
 async function setupFilesMainView() {
     const appletServices: AppletServices = {
-        attachmentTypes: async (_appletClient) => ({}),
-        getAttachableInfo,
+        creatables: {},
         blockTypes,
+        getAttachableInfo,
         search,
+        bindAsset,
     };
 
     return setup(appletServices, createFilesApplet, devtestNames);
 }
 
+
+
+/** */
+export async function bindAsset(
+  appletClient: AppAgentClient,
+  srcWal: HrlWithContext,
+  dstWal: HrlWithContext,
+  dstRoleName: RoleName,
+  dstIntegrityZomeName: ZomeName,
+  dstEntryType: string,
+): Promise<void> {
+
+}
 
 export default setupFilesApplet;

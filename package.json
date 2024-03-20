@@ -105,7 +105,7 @@
     "@ddd-qc/delivery": "=0.10.1",
     "@holochain-open-dev/core-types": "0.7.0",
     "@holochain-open-dev/profiles": "=0.17.3",
-    "@lightningrodlabs/we-applet": "0.14.0",
+    "@lightningrodlabs/we-applet": "0.15.0",
     "@shoelace-style/shoelace": "2.11.2",
     "@lit/context": "1.0.1",
     "@lit/localize": "0.12.1",
