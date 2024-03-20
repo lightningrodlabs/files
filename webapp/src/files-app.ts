@@ -165,7 +165,7 @@ export class FilesApp extends HappElement {
     console.log("hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
     /** Authorize all zome calls */
     if (!this._adminWs && this._canAuthorizeZfns) {
-      this._adminWs = await AdminWebsocket.connect(new URL(`ws://localhost:${HC_ADMIN_PORT}`));
+      this._adminWs = await AdminWebsocket.connect({url: new URL(`ws://localhost:${HC_ADMIN_PORT}`)});
       console.log("hvmConstructed() connect() called", this._adminWs);
     }
     if (this._adminWs && this._canAuthorizeZfns) {

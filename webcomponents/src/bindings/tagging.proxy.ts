@@ -2,6 +2,7 @@
 
 import {PUBLIC_TAG_ROOT, TAGGING_ZOME_NAME, TaggingEntry, TaggingLinkTypes, PrivateTag, TaggingInput, TaggingProperties, UntagInput, } from './tagging.types';
 import {
+WebsocketConnectionOptions,
 /** types.ts */
 HoloHash,
 AgentPubKey,

@@ -111,7 +111,7 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
     let _record = query_private_entry(input.target.clone())?;
     let tag_eh = hash_entry(PrivateTag { value: input.tag})?;
     /// Get Tag link
-    let link_tuples = get_typed_from_links::<PrivateTag>(input.target.clone(), TaggingLinkTypes::PrivateTags, None)?;
+    let link_tuples = get_typed_from_links::<PrivateTag>(link_input(input.target.clone(), TaggingLinkTypes::PrivateTags, None))?;
     let link_tuple: Vec<(PrivateTag, Link)> = link_tuples.into_iter()
         .filter(|(tag_entry, _link)| {
             let cur_tag_eh = hash_entry(tag_entry.to_owned()).unwrap();
@@ -127,7 +127,7 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
     let _ = delete_link(link.create_link_hash)?;
     /// Get reverse link
     let tag_eh = hash_entry(link_tuple[0].0.clone())?;
-    let links = get_links(tag_eh, TaggingLinkTypes::PrivateEntry, None)?;
+    let links = get_links(link_input(tag_eh, TaggingLinkTypes::PrivateEntry, None))?;
     let link: Vec<Link> = links.into_iter()
         .filter(|link| link.target.clone().into_entry_hash() == Some(input.target.clone()))
         .collect();
@@ -148,7 +148,7 @@ pub fn get_private_tags(eh: EntryHash) -> ExternResult<Vec<(EntryHash, String)>>
     /// Make sure entry exist and is private
     let _record = query_private_entry(eh.clone())?;
     /// Grab private tags
-    let link_tuples = get_typed_from_links::<PrivateTag>(eh, TaggingLinkTypes::PrivateTags, None)?;
+    let link_tuples = get_typed_from_links::<PrivateTag>(link_input(eh, TaggingLinkTypes::PrivateTags, None))?;
     let res = link_tuples.into_iter()
         .map(|(tag_entry, link)| (link.target.into_entry_hash().unwrap(), tag_entry.value))
         .collect();
@@ -166,7 +166,7 @@ pub fn get_private_entries_with_tag(tag: String) -> ExternResult<Vec<(EntryHash,
     for tuple in private_tags {
         if tuple.2 == tag {
             /// Found: grab links
-            let links = get_links(tuple.0, TaggingLinkTypes::PrivateEntry, None)?;
+            let links = get_links(link_input(tuple.0, TaggingLinkTypes::PrivateEntry, None))?;
             let res = links.into_iter()
                 .map(|link| (link.target.into_entry_hash().unwrap(), tag2str(&link.tag).unwrap()))
                 .collect();

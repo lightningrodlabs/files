@@ -114,7 +114,7 @@ pub fn get_public_tags(eh: EntryHash) -> ExternResult<Vec<String>> {
     /// Make sure entry exist and is private
     let _ = get_public_entry(eh.clone())?;
     /// Grab private tags
-    let links = get_links(eh, TaggingLinkTypes::PrivateTags, None)?;
+    let links = get_links(link_input(eh, TaggingLinkTypes::PrivateTags, None))?;
     let res = links.into_iter()
         .map(|link| (tag2str(&link.tag).unwrap()))
         .collect();
@@ -132,7 +132,7 @@ pub fn get_public_entries_with_tag(tag: String) -> ExternResult<Vec<(EntryHash, 
     tp.path.append_component(tag.into());
     /// Grab entries
     //let links = tp_children(&tp)?;
-    let links = get_links(tp.path_entry_hash()?, TaggingLinkTypes::PublicEntry, None)?;
+    let links = get_links(link_input(tp.path_entry_hash()?, TaggingLinkTypes::PublicEntry, None))?;
     let res = links.into_iter()
         .map(|link| (link.target.into_entry_hash().unwrap(), tag2str(&link.tag).unwrap()))
         .collect();

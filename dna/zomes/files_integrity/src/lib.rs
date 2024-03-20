@@ -32,12 +32,12 @@ pub const ATTACHMENTS_ROOT: &str = "public_attachments";
 use hdi::prelude::*;
 use crate::priv_enc_key::PrivEncKey;
 
-#[hdk_entry_defs]
+#[hdk_entry_types]
 #[unit_enum(FilesEntryTypes)]
 pub enum FilesEntry {
-   #[entry_def(required_validations = 2, visibility = "private")]
+   #[entry_type(required_validations = 2, visibility = "private")]
    FileShare(FileShare),
-   #[entry_def(required_validations = 1, visibility = "private")]
+   #[entry_type(required_validations = 1, visibility = "private")]
    PrivEncKey(PrivEncKey),
 }
 

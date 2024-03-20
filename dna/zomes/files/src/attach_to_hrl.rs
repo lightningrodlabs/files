@@ -30,7 +30,7 @@ pub fn get_files_from_hrl(hrl: (DnaHash, EntryHash)) -> ExternResult<Vec<EntryHa
     std::panic::set_hook(Box::new(zome_panic_hook));
     let tp = hrl_path(hrl)?;
     /// Grab links
-    let links = get_links(tp.path_entry_hash()?, FilesLinkTypes::Attachment, None)?;
+    let links = get_links(link_input(tp.path_entry_hash()?, FilesLinkTypes::Attachment, None))?;
     let res = links.into_iter()
         .map(|link| link.target.into_entry_hash().unwrap())
         .collect();

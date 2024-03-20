@@ -21,10 +21,10 @@ pub const PUBLIC_TAG_ROOT: &str = "public_tags";
 /// Integrity zome is not really necessary but it is defined because the holochain ecosystem
 /// does not support well a zome that does not have one.
 
-#[hdk_entry_defs]
+#[hdk_entry_types]
 #[unit_enum(TaggingEntryTypes)]
 pub enum TaggingEntry {
-   #[entry_def(required_validations = 2, visibility = "private")]
+   #[entry_type(required_validations = 2, visibility = "private")]
    PrivateTag(PrivateTag),
 }
 

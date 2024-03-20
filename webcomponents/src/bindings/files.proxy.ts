@@ -2,6 +2,7 @@
 
 import {ATTACHMENTS_ROOT, FILES_DEFAULT_COORDINATOR_ZOME_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FILES_DEFAULT_ROLE_NAME, FILE_TYPE_NAME, FilesEntry, FilesLinkTypes, AttachInput, FileShare, PrivEncKey, SendFileInput, WriteManifestInput, } from './files.types';
 import {
+WebsocketConnectionOptions,
 /** types.ts */
 HoloHash,
 AgentPubKey,
