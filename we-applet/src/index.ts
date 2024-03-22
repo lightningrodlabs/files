@@ -1,13 +1,13 @@
 import {setup} from "@ddd-qc/we-utils";
 import {createFilesApplet} from "./createFilesApplet";
 import {AppletServices} from "@lightningrodlabs/we-applet";
-import {getAttachableInfo} from "./appletServices/getAttachableInfo";
+import {getAssetInfo} from "./appletServices/getAssetInfo";
 import {blockTypes} from "./appletServices/blockTypes";
 import {DeliveryEntryType} from "@ddd-qc/delivery";
 import {devtestNames, setupFilesEntryView} from "./devtest";
 import {search} from "./appletServices/search";
 import {AppAgentClient, RoleName, ZomeName} from "@holochain/client";
-import {HrlWithContext} from "@lightningrodlabs/we-applet/dist/types";
+import {WAL} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */
@@ -39,7 +39,7 @@ async function setupFilesMainView() {
     const appletServices: AppletServices = {
         creatables: {},
         blockTypes,
-        getAttachableInfo,
+        getAssetInfo,
         search,
         bindAsset,
     };
@@ -52,8 +52,8 @@ async function setupFilesMainView() {
 /** */
 export async function bindAsset(
   appletClient: AppAgentClient,
-  srcWal: HrlWithContext,
-  dstWal: HrlWithContext,
+  srcWal: WAL,
+  dstWal: WAL,
   dstRoleName: RoleName,
   dstIntegrityZomeName: ZomeName,
   dstEntryType: string,

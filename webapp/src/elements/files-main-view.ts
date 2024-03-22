@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {decodeHashFromBase64, encodeHashToBase64, EntryHashB64, Timestamp,} from "@holochain/client";
-import {AppletInfo, GroupProfile, weaveUrlFromAppletHash, WeNotification, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletInfo, GroupProfile, weaveUrlFromAppletHash, FrameNotification, WeServices} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
 import {createContext} from "@lit/context";
 
@@ -420,7 +420,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
         createAlert(title, message, variant, icon, duration, extraHtml, id);
 
         if (this.weServices) {
-            const myNotif: WeNotification  = {
+            const myNotif: FrameNotification = {
                 title,
                 body: message,
                 notification_type: type,
@@ -428,7 +428,7 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 urgency: 'medium',
                 timestamp: ts,
             }
-            this.weServices.notifyWe([myNotif]);
+            this.weServices.notifyFrame([myNotif]);
         }
     }
 

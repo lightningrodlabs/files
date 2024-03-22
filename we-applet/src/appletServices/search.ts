@@ -6,7 +6,7 @@ import {
     EntryHash,
     Timestamp
 } from "@holochain/client";
-import {AppletHash, HrlWithContext} from "@lightningrodlabs/we-applet/dist/types";
+import {AppletHash, WAL} from "@lightningrodlabs/we-applet/dist/types";
 import {WeServices} from "@lightningrodlabs/we-applet/dist/api";
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
@@ -21,7 +21,7 @@ import {ParcelDescription, ParcelManifest, ParcelReference} from "@ddd-qc/delive
 
 
 /** Return EntryHashs of Manifests whose name match the search filter */
-export async function search(appletClient: AppAgentClient, appletHash: AppletHash, weServices: WeServices, searchFilter: string): Promise<Array<HrlWithContext>> {
+export async function search(appletClient: AppAgentClient, appletHash: AppletHash, weServices: WeServices, searchFilter: string): Promise<Array<WAL>> {
     console.log("Files/we-applet/search():", searchFilter);
     const searchLC = searchFilter.toLowerCase();
 
@@ -57,8 +57,8 @@ export async function search(appletClient: AppAgentClient, appletHash: AppletHas
     /** Merge the two lists */
     const concat = matchingPublic.concat(matchingPrivate);
 
-    /** Transform results into HrlWithContext */
-    const results: Array<HrlWithContext> = concat
+    /** Transform results into WAL */
+    const results: Array<WAL> = concat
         .map(([eh, description, author, isPrivate]) => { return {
             hrl: [dnaHash, eh],
             context: {

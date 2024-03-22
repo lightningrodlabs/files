@@ -18,7 +18,7 @@ import {ParcelDescription} from "@ddd-qc/delivery";
 import {Hrl, WeServices} from "@lightningrodlabs/we-applet";
 //import {weClientContext} from "@lightningrodlabs/we-applet/context";
 import {createContext} from "@lit/context";
-import {HrlWithContext} from "@lightningrodlabs/we-applet/dist/types";
+import {WAL} from "@lightningrodlabs/we-applet/dist/types";
 import {msg} from "@lit/localize";
 import {SlTooltip} from "@shoelace-style/shoelace";
 
@@ -178,7 +178,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     <sl-popup class="fileButton" placement="right" active>
                         
                         <div slot="anchor" @click=${async (e) => {
-                            const obj: HrlWithContext = {
+                            const obj: WAL = {
                                 hrl: [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)],
                                 context: {
                                     subjectName: fileDescription.name,
@@ -187,7 +187,7 @@ export class FileButton extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                 },
                             }
                             console.log("Copied to HrlClipboard", obj);
-                            if (this.weServices) this.weServices.hrlToClipboard(obj);
+                            if (this.weServices) this.weServices.walToPocket(obj);
                             await delay(1200);
                             const tt = this.shadowRoot.getElementById("file-tip") as SlTooltip;
                             tt.hide();
