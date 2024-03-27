@@ -5,11 +5,12 @@ import {FilesDvm} from "../viewModels/files.dvm";
 import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput} from "@shoelace-style/shoelace";
-import {prettyFileSize, splitFile, SplitObject} from "../utils";
+import {getCompletionPct, prettyFileSize, splitFile, SplitObject} from "../utils";
 import {toastError, toastWarning} from "../toast";
 import {TagList} from "./tag-list";
 import {kind2Icon} from "../fileTypeUtils";
 import {msg} from "@lit/localize";
+import {EntryHashB64} from "@holochain/client";
 
 
 
@@ -18,6 +19,8 @@ import {msg} from "@lit/localize";
  */
 @customElement("store-dialog")
 export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
+
+    @property() wait: boolean = false;
 
     @state() private _file?: File;
     @state() private _selectedTags = [];
@@ -83,9 +86,15 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     render() {
-        console.log("<store-dialog>.render()", this._file);
+        console.log("<store-dialog>.render()", this.wait, this._file, this.perspective.uploadState);
 
         let content = html`<sl-spinner></sl-spinner>`;
+
+        if (this.wait && this.perspective.uploadState) {
+            let pct = Math.ceil(this.perspective.uploadState.written_chunks / this.perspective.uploadState.splitObj.numChunks * 100);
+            content = html`<sl-progress-bar .value=${pct}>${pct}%</sl-progress-bar>`;
+        }
+
         if (this._file) {
             let allTags;
             if (this._localOnly) {
@@ -112,19 +121,19 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     ${this._selectedTags.length == 0
                 ? html``
                 : html`
-                            <tag-list selectable deletable
-                                      .tags=${this._selectedTags}
-                                      @deleted=${(e) => {
-                    console.log("deleted tag", e.detail);
-                    const index = this._selectedTags.indexOf(e.detail);
-                    if (index > -1) {
-                        this._selectedTags.splice(index, 1);
-                    }
-                    this.requestUpdate();
-                    if(this.tagListElem) this.tagListElem.requestUpdate();
-                }}
-                            >
-                            </tag-list>
+                    <tag-list selectable deletable
+                              .tags=${this._selectedTags}
+                              @deleted=${(e) => {
+                                console.log("deleted tag", e.detail);
+                                const index = this._selectedTags.indexOf(e.detail);
+                                if (index > -1) {
+                                    this._selectedTags.splice(index, 1);
+                                }
+                                this.requestUpdate();
+                                if(this.tagListElem) this.tagListElem.requestUpdate();
+                            }}
+                    >
+                    </tag-list>
                     `}
                 </div>
                 <tag-input .tags=${allTags}
@@ -132,25 +141,54 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                            @selected=${(e) => {this._selectedTags.push(e.detail); this.requestUpdate(); if (this.tagListElem) this.tagListElem.requestUpdate();}}
                 ></tag-input>
                 
-                <sl-button slot="footer" variant="neutral" @click=${(e) => {this._file = undefined; this.dialogElem.open = false;}}>${msg("Cancel")}</sl-button>
-                <sl-button slot="footer" variant="primary" ?disabled=${!this._file} @click=${async (e) => {
-                   if (this._localOnly) {
-                       const res = await this._dvm.startCommitPrivateFile(this._file, this._selectedTags);
-                       if (!res) {
-                           toastError(msg("File already stored locally"));
-                           //this.dialogElem.open = false;
-                       }
-                   }  else {
-                       const maybeSplitObj = await this._dvm.startPublishFile(this._file, this._selectedTags);
-                       if (!maybeSplitObj) {
-                           toastError(msg("File already shared to group or stored locally"));
-                       }
-                   }
-                this._file = undefined;
-                this._selectedTags = [];
-                this.dialogElem.open = false;
-                //this.dispatchEvent(new CustomEvent('store-started', {detail: this._splitObj, bubbles: true, composed: true}));
-            }}>
+                <sl-button slot="footer" variant="neutral" 
+                           @click=${(e) => {
+                                this._file = undefined; 
+                                this.dialogElem.open = false;
+                                this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))
+                           }}>
+                    ${msg("Cancel")}
+                </sl-button>
+                <sl-button slot="footer" variant="primary" 
+                           ?disabled=${!this._file} 
+                           @click=${async (e) => {
+                               e.preventDefault(); e.stopPropagation();
+                               if (this._localOnly) {
+                                   const res = await this._dvm.startCommitPrivateFile(this._file, this._selectedTags);
+                                   if (!res) {
+                                       const str = msg("File already stored locally");
+                                       toastError(str);
+                                       this.dispatchEvent(new CustomEvent('reject', {detail: str, bubbles: true, composed: true}));
+                                       this.dialogElem.open = false;
+                                   }
+                               }  else {
+                                   let maybeSplitObj;
+                                   let str = msg("File already shared to group or stored locally")
+                                   try {
+                                       maybeSplitObj = await this._dvm.startPublishFile(this._file, this._selectedTags, (manifestEh: EntryHashB64) => {
+                                           console.log("<store-dialog>.onUploadDone()", manifestEh, this);
+                                           this.dispatchEvent(new CustomEvent('create', {detail: manifestEh, bubbles: true, composed: true}));
+                                           if (this.dialogElem) this.dialogElem.open = false;
+                                       }
+                                   );
+                                   } catch(e) {
+                                       console.warn("filesDvm.startPublishFile() Failed", e);
+                                       str = e;
+                                   }
+                                   console.log("<store-dialog>.click", maybeSplitObj);
+                                   if (!maybeSplitObj) {
+                                       toastError(str);
+                                       this.dispatchEvent(new CustomEvent('reject', {detail: str, bubbles: true, composed: true}));
+                                       this.dialogElem.open = false;
+                                   }
+                               }
+                            this._file = undefined;
+                            this._selectedTags = [];
+                            if (!this.wait) {
+                                this.dialogElem.open = false;
+                            }
+                            //this.dispatchEvent(new CustomEvent('store-started', {detail: this._splitObj, bubbles: true, composed: true}));
+                        }}>
                     ${this._localOnly? msg("Add") : msg("Publish")}
                 </sl-button>                
             `;
@@ -160,7 +198,15 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
         /** render all */
         return html`
             <sl-dialog class="action-dialog" 
-                       @sl-request-close=${e => this._file = undefined}>
+                       @sl-request-close=${(e) => {
+                           console.log("<store-dialog> sl-request-close", e); 
+                           if (!this.wait) {
+                               this._file = undefined;
+                           } else {
+                               e.preventDefault();
+                               e.stopPropagation();
+                           }
+                       }}>
                 <div slot="label">
                     <sl-icon class="prefixIcon" name="${this._localOnly?"hdd" : "people"}"></sl-icon>
                     ${this._localOnly? msg("Add to my personal files") : msg("Share with group")}

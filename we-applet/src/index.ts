@@ -1,4 +1,4 @@
-import {setup} from "@ddd-qc/we-utils";
+import {setup, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {createFilesApplet} from "./createFilesApplet";
 import {AppletServices} from "@lightningrodlabs/we-applet";
 import {getAssetInfo} from "./appletServices/getAssetInfo";
@@ -8,6 +8,7 @@ import {devtestNames, setupFilesEntryView} from "./devtest";
 import {search} from "./appletServices/search";
 import {AppAgentClient, RoleName, ZomeName} from "@holochain/client";
 import {WAL} from "@lightningrodlabs/we-applet/dist/types";
+import {mdiFileOutline} from "@mdi/js";
 
 
 /** */
@@ -37,7 +38,12 @@ export async function setupFilesApplet() {
 /** */
 async function setupFilesMainView() {
     const appletServices: AppletServices = {
-        creatables: {},
+        creatables: {
+            file: {
+                label: "File",
+                icon_src: wrapPathInSvg(mdiFileOutline),
+            }
+        },
         blockTypes,
         getAssetInfo,
         search,
@@ -58,7 +64,7 @@ export async function bindAsset(
   dstIntegrityZomeName: ZomeName,
   dstEntryType: string,
 ): Promise<void> {
-
+    /* FIXME */
 }
 
 export default setupFilesApplet;

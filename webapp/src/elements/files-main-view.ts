@@ -1086,15 +1086,15 @@ export class FilesMainView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 .profile=${myProfile}
                 @sl-after-hide=${(e) => {this.fabElem.style.display = "block"}}
                 @selected=${(e) => {
-            if (e.detail == "send") {
-                this.sendDialogElem.open();
-            }
-            if (e.detail == "publish") {
-                this.storeDialogElem.open(false);
-            }
-            if (e.detail == "add") {
-                this.storeDialogElem.open(true);
-            }
+                    if (e.detail == "send") {
+                        this.sendDialogElem.open();
+                    }
+                    if (e.detail == "publish") {
+                        this.storeDialogElem.open(false);
+                    }
+                    if (e.detail == "add") {
+                        this.storeDialogElem.open(true);
+                    }
         }}></action-overlay>
         <store-dialog></store-dialog>
         <send-dialog></send-dialog>

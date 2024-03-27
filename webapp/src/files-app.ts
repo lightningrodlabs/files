@@ -4,8 +4,8 @@ import {ContextProvider} from "@lit/context";
 import {
   AdminWebsocket,
   AgentPubKeyB64,
-  AppWebsocket,
-  DnaDefinition, encodeHashToBase64, EntryHash,
+  AppWebsocket, decodeHashFromBase64,
+  DnaDefinition, encodeHashToBase64, EntryHash, EntryHashB64,
   InstalledAppId,
   ZomeName
 } from "@holochain/client";
@@ -21,7 +21,7 @@ import {
   FILES_DEFAULT_ROLE_NAME, ProfileInfo,
 } from "@ddd-qc/files";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
-import {AppletId, AppletView, GroupProfile, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletId, AppletView, CreatableName, GroupProfile, WAL, WeServices} from "@lightningrodlabs/we-applet";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DELIVERY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
@@ -275,6 +275,32 @@ export class FilesApp extends HappElement {
             default:
               throw new Error(`Unknown entry type ${entryType}.`);
             }
+          break;
+        case "creatable":
+          const creatableViewInfo = this.appletView as {
+            type: "creatable";
+            name: CreatableName;
+            resolve: (wal: WAL) => Promise<void>;
+            reject: (reason: any) => Promise<void>;
+            cancel: () => Promise<void>;
+          };
+          if (creatableViewInfo.name == "File") {
+            view = html`<store-dialog wait="true"
+              @create=${async (e: CustomEvent<EntryHashB64>) => {
+                try {
+                  console.log("@create event", e.detail);
+                  const wal: WAL = {hrl: [decodeHashFromBase64(this.filesDvm.cell.dnaHash), decodeHashFromBase64(e.detail)], context: null}
+                  await creatableViewInfo.resolve(wal);
+                } catch(e) {
+                  creatableViewInfo.reject(e)
+                }
+              }}
+              @cancel=${(_e) => creatableViewInfo.cancel()}
+              @reject=${(e) => creatableViewInfo.reject(e.detail)}
+            ></store-dialog>`;
+          } else {
+            throw new Error(`Unhandled creatable type ${creatableViewInfo.name}.`)
+          }
           break;
         default:
           console.error("We applet-view type:", this.appletView);
