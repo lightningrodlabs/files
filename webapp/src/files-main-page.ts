@@ -955,7 +955,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
                 mainArea = html`
                     <h2>${msg("Group Files")}</h2>
-                    <file-table type="group" .items=${dhtPublicItems}></file-table>
+                    <file-table type="group" nolocal noselect .items=${dhtPublicItems}></file-table>
                 `;
             }
 

@@ -27,6 +27,16 @@ export function prettyTimestamp(ts: number): string {
     return date_str;
 }
 
+/** Make a pretty data string from a holochain timestamp */
+export function dayTimestamp(ts: number): string {
+    if (ts <= 0) {
+        return "N/A";
+    }
+    const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+    const date_str =     date.toLocaleDateString('en-US', { 'year': 'numeric', 'month': '2-digit', 'day': '2-digit' }); // "24 January 2024"
+    return date_str;
+}
+
 
 /** */
 export function arrayBufferToBase64(buffer: ArrayBuffer): string {

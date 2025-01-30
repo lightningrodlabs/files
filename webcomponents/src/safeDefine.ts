@@ -3,16 +3,18 @@
 
 /** Hack for bypassing element already defined error */
 function safeDefine(fn:any) {
+  console.log("safeDefine()", fn);
   // eslint-disable-next-line func-names
   return function(...args:any) {
     try {
       // @ts-ignore
       return fn.apply(this, args);
     } catch (error) {
+      console.log("safeDefine() error", error);
       if (
         error instanceof DOMException &&
-        //error.message.includes('has already been used with this registry')
-        error.message.includes('has already been defined as a custom element')
+        (error.message.includes('has already been used with this registry') ||
+        error.message.includes('has already been defined as a custom element'))
       ) {
         console.warn("Double customElements.define waived")
         return false;

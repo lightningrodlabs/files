@@ -16,7 +16,7 @@ pub fn query_all_PrivateTag(_: ()) -> ExternResult<Vec<(EntryHash, Timestamp, St
     /// Form & Emit Signal
     let pulses = tuples.clone().into_iter()
       .map(|(record, _entry)| {
-          let entry_pulse = EntryPulse::try_from_new_record(record, false).unwrap();
+          let entry_pulse = EntryPulse::try_from_new_record(record, ValidatedBy::Me, false).unwrap();
           return ZomeSignalProtocol::Entry(entry_pulse);
       })
       .collect();

@@ -1,6 +1,6 @@
 import {css, html, LitElement} from "lit";
 import {property, customElement} from "lit/decorators.js";
-import {prettyFileSize, prettyTimestamp} from "../utils";
+import {dayTimestamp, prettyFileSize} from "../utils";
 import {columnBodyRenderer, columnFooterRenderer} from "@vaadin/grid/lit";
 import {ParcelDescription} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {filesSharedStyles} from "../sharedStyles";
@@ -48,9 +48,13 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
 
     @property() selectable?: string;
 
-    @property({type: Boolean}) view: boolean = false;
+    @property({type: Boolean}) view: boolean = false; // Allow Send & Delete buttons
 
-    @property({type: Boolean}) notag: boolean = false;
+    @property({type: Boolean}) notag: boolean = false; // Display the tag columns
+
+    @property({type: Boolean}) nolocal: boolean = false; // Display the Local column
+
+   @property({type: Boolean}) noselect: boolean = false; // Display the Checkbox column
 
     /** */
     get gridElem(): LitElement {
@@ -87,7 +91,7 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
         return html`
             <vaadin-grid id="grid"
                          .items=${this.items}>
-                <vaadin-grid-selection-column></vaadin-grid-selection-column>
+                <vaadin-grid-selection-column .hidden=${this.noselect}></vaadin-grid-selection-column>
                 <vaadin-grid-column path="description" header=${msg("Filename")}
                                     ${columnBodyRenderer<FileTableItem>(
                                             ({ description }) => html`<span>${description.name}</span>`,
@@ -147,12 +151,12 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
                 ></vaadin-grid-column>
                 <vaadin-grid-column path="timestamp" header=${msg("Date")}
                                     ${columnBodyRenderer<FileTableItem>(
-                                            ({ timestamp }) => html`<span>${prettyTimestamp(timestamp)}</span>`,
+                                            ({ timestamp }) => html`<span>${dayTimestamp(timestamp)}</span>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
                 <vaadin-grid-column path="isLocal" header=${msg("Local")} width="80px"
-                                    .hidden=${this.type == "personal"}
+                                    .hidden=${this.type == "personal" || this.nolocal}
                                     ${columnBodyRenderer<FileTableItem>(
                                             ({ isLocal }) => html`<span>${isLocal? msg("Yes") : msg("No")}</span>`,
                                             [],

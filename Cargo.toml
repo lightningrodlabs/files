@@ -30,21 +30,21 @@ ill_formed_attribute_input = "allow"
 
 [workspace.dependencies]
 serde = { version = "=1.0.203", default-features = false }
-hdi = { version = "=0.5.0-rc.1", default-features = false }
-hdk = { version = "=0.4.0-rc.1", default-features = false }
+hdi = { version = "=0.5.1", default-features = false }
+hdk = { version = "=0.4.1", default-features = false }
 
-zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-4.0-dev.20" }
-zome_signals = { git = "https://github.com/ddd-mtl/zome-signals", branch = "hdk-4.0-dev.20" }
-path_explorer_types = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-4.0-dev.20" }
+zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-4.1" }
+zome_signals = { git = "https://github.com/ddd-mtl/zome-signals", branch = "hdk-4.1" }
+path_explorer_types = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-4.1" }
 
-delivery = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-4.0-dev.20" }
-zome_delivery_integrity = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-4.0-dev.20" }
-zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_types", branch = "hdk-4.0-dev.20" }
-zome_delivery_api = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_api", branch = "hdk-4.0-dev.20" }
-path_explorer = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-4.0-dev.20" }
+delivery = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-4.1" }
+zome_delivery_integrity = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-4.1" }
+zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_types", branch = "hdk-4.1" }
+zome_delivery_api = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_api", branch = "hdk-4.1" }
+path_explorer = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-4.1" }
 
-hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/profiles_alt_zome", branch = "hdk-4.0-dev.20", package="profiles_alt_coordinator" }
-hc_zome_profiles_integrity = {git = "https://github.com/ddd-mtl/profiles_alt_zome", branch = "hdk-4.0-dev.20" }
+hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/profiles_alt_zome", branch = "hdk-4.1", package="profiles_alt_coordinator" }
+hc_zome_profiles_integrity = {git = "https://github.com/ddd-mtl/profiles_alt_zome", branch = "hdk-4.1" }
 
 
 [profile.dev]

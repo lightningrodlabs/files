@@ -39,12 +39,15 @@ export function type2Icon(type: FileType): string {
 /** */
 export function kind2mime(kindInfo: ParcelKind): string {
     let filetype = (kindInfo as ParcelKindVariantManifest).Manifest;
-    //console.log("prettyFiletype()", filetype);
+    //console.log("kind2mime()", filetype);
     const fields = filetype.split('::');
     if (fields.length > 1) {
         filetype = fields[1]!;
     }
-    //console.log("prettyFiletype() res ", filetype);
+    //console.log("kind2mime() res ", filetype);
+    if (filetype == "") {
+        filetype = "Unknown";
+    }
     return filetype;
 }
 

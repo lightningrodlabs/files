@@ -157,7 +157,7 @@ export class FilesDvm extends DnaViewModel {
         const maybeCachedData = this.getFileFromCache(manifest.data_hash);
         let file;
         if (maybeCachedData == null) {
-            file = (await this.fetchFile(manifestEh))[1];
+            file = (await this.fetchFile(manifestEh, manifest))[1];
             await this.cacheFileLocalStorage(file);
         } else {
             file = this.data2File(manifest, maybeCachedData);
@@ -647,9 +647,12 @@ export class FilesDvm extends DnaViewModel {
 
 
     /** */
-    async fetchFile(ppEh: EntryId): Promise<[ParcelManifest, File]> {
+    async fetchFile(ppEh: EntryId, manifest?: ParcelManifest): Promise<[ParcelManifest, File]> {
         assertIsDefined(ppEh);
-        const [manifest, _ts] = await this.deliveryZvm.fetchPublicManifest(ppEh);
+        if (!manifest) {
+            const tuple = await this.deliveryZvm.fetchPublicManifest(ppEh);
+            manifest = tuple[0];
+        }
         const maybeData = this._perspective.fileCache.get(ppEh);
         if (maybeData) {
             return [manifest, maybeData];

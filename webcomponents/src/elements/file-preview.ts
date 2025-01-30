@@ -52,7 +52,7 @@ export class FilePreview extends DnaElement<FilesDvmPerspective, FilesDvm> {
             if (this._manifest && this._manifest.description.size < this._dvm.dnaProperties.maxChunkSize) {
                 const mime = kind2mime(this._manifest.description.kind_info);
                 //const fileType = kind2Type(this._manifest.description.kind_info);
-                this._maybeFile = (await this._dvm.fetchFile(this.hash))[1];
+                this._maybeFile = (await this._dvm.fetchFile(this.hash, this._manifest))[1];
 
                 const reader = new FileReader();
                 if (this._maybeBlobUrl) {
