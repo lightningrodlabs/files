@@ -330,11 +330,11 @@ export class FilesDvm extends DnaViewModel {
                 const manifest = decode(pulse.bytes) as ParcelManifest;
                 console.log("filesDvm received PublicManifest", pulse.eh, manifest);
                 /** Follow-up send if requested */
-                if (this._mustSendTo[manifest.data_hash] && this._mustSendTo[manifest.data_hash]!.length > 0) {
+                if (this.isMainView && this._mustSendTo[manifest.data_hash] && this._mustSendTo[manifest.data_hash]!.length > 0) {
                     this._sendFile(pulse.eh, manifest);
                 }
                 /** Add Public tags if any */
-                if (this._mustAddTags[manifest.data_hash]) {
+                if (this.isMainView && this._mustAddTags[manifest.data_hash]) {
                     const addTags = this._mustAddTags[manifest.data_hash] as any;
                     if (addTags.isPrivate) {
                         /*await*/
@@ -370,16 +370,18 @@ export class FilesDvm extends DnaViewModel {
                     uploadState.chunks.push(pulse.eh); // FIXME ?
                     //const index = uploadState.chunks.length;
                     /** Commit manifest if it was the last chunk */
-                    if (uploadState.chunks.length == uploadState.splitObj.numChunks) {
-                        if (uploadState.isPrivate) {
-                            this.filesZvm.commitPrivateManifest(uploadState.file, uploadState.splitObj.dataHash, uploadState.chunks)
+                    if (this.isMainView) {
+                        if (uploadState.chunks.length == uploadState.splitObj.numChunks) {
+                            if (uploadState.isPrivate) {
+                                this.filesZvm.commitPrivateManifest(uploadState.file, uploadState.splitObj.dataHash, uploadState.chunks)
+                            } else {
+                                this.filesZvm.publishFileManifest(uploadState.file, uploadState.splitObj.dataHash, uploadState.chunks);
+                            }
                         } else {
-                            this.filesZvm.publishFileManifest(uploadState.file, uploadState.splitObj.dataHash, uploadState.chunks);
-                        }
-                    } else {
-                        /** Otherwise commit next batch */
-                        if (uploadState.chunks.length == uploadState.written_chunks) {
-                            this.writeChunks(chunk.data_hash);
+                            /** Otherwise commit next batch */
+                            if (uploadState.chunks.length == uploadState.written_chunks) {
+                                this.writeChunks(chunk.data_hash);
+                            }
                         }
                     }
                     this._perspective.uploadStates[chunk.data_hash] = uploadState;

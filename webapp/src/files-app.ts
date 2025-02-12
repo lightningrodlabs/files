@@ -140,7 +140,7 @@ export class FilesApp extends HappElement {
     console.log("createProfilesDvm() cell_infos:", cell_infos);
     /** Create Profiles DVM */
         //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
-    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
+    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId), false);
     console.log("createProfilesDvm() dvm", dvm);
     console.log("createProfilesDvm() profilesAppInfo", profilesAppInfo);
     await this.setupWeProfilesDvm(dvm as ProfilesDvm);
