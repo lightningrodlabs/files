@@ -54,7 +54,7 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
 
     @property({type: Boolean}) nolocal: boolean = false; // Display the Local column
 
-   @property({type: Boolean}) noselect: boolean = false; // Display the Checkbox column
+    @property({type: Boolean}) noselect: boolean = false; // Display the Checkbox column
 
     /** */
     get gridElem(): LitElement {
