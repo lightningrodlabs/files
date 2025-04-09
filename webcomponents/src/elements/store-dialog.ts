@@ -19,7 +19,9 @@ import {msg} from "@lit/localize";
 @customElement("store-dialog")
 export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
-    @property() wait: boolean = false;
+    @property({type: Boolean}) wait: boolean = false; // when doing Creatable
+
+    @state() private _loading = false;
 
     @state() private _file: File | undefined = undefined;
     @state() private _selectedTags: any[] = [];
@@ -87,14 +89,14 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
     override render() {
         console.log("<store-dialog>.render()", this.wait, this._file, this.perspective.uploadStates);
 
-        let content = html`<sl-spinner></sl-spinner>`;
+        let content = html`Preparing upload...`;
 
         if (this.wait && this._splitObj && this.perspective.uploadStates[this._splitObj.dataHash]) {
             let pct = Math.ceil(this.perspective.uploadStates[this._splitObj.dataHash]!.written_chunks / this.perspective.uploadStates[this._splitObj.dataHash]!.splitObj.numChunks * 100);
             content = html`<sl-progress-bar .value=${pct}>${pct}%</sl-progress-bar>`;
         }
 
-        if (this._file) {
+        if (!this._loading && this._file) {
             let allTags;
             if (this._localOnly) {
                 allTags = this._dvm.taggingZvm.perspective.allPrivateTags;
@@ -162,14 +164,15 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                    }
                                }  else {
                                    let maybeSplitObj;
-                                   let str = msg("File already published to group or stored locally")
+                                   let str = msg("File already published to group or stored locally");
+                                   this._loading = true;
                                    try {
                                        maybeSplitObj = await this._dvm.startPublishFile(this._file!, this._selectedTags, this._dvm.profilesZvm.perspective.agents,(manifestEh: EntryId) => {
                                            console.log("<store-dialog>.onUploadDone()", manifestEh, this);
                                            this.dispatchEvent(new CustomEvent<EntryId>('created', {detail: manifestEh, bubbles: true, composed: true}));
+                                           this._loading = false;
                                            if (this.dialogElem) this.dialogElem.open = false;
-                                       }
-                                   );
+                                       });
                                    } catch(e:any) {
                                        console.warn("filesDvm.startPublishFile() Failed", e);
                                        str = e;
@@ -179,11 +182,14 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                        toastError(str);
                                        this.dispatchEvent(new CustomEvent('reject', {detail: str, bubbles: true, composed: true}));
                                        this.dialogElem.open = false;
+                                       this._loading = false;
+                                   } else {
+                                       this.dispatchEvent(new CustomEvent('started', {detail: null, bubbles: true, composed: true}));
                                    }
                                }
                             this._file = undefined;
                             this._selectedTags = [];
-                            if (!this.wait) {
+                            if (!this.wait && this.dialogElem) {
                                 this.dialogElem.open = false;
                             }
                             //this.dispatchEvent(new CustomEvent('store-started', {detail: this._splitObj, bubbles: true, composed: true}));
@@ -202,8 +208,7 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                            if (!this.wait) {
                                this._file = undefined;
                            } else {
-                               e.preventDefault();
-                               e.stopPropagation();
+                               e.stopPropagation(); e.preventDefault();
                            }
                        }}>
                 <div slot="label">

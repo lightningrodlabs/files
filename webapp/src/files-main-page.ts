@@ -334,7 +334,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
     async refresh() {
         await this._dvm.probeAll();
         //await this._dvm.filesZvm.zomeProxy.getPrivateFiles();
-        await this._dvm.deliveryZvm.zomeProxy.queryAll();
+        //await this._dvm.deliveryZvm.zomeProxy.queryAll();
         this.requestUpdate();
     }
 
@@ -1150,6 +1150,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
             ></files-edit-profile>
         </sl-dialog>
         <action-overlay
+                id="act-overlay"
                 .profile=${myProfile}
                 @sl-after-hide=${(_e:any) => {this.fabElem.style.display = "block"}}
                 @selected=${(e:any) => {
@@ -1163,7 +1164,12 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         this.storeDialogElem.open(true);
                     }
         }}></action-overlay>
-        <store-dialog></store-dialog>
+        <store-dialog
+          @created=${async (_e: CustomEvent<EntryId>) => this.actionOverlayElem.close()}
+          @started=${async () => this.actionOverlayElem.close()}
+          @cancel=${(_e:any) => this.actionOverlayElem.close()}
+          @reject=${(_e:any) => this.actionOverlayElem.close()}
+        ></store-dialog>
         <send-dialog></send-dialog>
         <sl-dialog id="delete-dialog">
             <div>Remove Public file?</div>

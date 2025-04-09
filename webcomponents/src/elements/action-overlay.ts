@@ -1,5 +1,5 @@
 import {css, html, LitElement} from "lit";
-import {property, customElement} from "lit/decorators.js";
+import {property, customElement, state} from "lit/decorators.js";
 import {SlDialog} from "@shoelace-style/shoelace";
 import {filesSharedStyles} from "../sharedStyles";
 import {msg} from '@lit/localize';
@@ -16,24 +16,36 @@ export class ActionOverlay extends LitElement {
     @property({ type: Object })
     profile: ProfileMat | undefined;
 
+    @state() private _loading = false;
+
     /** */
     get dialogElem() : SlDialog {
         return this.shadowRoot!.querySelector("sl-dialog") as SlDialog;
     }
 
-    /** */
-    open() {
-        this.dialogElem.open = true;
-    }
 
     isOpen(): boolean {
       return this.dialogElem && this.dialogElem.open;
     }
 
     /** */
-    onClick(action: string) {
-        this.dispatchEvent(new CustomEvent('selected', {detail: action, bubbles: true, composed: true}));
+    open() {
+        this._loading = false;
+        this.dialogElem.open = true;
+    }
+    /** */
+    close() {
+        console.log("<action-overlay>.close()");
+        this._loading = false;
         this.dialogElem.open = false;
+    }
+
+
+    /** */
+    onClick(action: string) {
+        this._loading = true;
+        this.dispatchEvent(new CustomEvent('selected', {detail: action, bubbles: true, composed: true}));
+        //this.dialogElem.open = false;
     }
 
 
@@ -41,7 +53,11 @@ export class ActionOverlay extends LitElement {
     override render() {
         return html`
             <sl-dialog id="action-overlay" class="action-dialog" noHeader>
-                <sl-button variant="neutral" @click=${(_e: any) => {this.onClick("send")}}>
+                ${this._loading? 
+                    html`
+                        <div style="width: 100%; height: 100%; background: #3b3b3b; border-radius: 12px;"><span style="margin-left:10px;">Loading file...</span>
+                        </div>` 
+                  : html`<sl-button variant="neutral" @click=${(_e: any) => {this.onClick("send")}}>
                     <sl-icon slot="prefix" name="send"></sl-icon>
                     ${msg("Send")}
                 </sl-button>
@@ -52,7 +68,7 @@ export class ActionOverlay extends LitElement {
                 <sl-button variant="neutral" @click=${(_e: any) => {this.onClick("add")}}>
                     <sl-icon slot="prefix" name="hdd"></sl-icon>
                     ${msg("Add to my personal files")}
-                </sl-button>
+                </sl-button>`}
             </sl-dialog>
         `;
 

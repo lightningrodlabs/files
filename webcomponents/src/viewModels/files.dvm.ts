@@ -151,7 +151,7 @@ export class FilesDvm extends DnaViewModel {
     /** */
     async downloadFile(manifestEh: EntryId): Promise<void> {
         console.log("FilesDvm.downloadFile()", manifestEh);
-        const [manifest, _ts, _author] = await this.deliveryZvm.fetchPublicManifest(manifestEh);
+        const manifest = await this.deliveryZvm.fetchFileInfo(manifestEh);
 
         console.log("FilesDvm.downloadFile() manifest", manifest);
         const maybeCachedData = this.getFileFromCache(manifest.data_hash);
@@ -634,26 +634,11 @@ export class FilesDvm extends DnaViewModel {
 
 
     /** */
-    async fetchFileInfo(eh: EntryId): Promise<ParcelManifest> {
-        const maybe = this.deliveryZvm.perspective.privateManifests.get(eh);
-        if (maybe) {
-            return maybe[0];
-        }
-        const maybePublic = this.deliveryZvm.perspective.localPublicManifests.get(eh);
-        if (maybePublic) {
-            return maybePublic[0];
-        }
-        const [manifest, _ts] = await this.deliveryZvm.fetchPublicManifest(eh);
-        return manifest;
-    }
-
-
-    /** */
     async fetchFile(ppEh: EntryId, manifest?: ParcelManifest): Promise<[ParcelManifest, File]> {
         assertIsDefined(ppEh);
+        console.debug("fetchFile()", ppEh, manifest);
         if (!manifest) {
-            const tuple = await this.deliveryZvm.fetchPublicManifest(ppEh);
-            manifest = tuple[0];
+            manifest = await this.deliveryZvm.fetchFileInfo(ppEh);
         }
         const maybeData = this._perspective.fileCache.get(ppEh);
         if (maybeData) {

@@ -183,6 +183,11 @@ export class FilesApp extends HappElement {
   /** */
   override async hvmConstructed() {
     console.log("hvmConstructed()", this._adminWs, this._canAuthorizeZfns);
+    this.appProxy.getCellProxy(this.filesDvm.deliveryZvm.cell.address).setCanThrottle(false);
+    this.appProxy.getCellProxy(this.filesDvm.filesZvm.cell.address).setCanThrottle(false);
+    this.appProxy.getCellProxy(this.filesDvm.taggingZvm.cell.address).setCanThrottle(false);
+    this.appProxy.getCellProxy(this.filesDvm.profilesZvm.cell.address).setCanThrottle(false);
+    console.log("hvmConstructed() DONE");
     this._hasHolochainFailed = false;
     this._loaded = true;
   }
@@ -278,7 +283,7 @@ export class FilesApp extends HappElement {
             cancel: () => Promise<void>;
           };
           if (creatableViewInfo.name == "File") {
-            view = html`<store-dialog wait="true"
+            view = html`<store-dialog wait
               @created=${async (e: CustomEvent<EntryId>) => {
                 try {
                   console.log("@created event", e.detail);

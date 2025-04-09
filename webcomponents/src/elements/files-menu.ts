@@ -137,7 +137,7 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 <sl-skeleton effect="sheen"></sl-skeleton>
             `;
         }
-        console.log("renderTags()", this.taggingPerspective.publicTargetsByTag, this.taggingPerspective.privateTargetsByTag);
+        // console.log("renderTags()", this.taggingPerspective.publicTargetsByTag, this.taggingPerspective.privateTargetsByTag);
         const tags: Dictionary<EntryIdMap<ActionId | undefined>> = isPrivate
             ? this.taggingPerspective.privateTargetsByTag
             : this.taggingPerspective.publicTargetsByTag;

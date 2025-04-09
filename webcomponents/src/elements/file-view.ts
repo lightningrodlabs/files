@@ -45,7 +45,7 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             console.log("<file-view>.willUpdate()", this.hash!.b64);
             this._loading = true;
             //this._manifest = await this._dvm.filesZvm.zomeProxy.getFileInfo(this.hash!.hash);
-            this._manifest = await this._dvm.fetchFileInfo(this.hash!);
+            this._manifest = await this._dvm.deliveryZvm.fetchFileInfo(this.hash!);
             this._loading = false;
         }
     }

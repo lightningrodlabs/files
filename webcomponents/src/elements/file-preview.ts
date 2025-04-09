@@ -47,7 +47,7 @@ export class FilePreview extends DnaElement<FilesDvmPerspective, FilesDvm> {
             }
             this._loading = true;
             //this._manifest = await this._dvm.filesZvm.zomeProxy.getFileInfo(this.hash.hash);
-            this._manifest = await this._dvm.fetchFileInfo(this.hash);
+            this._manifest = await this._dvm.deliveryZvm.fetchFileInfo(this.hash);
             //console.log(`<file-preview>.willUpdate() ${this._manifest.description.size} < ${this._dvm.dnaProperties.maxChunkSize}?`);
             if (this._manifest && this._manifest.description.size < this._dvm.dnaProperties.maxChunkSize) {
                 const mime = kind2mime(this._manifest.description.kind_info);
