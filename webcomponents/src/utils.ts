@@ -38,8 +38,24 @@ export function dayTimestamp(ts: number): string {
 }
 
 
+export async function arrayBufferToBase64Async(buffer: ArrayBuffer): Promise<string> {
+    const blob = new Blob([buffer]);
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl  = reader.result as string;
+            // Remove the data URL prefix (e.g., "data:application/octet-stream;base64,")
+            const base64 = dataUrl .substring(dataUrl.indexOf(',') + 1);
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
 /** */
 export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    console.log("arrayBufferToBase64()");
     let binary = '';
     const bytes = new Uint8Array(buffer);
     const len = bytes.byteLength;
@@ -65,21 +81,27 @@ export function base64ToArrayBuffer(base64: string): ArrayBufferLike {
 
 export type FileHashB64 = string;
 
+
 /** */
 export async function sha256(message: string): Promise<FileHashB64> {
+    console.log("sha256()", message.length);
     const utf8 = new TextEncoder().encode(message);
-    await _sodium.ready;
-    const sodium = _sodium;
-    let hashArray = await sodium.crypto_hash_sha256(utf8);
-    console.log("sha256", encodeHashToBase64(hashArray));
-    //const hashBuffer0 = await crypto.subtle.digest('SHA-256', utf8);
-    //const hashArray0 = Array.from(new Uint8Array(hashBuffer0));
-    //console.log("hash compare", hashArray, hashArray0);
-    // const hashHex = hashArray
-    //     .map((bytes) => bytes.toString(16).padStart(2, '0'))
-    //     .join('');
-    return encodeHashToBase64(hashArray);
+    let res;
+    // /* Sodium */
+    // await _sodium.ready;
+    // const sodium = _sodium;
+    // console.log("sha256() sodium is ready!");
+    // let hashArray: Uint8Array = await sodium.crypto_hash_sha256(utf8);
+    // res = encodeHashToBase64(hashArray)
+    // console.log("sha256() sodium", res);
+    /* Crypto */
+    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    res = encodeHashToBase64(new Uint8Array(hashBuffer));
+    console.log("sha256() crypto", res);
+    /* */
+    return res;
 }
+
 
 
 /** */
@@ -103,13 +125,14 @@ export interface SplitObject {
 
 /** */
 export async function splitFile(file: File, chunkMaxSize: number): Promise<SplitObject> {
+    console.log("splitFile()", file.name);
     // /** Causes stack error on big files */
     // if (!base64regex.test(file.content)) {
     //   const invalid_hash = sha256(file.content);
     //   console.error("File '" + file.name + "' is invalid base64. hash is: " + invalid_hash);
     // }
     const content = await file.arrayBuffer();
-    const contentB64 = arrayBufferToBase64(content);
+    const contentB64 = await arrayBufferToBase64Async(content);
     const splitObj = await splitData(contentB64, chunkMaxSize);
     console.log("splitObj: ", splitObj);
     return splitObj;
@@ -118,9 +141,9 @@ export async function splitFile(file: File, chunkMaxSize: number): Promise<Split
 
 /** */
 export async function splitData(full_data_string: string, chunkMaxSize: number): Promise<SplitObject> {
+    console.log("splitData()", full_data_string.length, chunkMaxSize);
     const hash = await sha256(full_data_string);
-    console.log('file hash: ' + hash);
-    console.log('splitFile()', chunkMaxSize);
+    console.log("splitData() hash", hash);
     const chunks = chunkSubstr(full_data_string, chunkMaxSize);
     return {
         dataHash: hash,

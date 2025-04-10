@@ -23,15 +23,16 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @state() private _loading = false;
 
-    @state() private _file: File | undefined = undefined;
     @state() private _selectedTags: any[] = [];
 
-    private _splitObj?: SplitObject;
+    @state() private _file: File | undefined = undefined;
+
+    @state() private _splitObj: SplitObject | undefined = undefined;
 
     private _localOnly: boolean = false;
 
-    /** -- Getters -- */
 
+    /** -- Getters -- */
 
     get inputElem() : SlInput {
         return this.shadowRoot!.getElementById("tag-input") as SlInput;
@@ -41,30 +42,32 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
         return this.shadowRoot!.querySelector("sl-dialog") as SlDialog;
     }
 
-
     get tagListElem() : TagList {
         return this.shadowRoot!.querySelector("tag-list") as TagList;
     }
+
 
     /** -- Methods -- */
 
     /** */
     open(localOnly?: boolean) {
-        console.log("<store-dialog> open()", this._dvm);
+        console.log("<store-dialog>.open()", this._dvm);
         this._localOnly = false;
+        this._file = undefined;
+        this._splitObj = undefined;
         if (localOnly) this._localOnly = localOnly;
         //console.log("<store-dialog> localOnly", localOnly, this._localOnly);
         var input = document.createElement('input');
         input.type = 'file';
-        input.onchange = async (e:any) => {
+        input.onchange = (e:any) => {
             console.log("<store-dialog> target download file", e);
             const file = e.target.files[0];
             if (file.size > this._dvm.dnaProperties.maxParcelSize) {
                 toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
                 return;
             }
-            this._splitObj = await splitFile(file, this._dvm.dnaProperties.maxChunkSize);
             this._file = file;
+            splitFile(file, this._dvm.dnaProperties.maxChunkSize).then((obj) => this._splitObj = obj);
             this.dialogElem.open = true;
         }
         input.click();
@@ -111,11 +114,6 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     ${this._file.name}
                     <span style="font-weight: normal">(${prettyFileSize(this._file.size)})</span>
                 </div>
-                    
-                <!--<div>Size: ${prettyFileSize(this._file.size)}</div>                    
-                    <div>Type: ${this._file.type}</div>
-                    <div>Hash: ${!this._splitObj? "" : this._splitObj.dataHash}</div>
-                </div>-->
                 
                 <div style="margin-bottom: 5px; display:flex;">
                     <span style="margin-top: 10px;margin-right: 10px;">${msg("Tags")}:</span> 
@@ -151,34 +149,34 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     ${msg("Cancel")}
                 </sl-button>
                 <sl-button slot="footer" variant="primary" 
-                           ?disabled=${!this._file} 
-                           @click=${async (e:any) => {
+                           ?disabled=${!this._splitObj} 
+                           @click=${(e:any) => {
                                e.preventDefault(); e.stopPropagation();
                                if (this._localOnly) {
-                                   const res = await this._dvm.startCommitPrivateFile(this._file!, this._selectedTags);
-                                   if (!res) {
+                                   const succeeded = this._dvm.startCommitPrivateFile(this._file!, this._splitObj!, this._selectedTags);
+                                   if (!succeeded) {
                                        const str = msg("File already stored locally");
                                        toastError(str);
                                        this.dispatchEvent(new CustomEvent('reject', {detail: str, bubbles: true, composed: true}));
                                        this.dialogElem.open = false;
                                    }
-                               }  else {
-                                   let maybeSplitObj;
+                               } else {
                                    let str = msg("File already published to group or stored locally");
                                    this._loading = true;
+                                   let succeeded = false;
                                    try {
-                                       maybeSplitObj = await this._dvm.startPublishFile(this._file!, this._selectedTags, this._dvm.profilesZvm.perspective.agents,(manifestEh: EntryId) => {
-                                           console.log("<store-dialog>.onUploadDone()", manifestEh, this);
-                                           this.dispatchEvent(new CustomEvent<EntryId>('created', {detail: manifestEh, bubbles: true, composed: true}));
-                                           this._loading = false;
-                                           if (this.dialogElem) this.dialogElem.open = false;
+                                        succeeded = this._dvm.startPublishFile(this._file!, this._splitObj!, this._selectedTags, this._dvm.profilesZvm.perspective.agents,(manifestEh: EntryId) => {
+                                        console.log("<store-dialog>.onUploadDone()", manifestEh, this);
+                                        this.dispatchEvent(new CustomEvent<EntryId>('created', {detail: manifestEh, bubbles: true, composed: true}));
+                                        this._loading = false;
+                                        if (this.dialogElem) this.dialogElem.open = false;
                                        });
                                    } catch(e:any) {
                                        console.warn("filesDvm.startPublishFile() Failed", e);
                                        str = e;
                                    }
-                                   console.log("<store-dialog>.click", maybeSplitObj);
-                                   if (!maybeSplitObj) {
+                                   console.log("<store-dialog>.click", succeeded);
+                                   if (!succeeded) {
                                        toastError(str);
                                        this.dispatchEvent(new CustomEvent('reject', {detail: str, bubbles: true, composed: true}));
                                        this.dialogElem.open = false;
@@ -194,8 +192,8 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             }
                             //this.dispatchEvent(new CustomEvent('store-started', {detail: this._splitObj, bubbles: true, composed: true}));
                         }}>
-                    ${this._localOnly? msg("Add") : msg("Publish")}
-                </sl-button>                
+                    ${!this._splitObj? msg("Loading...") : this._localOnly? msg("Add") : msg("Publish")}
+                </sl-button>               
             `;
 
         }

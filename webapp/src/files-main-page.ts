@@ -28,7 +28,7 @@ import {
     filesSharedStyles,
     kind2Icon,
     ProfileInfo,
-    FilesNotificationVariantPublicSharingRemoved,
+    FilesNotificationVariantPublicSharingRemoved, splitFile,
 } from "@ddd-qc/files";
 import {DeliveryPerspective, DeliveryState, Distribution} from "@ddd-qc/delivery";
 import {
@@ -299,10 +299,12 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         }
         console.log("onAddFile():", fileInput.files);
         if (fileInput.files && fileInput.files.length > 0) {
-            let res = await this._dvm.startCommitPrivateFile(fileInput.files[0]!, []);
-            console.log("onAddFile() res:", res);
+            const file = fileInput.files[0]!;
+            const splitObj = await splitFile(file, this._dvm.dnaProperties.maxChunkSize);
+            let succeeded = this._dvm.startCommitPrivateFile(file, splitObj, []);
+            console.log("onAddFile() succeeded:", succeeded);
             fileInput.value = "";
-            return res;
+            return splitObj;
         }
         return undefined;
     }
@@ -1151,25 +1153,12 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         </sl-dialog>
         <action-overlay
                 id="act-overlay"
-                .profile=${myProfile}
                 @sl-after-hide=${(_e:any) => {this.fabElem.style.display = "block"}}
-                @selected=${(e:any) => {
-                    if (e.detail == "send") {
-                        this.sendDialogElem.open();
-                    }
-                    if (e.detail == "publish") {
-                        this.storeDialogElem.open(false);
-                    }
-                    if (e.detail == "add") {
-                        this.storeDialogElem.open(true);
-                    }
-        }}></action-overlay>
-        <store-dialog
-          @created=${async (_e: CustomEvent<EntryId>) => this.actionOverlayElem.close()}
-          @started=${async () => this.actionOverlayElem.close()}
-          @cancel=${(_e:any) => this.actionOverlayElem.close()}
-          @reject=${(_e:any) => this.actionOverlayElem.close()}
-        ></store-dialog>
+                @ao-send=${() => this.sendDialogElem.open()}
+                @ao-publish=${() => this.storeDialogElem.open(false)}
+                @ao-store=${() =>  this.storeDialogElem.open(true)}
+        ></action-overlay>
+        <store-dialog></store-dialog>
         <send-dialog></send-dialog>
         <sl-dialog id="delete-dialog">
             <div>Remove Public file?</div>

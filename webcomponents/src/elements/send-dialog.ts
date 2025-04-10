@@ -31,10 +31,14 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
     @state() private _file: File | undefined = undefined;
-    private _splitObj?: SplitObject;
+
+    @state() private _splitObj: SplitObject | undefined = undefined;
 
     @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     profilesPerspective!: ProfilesPerspective;
+
+
+    @state() private _selectedTags: string[] = [];
 
 
     /** -- Getters -- */
@@ -52,27 +56,27 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     open(hash?: EntryId) {
+        this._file = undefined;
+        this._splitObj = undefined;
         if (hash) {
             this._dvm.fetchFile(hash).then(([_manifest, file]) => {
-                splitFile(file, this._dvm.dnaProperties.maxChunkSize).then((splitObj) => {
-                    this._splitObj = splitObj;
-                    this._file = file;
-                    this.dialogElem.open = true;
-                })
+                this._file = file;
+                splitFile(file, this._dvm.dnaProperties.maxChunkSize).then((obj) => this._splitObj = obj);
+                this.dialogElem.open = true;
             });
             return;
         }
         const input = document.createElement('input');
         input.type = 'file';
-        input.onchange = async (e:any) => {
+        input.onchange = (e:any) => {
             console.log("<send-dialog> target download file", e);
             const file = e.target.files[0];
                 if (file.size > this._dvm.dnaProperties.maxParcelSize) {
                     toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
                     return;
                 }
-                this._splitObj = await splitFile(file, this._dvm.dnaProperties.maxChunkSize);
                 this._file = file;
+                splitFile(file, this._dvm.dnaProperties.maxChunkSize).then((obj) => this._splitObj = obj);
                 this.dialogElem.open = true;
             }
         input.click();
@@ -113,7 +117,6 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
     // `;
 
 
-    @state() private _selectedTags: string[] = [];
 
     get inputElem() : SlInput {
         return this.shadowRoot!.getElementById("tag-input") as SlInput;
@@ -214,23 +217,29 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 ></tag-input>
 
                 ${myNotifier}
-                <sl-button slot="footer" variant="neutral" @click=${(_e:any) => {this._file = undefined; this.dialogElem.open = false;}}>${msg("Cancel")}</sl-button>
-                <sl-button slot="footer" variant="primary" ?disabled=${this._recipients.length <= 0} @click=${async (_e:any) => {
-                this.dispatchEvent(new CustomEvent('send-started', {detail: {splitObj: this._splitObj, recipients: this._recipients}, bubbles: true, composed: true}));
-                //const _splitObject = await this._dvm.startCommitPrivateAndSendFile(this._file, this._recipient, this._selectedTags.map((item) => item.value));
-                /*const _splitObject =*/ await this._dvm.startCommitPrivateAndSendFile(this._file!, this._recipients, this._selectedTags);
-                this._file = undefined;
-                this._selectedTags = [];
-                this._recipients = [];
-                this.dialogElem.open = false;
-            }}>
-                    ${msg("Send")}
+                <sl-button slot="footer" variant="neutral" 
+                           @click=${(_e:any) => {
+                               this._file = undefined;
+                               this._splitObj = undefined;
+                               this.dialogElem.open = false;
+                           }}>${msg("Cancel")}</sl-button>
+                <sl-button slot="footer" variant="primary" 
+                           ?disabled=${this._recipients.length <= 0 || !this._splitObj} 
+                           @click=${(_e:any) => {
+                             const succeeded = this._dvm.startCommitPrivateAndSendFile(this._file!, this._splitObj!, this._recipients, this._selectedTags);
+                             if (!succeeded) {
+                                 toastError("Failed to start sending file");
+                             }
+                             this._file = undefined;
+                             this._splitObj = undefined;
+                             this._selectedTags = [];
+                             this._recipients = [];
+                             this.dialogElem.open = false;
+                        }}>
+                    ${this._splitObj? msg("Send") : msg("Loading...")}
                 </sl-button>
-                
             `;
-
         }
-
 
         /** render all */
         return html`

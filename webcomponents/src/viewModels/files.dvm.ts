@@ -31,12 +31,11 @@ import {
 import {SignalCb, AppSignal, Signal, SignalType} from "@holochain/client";
 import {FilesZvm} from "./files.zvm";
 import {
-    arrayBufferToBase64,
     base64ToArrayBuffer,
+    arrayBufferToBase64Async,
     FileHashB64,
     prettyFileSize,
     sha256,
-    splitFile,
     SplitObject
 } from "../utils";
 import { decode } from "@msgpack/msgpack";
@@ -174,7 +173,7 @@ export class FilesDvm extends DnaViewModel {
     /** */
     async cacheFileLocalStorage(file: File) {
         const content = await file.arrayBuffer();
-        const contentB64 = arrayBufferToBase64(content);
+        const contentB64 = await arrayBufferToBase64Async(content);
         if (contentB64.length > 1 * 1024 * 1024) {
             console.log("FilesDvm.cacheFile() Aborted. File is too big for caching", contentB64.length);
             return;
@@ -506,23 +505,30 @@ export class FilesDvm extends DnaViewModel {
 
 
     /** Can't send to self */
-    async startCommitPrivateAndSendFile(file: File, recipients: AgentId[], tags: string[]): Promise<SplitObject | undefined> {
+    startCommitPrivateAndSendFile(file: File, splitObj: SplitObject, recipients: AgentId[], tags: string[]): boolean {
         const agents = recipients
             .filter((agent) => !agent.equals(this.cell.address.agentId))
         console.log("startCommitPrivateAndSendFile()", recipients, agents);
         if (agents.length == 0) {
-            return undefined;
+            return false;
         }
-        return this.startCommitPrivateFile(file, tags, agents);
+        const succeeded = this.startCommitPrivateFile(file, splitObj, tags, agents);
+        if (!succeeded) {
+            console.error("Commit failed");
+            return false;
+        }
+        return true;
     }
 
 
+
     /** */
-    async startCommitPrivateFile(file: File, tags: string[], recipients?: AgentId[]): Promise<SplitObject | undefined> {
-        console.log('dvm.startCommitPrivateFile: ', file, tags);
-        const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
+    startCommitPrivateFile(file: File, splitObj: SplitObject, tags: string[], recipients?: AgentId[]): boolean {
+        console.log('FilesDvm.startCommitPrivateFile()', file, tags);
+
         if (this._perspective.uploadStates[splitObj.dataHash]) {
-            return Promise.reject("File commit already in progress");
+            console.error("File commit already in progress");
+            return false;
         }
         if (recipients) {
             this._mustSendTo[splitObj.dataHash] = recipients;
@@ -535,7 +541,7 @@ export class FilesDvm extends DnaViewModel {
             if (this._mustSendTo[splitObj.dataHash]) {
                 this._sendFile(manifestEh, this.deliveryZvm.perspective.privateManifests.get(manifestEh)![0]);
             }
-            return undefined;
+            return false;
         }
         this._perspective.uploadStates[splitObj.dataHash] = {
             splitObj,
@@ -550,19 +556,16 @@ export class FilesDvm extends DnaViewModel {
         /** Initiate write chunk loop */
         /* await */ this.writeChunks(splitObj.dataHash);
         this._mustAddTags[splitObj.dataHash] = {isPrivate: true, tags};
-        /* Done */
-        return splitObj;
+        return true;
     }
 
 
-
-    //private _peersToSignal: AgentId[] = [];
     /** */
-    async startPublishFile(file: File, tags: string[], _peersToSignal: AgentId[], callback?: FilesCb): Promise<SplitObject | undefined> {
-        console.log('dvm.startPublishFile: ', file, tags);
-        const splitObj = await splitFile(file, this.dnaProperties.maxChunkSize);
+    startPublishFile(file: File, splitObj: SplitObject, tags: string[], _peersToSignal: AgentId[], callback?: FilesCb): boolean{
+        console.log('FilesDvm.startPublishFile()', file, tags);
         if (this._perspective.uploadStates[splitObj.dataHash]) {
-            return Promise.reject("File commit already in progress");
+            console.error("File commit already in progress");
+            return false;
         }
         /** Check if file already present */
         const maybeExist = this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
@@ -575,7 +578,7 @@ export class FilesDvm extends DnaViewModel {
                     callback(maybeExist[0]);
                 }
             }
-            return undefined;
+            return false;
         }
         //this._peersToSignal = peersToSignal;
         this._perspective.uploadStates[splitObj.dataHash] = {
@@ -594,7 +597,7 @@ export class FilesDvm extends DnaViewModel {
         // this.filesZvm.zomeProxy.writePublicFileChunks([{data_hash: splitObj.dataHash, data: splitObj.chunks[0]}]);
         this._mustAddTags[splitObj.dataHash] = {isPrivate: false, tags};
         /** Done */
-        return splitObj;
+        return true;
     }
 
 
