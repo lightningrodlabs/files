@@ -629,6 +629,7 @@ export class FilesDvm extends DnaViewModel {
 
     /** */
     async resumeInbounds() {
+        console.log("resumeInbounds()");
         const [_unreplieds, inbounds] = this.deliveryZvm.inbounds();
         for (const noticeEh of inbounds.keys()) {
             await this.deliveryZvm.requestMissingChunks(noticeEh);

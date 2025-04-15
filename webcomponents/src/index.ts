@@ -21,6 +21,7 @@ export * from './elements/filename';
 export * from './elements/inbound-stack';
 export * from './elements/profile-input';
 export * from './elements/profile-item';
+export * from './elements/notice-table';
 export * from './elements/send-dialog';
 export * from './elements/store-dialog';
 export * from './elements/tag-input';

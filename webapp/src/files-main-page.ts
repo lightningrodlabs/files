@@ -794,7 +794,10 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                 if (DeliveryState.NoticeDelivered == state) {
                                     return html`<span>${msg("Waiting for reply")}</span>`
                                 }
-                                return html`<span>${msg("Unknown")}</span>`
+                                if (DeliveryState.ParcelAccepted == state) {
+                                    return html`<span>${msg("In Progress")}</span>`
+                                }                                
+                                return html`<span>${msg("Unknown")}: ${state}</span>`
                             },
                             [],
                         )}>
@@ -1009,6 +1012,12 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 `;
 
             }
+            if (this._selectedMenuItem.type == SelectedType.NoticeDebug) {
+                mainArea = html`
+                    <h2>${msg("Notices")}</h2>
+                    <notice-table ></notice-table>
+                `;
+            }
             if (this._selectedMenuItem.type == SelectedType.PublicTag && this._selectedMenuItem.tag) {
                 console.log("Public taggedItems 0", this.deliveryPerspective.publicParcels);
                 let taggedItems = Array.from(this.deliveryPerspective.publicParcels.entries())
@@ -1177,6 +1186,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <!-- commit button & panel -->
             ${maybeUploading && this.perspective.uploadStates[maybeUploading]? html`
                         <div id="uploadingView">
+                            <div style="margin:auto; font-weight: bold; color:white">Storing File</div>
                             <div style="display:flex; flex-direction:row; gap:35px;">
                                 <sl-progress-bar style="flex-grow:1;--indicator-color:#3dd23d;"
                                                  .value=${Math.ceil(this.perspective.uploadStates[maybeUploading]!.chunks.length / this.perspective.uploadStates[maybeUploading]!.splitObj.numChunks * 100)}></sl-progress-bar>
@@ -1199,7 +1209,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     </sl-button>
                 </sl-tooltip>
         `}
-            <inbound-stack></inbound-stack>
+            <inbound-stack .profiles=${this._dvm.profilesZvm.perspective}></inbound-stack>
         </div>
         `;
     }

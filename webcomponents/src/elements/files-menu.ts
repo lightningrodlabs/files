@@ -22,6 +22,7 @@ export enum SelectedType {
     InProgress = 'In Progress',
     PublicTag = 'PublicTag',
     PrivateTag = 'PrivateTag',
+    NoticeDebug = 'NoticeDebug',
 }
 
 
@@ -179,9 +180,9 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
         let privOrphans = 0;
         let pubOrphans = 0;
         if (this._initialized) {
-            const [unreplieds, inbounds] = this._dvm.deliveryZvm.inbounds();
+            const [unreplieds, incomplete_inbounds] = this._dvm.deliveryZvm.inbounds();
             dhtPublicCount = Array.from(this.deliveryPerspective.publicParcels.entries()).filter(([_ppEh, pprm]) => !pprm.deleteInfo).length;
-            inboundCount = Array.from(inbounds.entries()).length;
+            inboundCount = Array.from(incomplete_inbounds.entries()).length;
             unrepliedCount = Array.from(unreplieds.entries()).length;
             outboundCount = Array.from(this._dvm.deliveryZvm.outbounds().entries()).length;
             //localPublicCount = Object.entries(this.deliveryPerspective.localPublicManifests).length;
@@ -220,7 +221,7 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 <sl-menu-item ?disabled=${!initialized} value=${SelectedType.Inbox}>
                     <sl-icon slot="prefix" name="download"></sl-icon>
                     ${msg("Inbox")}
-                    ${initialized? html`<sl-badge slot="suffix" variant=${unrepliedCount > 0? "primary" : "neutral"} pill>${unrepliedCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${initialized? html`<sl-badge slot="suffix" variant=${unrepliedCount > 0? "primary" : "neutral"} pill>${unrepliedCount + inboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
                 <sl-menu-item ?disabled=${!initialized} value=${SelectedType.Sent}>
                     <sl-icon slot="prefix" name="send"></sl-icon>
@@ -229,9 +230,16 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 </sl-menu-item>
                 <sl-menu-item ?disabled=${!initialized} value=${SelectedType.InProgress}>
                     <sl-icon slot="prefix" name="arrow-left-right"></sl-icon>
-                    ${msg("In Progress")}
-                    ${initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount + inboundCount}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                    ${msg("Sending")}
+                    ${initialized? html`<sl-badge slot="suffix" variant=${outboundCount > 0? "primary" : "neutral"} pill>${outboundCount/* + inboundCount*/}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
                 </sl-menu-item>
+                <!--
+                <sl-menu-item ?disabled=${!initialized} value=${SelectedType.NoticeDebug}>
+                    <sl-icon slot="prefix" name="send"></sl-icon>
+                    ${msg("Notices")}
+                    ${initialized? html`<sl-badge slot="suffix" variant="neutral" pill>${this._dvm.deliveryZvm.perspective.notices.size}</sl-badge>`: html`<sl-skeleton slot="suffix" effect="sheen"></sl-skeleton>`}
+                </sl-menu-item>
+                -->               
                 ${this.renderTags(false)}
                 ${this.renderTags(true)}
             </sl-menu>

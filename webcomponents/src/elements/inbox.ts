@@ -166,7 +166,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
 
             const incompleteItems: [number, TemplateResult<1>][] = Array.from(incompletes.entries()).map(
                 ([noticeEh, [notice, ts, missingChunks]]) => {
-                    console.log("<files-inbox> incomplete " + noticeEh.b64, this.deliveryPerspective.notices.get(noticeEh));
+                    console.log("<files-inbox> incomplete " + noticeEh.b64, missingChunks.size, notice.summary.parcel_reference.description.size / 524288);
                     const senderKey = new AgentId(notice.sender);
                     const senderProfile = this._dvm.profilesZvm.perspective.getProfile(senderKey);
                     let senderName = senderKey.b64;
@@ -179,6 +179,7 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                     /** */
                     const pct = getCompletionPct(this._dvm.deliveryZvm, notice, missingChunks);
                     //  .author=${notice.sender}
+                    //  <sl-icon-button name="play-fill" @click=${() => {this._dvm.deliveryZvm.requestMissingChunks(noticeEh)}}></sl-icon-button>
                     const incompleteItem = html`
                         <div class="inboxLine">
                             <file-button .description=${notice.summary.parcel_reference.description}></file-button>
@@ -187,7 +188,6 @@ export class Inbox extends DnaElement<unknown, FilesDvm> {
                             <div class="gap"></div>
                             <div style="display:flex; flex-direction:row; width:100px;">
                                 <sl-progress-bar .value=${pct}>${pct}%</sl-progress-bar>
-                                <sl-icon-button name="play-fill" @click=${() => {this._dvm.deliveryZvm.requestMissingChunks(noticeEh)}}></sl-icon-button>
                             </div>
                             <div class="activityDate">${date_str}</div>
                         </div>
