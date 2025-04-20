@@ -243,10 +243,10 @@ export class FilesDvm extends DnaViewModel {
     /** */
     mySignalHandler(signal: Signal): void {
         console.log("FilesDvm.mySignalHandler()", signal);
-        if (!(SignalType.App in signal)) {
+        if (SignalType.App != signal.type) {
             return;
         }
-        const appSignal: AppSignal = signal.App;
+        const appSignal: AppSignal = signal.value;
         const zomeSignal = appSignal.payload as ZomeSignal;
         if (!("pulses" in zomeSignal)) {
             return;

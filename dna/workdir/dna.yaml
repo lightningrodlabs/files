@@ -2,7 +2,6 @@
 manifest_version: "1"
 name: dFiles
 integrity:
-  origin_time: 2023-10-24T13:55:49.200Z
   # WARN: properties might be overridden in the happ.yaml
   properties:
     maxChunkSize: 524288

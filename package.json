@@ -2,8 +2,8 @@
   "name": "files-dev",
   "version": "0.1.0",
   "config": {
-    "hc_version": "0.4.1",
-    "zits_version": "1.16.3",
+    "hc_version": "0.5.0-rc.4",
+    "zits_version": "1.16.4",
     "bin": "bin"
   },
   "private": true,
@@ -87,7 +87,7 @@
 
   },
   "devDependencies": {
-    "@theweave/cli": "0.13.0-rc.1",
+    "@theweave/cli": "0.14.0-rc.0",
     "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
     "bestzip": "^2.2.0",
@@ -102,17 +102,17 @@
     "typescript": "~5.2.0"
   },
   "dependencies": {
-    "@theweave/api": "=0.4.0",
-    "@holochain/client": "=0.18.0",
-    "@ddd-qc/cell-proxy": "=0.31.11",
-    "@ddd-qc/lit-happ": "=0.31.11",
-    "@ddd-qc/profiles-dvm": "=0.31.10",
-    "@ddd-qc/we-utils": "=0.31.10",
-    "@ddd-qc/path-explorer": "=0.7.0",
-    "@ddd-qc/delivery": "=0.18.12",
+    "@theweave/api": "=0.5.0-rc.0",
+    "@holochain/client": "=0.19.0-rc.1",
+    "@ddd-qc/cell-proxy": "=0.32.1",
+    "@ddd-qc/lit-happ": "=0.32.0",
+    "@ddd-qc/profiles-dvm": "=0.32.0",
+    "@ddd-qc/we-utils": "=0.32.1",
+    "@ddd-qc/path-explorer": "=0.9.1",
+    "@ddd-qc/delivery": "=0.19.0",
     "@holochain-open-dev/core-types": "0.7.0",
-    "@holochain-open-dev/profiles": "0.400.0",
-    "@holochain-open-dev/elements": "0.400.0",
+    "@holochain-open-dev/profiles": "0.500.0-rc.2",
+    "@holochain-open-dev/elements": "0.500.0-rc.1",
     "@shoelace-style/shoelace": "2.11.2",
     "@lit/context": "1.0.1",
     "@lit/localize": "0.12.1",
