@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 import checker from 'vite-plugin-checker';
+import dts from 'vite-plugin-dts';
 //import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
@@ -28,6 +29,7 @@ export default defineConfig({
       //   lintCommand: 'eslint --ext .ts,.html . --ignore-path .gitignore',
       // },
     }),
+    dts(),
     viteStaticCopy({
       targets: [
         { src: "weave.config.json", dest: DIST_FOLDER },
@@ -45,7 +47,7 @@ export default defineConfig({
   define: {
     '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),
     'process.env.HAPP_BUILD_MODE': JSON.stringify(HAPP_BUILD_MODE),
-    'process.env.HAPP_ENV': HAPP_BUILD_MODE == "Release"? JSON.stringify("We") : JSON.stringify("DevtestWe"),
+    'process.env.HAPP_ENV': JSON.stringify("Browser"),
     'process.env.APPLET_VIEW': JSON.stringify(APPLET_VIEW),
     "process.env.HC_APP_PORT": JSON.stringify(process.env.HC_APP_PORT),
     "process.env.HC_ADMIN_PORT": JSON.stringify(process.env.HC_ADMIN_PORT) || undefined,
@@ -57,7 +59,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         entryFileNames: "index.js",
-        chunkFileNames: `assets/index-chunk.js`,
+        //chunkFileNames: `assets/index-chunk.js`,
         assetFileNames: "assets[extname]",
       },
     }

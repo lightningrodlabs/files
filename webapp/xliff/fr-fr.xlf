@@ -177,6 +177,12 @@
 <trans-unit id="sdc673e73b5c13aea">
   <source>Delete</source>
 </trans-unit>
+<trans-unit id="sce4f864763a12cc5">
+  <source>In Progress</source>
+</trans-unit>
+<trans-unit id="s73112da1b80edcc6">
+  <source>Notices</source>
+</trans-unit>
 </body>
 </file>
 </xliff>

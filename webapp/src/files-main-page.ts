@@ -1,38 +1,19 @@
 import {css, html, TemplateResult} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {AgentId, DnaElement, EntryId, HAPP_ENV, HappEnvType} from "@ddd-qc/lit-happ";
+import {AgentId, DnaElement, EntryId, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {Timestamp} from "@holochain/client";
-import {GroupProfile, FrameNotification, WeaveServices, weaveUrlFromWal, Hrl} from "@theweave/api";
-import {consume} from "@lit/context";
-import {createContext} from "@lit/context";
+import {FrameNotification, GroupProfile, Hrl, WeaveServices, weaveUrlFromWal} from "@theweave/api";
+import {consume, createContext} from "@lit/context";
 
 
 import {
-    FilesDvm,
-    FilesMenu,
-    SelectedEvent,
-    SelectedType,
-    prettyFileSize,
-    prettyTimestamp,
-    SplitObject,
-    createAlert,
-    FileType,
     ActionOverlay,
-    StoreDialog,
-    SendDialog,
     countFileTypes,
-    type2Icon,
-    FileTableItem,
-    kind2Type,
+    createAlert,
     DistributionTableItem,
-    filesSharedStyles,
-    kind2Icon,
-    ProfileInfo,
-    FilesNotificationVariantPublicSharingRemoved, splitFile,
-} from "@ddd-qc/files";
-import {DeliveryPerspective, DeliveryState, Distribution} from "@ddd-qc/delivery";
-import {
+    FilesDvm,
     FilesDvmPerspective,
+    FilesMenu,
     FilesNotification,
     FilesNotificationType,
     FilesNotificationVariantDeliveryRequestSent,
@@ -40,9 +21,26 @@ import {
     FilesNotificationVariantNewNoticeReceived,
     FilesNotificationVariantPrivateCommitComplete,
     FilesNotificationVariantPublicSharingComplete,
+    FilesNotificationVariantPublicSharingRemoved,
     FilesNotificationVariantReceptionComplete,
-    FilesNotificationVariantReplyReceived
+    FilesNotificationVariantReplyReceived,
+    filesSharedStyles,
+    FileTableItem,
+    FileType,
+    kind2Icon,
+    kind2Type,
+    prettyFileSize,
+    prettyTimestamp,
+    ProfileInfo,
+    SelectedEvent,
+    SelectedType,
+    SendDialog,
+    splitFile,
+    SplitObject,
+    StoreDialog,
+    type2Icon,
 } from "@ddd-qc/files";
+import {DeliveryPerspective, DeliveryState, Distribution} from "@ddd-qc/delivery";
 
 import {DistributionState} from "@ddd-qc/delivery/dist/bindings/delivery.types";
 import {columnBodyRenderer} from "@vaadin/grid/lit";
@@ -81,7 +79,7 @@ import '@vaadin/upload/theme/lumo/vaadin-upload.js';
 import {setLocale} from "./localization";
 import {msg} from "@lit/localize";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
-import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
+import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiCog, mdiInformationOutline} from "@mdi/js";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/files/issues/new`;
@@ -642,8 +640,9 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** */
     override render() {
         //console.log("<files-main-page>.render()")
-        const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
+        //const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
         //const isInDev = true;
+        const isInDev = HAPP_BUILD_MODE == HappBuildModeType.Debug;
         console.log("<files-main-page>.render()", isInDev, this._initialized, this._dvm.deliveryZvm.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._dvm.profilesZvm.perspective);
 
 
