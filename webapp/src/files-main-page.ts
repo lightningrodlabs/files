@@ -642,7 +642,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         //console.log("<files-main-page>.render()")
         //const isInDev = HAPP_ENV == HappEnvType.Devtest || HAPP_ENV == HappEnvType.DevtestWe || HAPP_ENV == HappEnvType.DevTestHolo;
         //const isInDev = true;
-        const isInDev = HAPP_BUILD_MODE == HappBuildModeType.Debug;
+        const isInDev = HAPP_BUILD_MODE != HappBuildModeType.Retail;
         console.log("<files-main-page>.render()", isInDev, this._initialized, this._dvm.deliveryZvm.probeDhtCount, this._selectedMenuItem, this.deliveryPerspective, this._dvm.profilesZvm.perspective);
 
 
@@ -1185,7 +1185,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <!-- commit button & panel -->
             ${maybeUploading && this.perspective.uploadStates[maybeUploading]? html`
                         <div id="uploadingView">
-                            <div style="margin:auto; font-weight: bold; color:white">Storing File</div>
+                            <div style="margin:auto; font-weight: bold; color:white">${msg('Storing File')}</div>
                             <div style="display:flex; flex-direction:row; gap:35px;">
                                 <sl-progress-bar style="flex-grow:1;--indicator-color:#3dd23d;"
                                                  .value=${Math.ceil(this.perspective.uploadStates[maybeUploading]!.chunks.length / this.perspective.uploadStates[maybeUploading]!.splitObj.numChunks * 100)}></sl-progress-bar>

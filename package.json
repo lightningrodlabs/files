@@ -39,7 +39,7 @@
 
     "prodtestfull:we"    : "npm run build:devtest && npm run dist:we && npm run prodtest:we",
 
-    "prodtest:we"        : "cross-env BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run prodtest:we-launch\"",
+    "prodtest:we"        : "cross-env RUST_LOG=debug WASM_LOG=debug BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run prodtest:we-launch\"",
     "prodtest:we-launch" : "weave \"-b http://127.0.0.1:$BOOTSTRAP_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config testdata/we.prodtest.config.json --agent-idx 1",
 
     "multiagent"           : "cross-env AGENT_NUM=1 concurrently \"npm run multiagent:we-launch\"",
@@ -56,7 +56,8 @@
     "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network mem",
     "new-sandbox:public" : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network --bootstrap https://bootstrap.holo.host/ webrtc wss://signal.holo.host",
     "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network --bootstrap http://127.0.0.1:$BOOTSTRAP_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
-    "serve:run"          : "$npm_package_config_bin/hc run-local-services --bootstrap-port $BOOTSTRAP_PORT --signal-port $SIGNAL_PORT",
+    "serve:run"          : "",
+    "serve:run-old"      : "$npm_package_config_bin/hc run-local-services --bootstrap-port $BOOTSTRAP_PORT --signal-port $SIGNAL_PORT",
     "serve:save"         : "echo SIGNAL_PORT=$SIGNAL_PORT && echo $SIGNAL_PORT > .hc_signalenv && echo $BOOTSTRAP_PORT > .hc_bootenv && echo BOOTSTRAP_PORT=$BOOTSTRAP_PORT",
     "serve"              : "cross-env BOOTSTRAP_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) npm run serve:run",
     "network2"           : "npm run build:devtest && cross-env BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:local\" \"sleep 1 && cross-env INDEX=1 npm run start:local\"",
@@ -75,6 +76,8 @@
     "package:webapp"     : "rm -rf artifacts/files-webapp-ui.zip && npm run dist -w webapp && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/files-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/files.webhapp",
     "package:we"         : "rm -rf artifacts/files-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/files-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/files-we_applet.webhapp",
     "dist:we"            : "npm run build -w we-applet && npm run package:we",
+
+    "hash"               : "weave hash-webhapp ./artifacts/files-we_applet.webhapp",
 
     "update-version"     : "bash scripts/update-version-number.sh $npm_package_version",
     "dl-test-release"    : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/files",
@@ -104,10 +107,10 @@
   "dependencies": {
     "@holochain/client": "=0.19.0",
     "@theweave/api": "=0.5.0",
-    "@ddd-qc/cell-proxy": "=0.32.2",
+    "@ddd-qc/cell-proxy": "=0.32.3",
     "@ddd-qc/lit-happ": "=0.32.1",
     "@ddd-qc/profiles-dvm": "=0.32.0",
-    "@ddd-qc/we-utils": "=0.32.3",
+    "@ddd-qc/we-utils": "=0.32.5",
     "@ddd-qc/path-explorer": "=0.9.1",
     "@ddd-qc/delivery": "=0.19.1",
     "@holochain-open-dev/core-types": "0.7.0",

@@ -17,23 +17,21 @@
       console.log("Files we-applet index.html START");
       window.IN_WE = true;
     </script>
-    <!-- Wait for Shoelace script -->
+    <!-- Wait for Shoelace script
     <script type="module">
       console.log("Waiting for Shoelace...")
-      Promise.allSettled([
+      await Promise.allSettled([
         customElements.whenDefined('sl-dialog'),
-      ]).then(() => {
-        console.log("Shoelace READY!");
-      });
-    </script>
+      ]);
+      console.log("Shoelace READY!");
+    </script> -->
     <!-- main script -->
     <script type="module">
       import setupFilesApplet from "./src/index.ts";
       console.log("Imported setupFilesApplet");
-       setupFilesApplet().then((happElem) => {
-        console.log("append happElem", happElem);
-        document.body.append(happElem);
-      });
+      const happElem = await setupFilesApplet();
+      console.log("append happElem", happElem);
+      document.body.append(happElem);
     </script>
   </body>
 </html>

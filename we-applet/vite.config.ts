@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 import checker from 'vite-plugin-checker';
+import topLevelAwait from "vite-plugin-top-level-await";
 //import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
@@ -28,6 +29,7 @@ export default defineConfig({
       //   lintCommand: 'eslint --ext .ts,.html . --ignore-path .gitignore',
       // },
     }),
+    topLevelAwait({}),
     viteStaticCopy({
       targets: [
         { src: "../assets/favicon.ico", dest: DIST_FOLDER },

@@ -47,7 +47,7 @@ async function setupFilesMainView() {
         search,
         //bindAsset,
     };
-
+    console.log("setupFilesMainView()")
     return setup(appletServices, createFilesApplet, devtestNames);
 }
 
