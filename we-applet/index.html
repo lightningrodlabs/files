@@ -20,18 +20,20 @@
     <!-- Wait for Shoelace script -->
     <script type="module">
       console.log("Waiting for Shoelace...")
-      await Promise.allSettled([
+      Promise.allSettled([
         customElements.whenDefined('sl-dialog'),
-      ]);
-      console.log("Shoelace READY!");
+      ]).then(() => {
+        console.log("Shoelace READY!");
+      });
     </script>
     <!-- main script -->
     <script type="module">
-      import setupFilesApplet from "./out-tsc";
+      import setupFilesApplet from "./src/index.ts";
       console.log("Imported setupFilesApplet");
-      const happElem = await setupFilesApplet();
-      console.log("append happElem", happElem);
-      document.body.append(happElem);
+       setupFilesApplet().then((happElem) => {
+        console.log("append happElem", happElem);
+        document.body.append(happElem);
+      });
     </script>
   </body>
 </html>

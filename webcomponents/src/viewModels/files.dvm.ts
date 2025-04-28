@@ -52,7 +52,7 @@ import {FILES_DEFAULT_ROLE_NAME} from "../bindings/files.types";
 //import {NotificationsZvm} from "@ddd-qc/notifications-dvm/dist/viewModels/notifications.zvm";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {ProfilesAltLinkType} from "@ddd-qc/profiles-dvm/dist/bindings/profilesAlt.integrity";
-import {Dictionary} from "@ddd-qc/cell-proxy";
+import {MyDictionary} from "@ddd-qc/cell-proxy";
 
 
 
@@ -63,10 +63,10 @@ export class FilesDvm extends DnaViewModel {
 
     /** For commit & send follow-up */
     /** dataHash -> recipients[] */
-    private _mustSendTo: Dictionary<AgentId[]> = {}
+    private _mustSendTo: MyDictionary<AgentId[]> = {}
     /** For publish or send follow-up */
     /** dataHash -> {isPrivate, tags} */
-    private _mustAddTags: Dictionary<Object> = {}
+    private _mustAddTags: MyDictionary<Object> = {}
 
     /** -- DnaViewModel Interface -- */
 

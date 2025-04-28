@@ -1,5 +1,5 @@
 import {ActionId, EntryId, EntryIdMap} from "@ddd-qc/lit-happ";
-import {Dictionary} from "@ddd-qc/cell-proxy";
+import {MyDictionary} from "@ddd-qc/cell-proxy";
 import {ActionHashB64, EntryHashB64} from "@holochain/client";
 
 
@@ -19,11 +19,11 @@ export class TaggingPerspective {
   /** tagEh -> tag string */
   publicTags: EntryIdMap<string> = new EntryIdMap();
   /** tag string -> (target_eh -> link_ah) */
-  publicTargetsByTag: Dictionary<EntryIdMap<ActionId | undefined>> = {};
+  publicTargetsByTag: MyDictionary<EntryIdMap<ActionId | undefined>> = {};
   /** tagEh -> tag string */
   privateTags: EntryIdMap<string> = new EntryIdMap();
   /** tag string -> (target_eh -> link_ah) */
-  privateTargetsByTag: Dictionary<EntryIdMap<ActionId>> = {};
+  privateTargetsByTag: MyDictionary<EntryIdMap<ActionId>> = {};
 
   /** */
   publicTagsByTarget: EntryIdMap<string[]> = new EntryIdMap();
@@ -63,7 +63,7 @@ export class TaggingPerspective {
     const privateTargetLinks: [EntryHashB64, ActionHashB64][] = [];
     /** Public */
     for (const [tagEh, tag] of (this.publicTags.entries())) {
-      const map = this.publicTargetsByTag[tag];
+      const map: EntryIdMap<ActionId | undefined> = this.publicTargetsByTag[tag]!;
       if (!map) {
         console.warn("No public targets found for tag", tag);
         continue;
@@ -156,7 +156,7 @@ export class TaggingPerspectiveMutable extends TaggingPerspective  {
     }
     const tags = this.publicTagsByTarget.get(targetEh);
     if (tags) {
-      const i = tags.findIndex((taggy) => taggy == tag);
+      const i = tags.findIndex((taggy:any) => taggy == tag);
       if (i > -1) {
         tags.splice(i, 1);
         this.publicTagsByTarget.set(targetEh, tags);
@@ -186,7 +186,7 @@ export class TaggingPerspectiveMutable extends TaggingPerspective  {
     }
     const tags = this.privateTagsByTarget.get(targetEh);
     if (tags) {
-      const i = tags.findIndex((taggy) => taggy == tag);
+      const i = tags.findIndex((taggy:any) => taggy == tag);
       if (i > -1) {
         tags.splice(i, 1)
         this.privateTagsByTarget.set(targetEh, tags);

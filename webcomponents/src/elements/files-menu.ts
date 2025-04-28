@@ -7,7 +7,7 @@ import {DeliveryPerspective} from "@ddd-qc/delivery";
 import {filesSharedStyles} from "../sharedStyles";
 import {SlMenu} from "@shoelace-style/shoelace";
 import {msg} from "@lit/localize";
-import {Dictionary} from "@ddd-qc/cell-proxy";
+import {MyDictionary} from "@ddd-qc/cell-proxy";
 import {TaggingPerspectiveMutable} from "../viewModels/tagging.perspective";
 
 
@@ -139,7 +139,7 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
             `;
         }
         // console.log("renderTags()", this.taggingPerspective.publicTargetsByTag, this.taggingPerspective.privateTargetsByTag);
-        const tags: Dictionary<EntryIdMap<ActionId | undefined>> = isPrivate
+        const tags: MyDictionary<EntryIdMap<ActionId | undefined>> = isPrivate
             ? this.taggingPerspective.privateTargetsByTag
             : this.taggingPerspective.publicTargetsByTag;
         const groupTags = Object.entries(tags)
