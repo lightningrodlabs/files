@@ -7,9 +7,9 @@
   "scripts": {
     "localize:extract": "lit-localize extract",
     "localize:build": "lit-localize build",
-    "build": "vite build",
-    "build:watch": "vite build --watch",
-    "start:ui": "vite --port $(port) --clearScreen false"
+    "dist": "vite build",
+    "build": "vite dev --clearScreen false",
+    "start": "vite --port $(port) --clearScreen false"
   },
   "devDependencies": {
     "vite": "^4.5.2",
