@@ -9,7 +9,7 @@
     "localize:build": "lit-localize build",
     "dist": "vite build",
     "build": "vite dev --clearScreen false",
-    "start": "vite --port $(port) --clearScreen false"
+    "start": "vite --port $UI_PORT --clearScreen false"
   },
   "devDependencies": {
     "vite": "^4.5.2",
