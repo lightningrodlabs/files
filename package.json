@@ -28,7 +28,7 @@
     "build:dna"          : "npm run build:zomes && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/files.dna dna/workdir",
     "build:happ"         : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/files.happ dna/workdir",
     "build:webapp"       : "npm run build:localize && npm run build -w webcomponents && npm run dist -w webapp",
-    "build:devtest"      : "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents",
+    "build:devtest"      : "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh",
 
     "devtest:quick"      : "UI_PORT=$(port) concurrently \"npm run build -w webapp\" \"npm run start:mem\"",
     "devtest"            : "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run build -w webapp\" \"npm run start:mem\"",
@@ -77,7 +77,7 @@
 
     "package:webapp"     : "rm -rf artifacts/files-webapp-ui.zip && npm run dist -w webapp && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/files-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/files.webhapp",
     "package:we"         : "rm -rf artifacts/files-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/files-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/files-we_applet.webhapp",
-    "dist:we"            : "npm run build -w we-applet && npm run package:we",
+    "dist:we"            : "npm run dist -w we-applet && npm run package:we",
 
     "hash"               : "weave hash-webhapp ./artifacts/files-we_applet.webhapp",
 
@@ -92,7 +92,7 @@
 
   },
   "devDependencies": {
-    "@theweave/cli": "0.14.0-rc.3",
+    "@theweave/cli": "0.14.0-rc.5",
     "@holochain/hc-spin": "0.500.1",
     "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
