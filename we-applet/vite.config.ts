@@ -9,7 +9,6 @@ console.log("vite: process.env.HC_APP_PORT: ", process.env.HC_APP_PORT);
 console.log("vite: process.env.HAPP_BUILD_MODE: ", process.env.HAPP_BUILD_MODE);
 const HAPP_BUILD_MODE = process.env.HAPP_BUILD_MODE? process.env.HAPP_BUILD_MODE : "Release";
 
-
 console.log("vite: process.env.APPLET_VIEW: ", process.env.APPLET_VIEW);
 const APPLET_VIEW = process.env.APPLET_VIEW? process.env.APPLET_VIEW : "main";
 
@@ -25,9 +24,6 @@ export default defineConfig({
   plugins: [
     checker({
       typescript: true,
-      // eslint: {
-      //   lintCommand: 'eslint --ext .ts,.html . --ignore-path .gitignore',
-      // },
     }),
     topLevelAwait({}),
     viteStaticCopy({

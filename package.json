@@ -108,12 +108,12 @@
     "typescript": "~5.2.0"
   },
   "dependencies": {
-    "@holochain/client": "=0.19.0",
+    "@holochain/client": "=0.19.1",
     "@theweave/api": "=0.5.2",
-    "@ddd-qc/cell-proxy": "=0.32.6",
-    "@ddd-qc/lit-happ": "=0.32.6",
-    "@ddd-qc/profiles-dvm": "=0.32.6",
-    "@ddd-qc/we-utils": "=0.32.6",
+    "@ddd-qc/cell-proxy": "=0.32.7",
+    "@ddd-qc/lit-happ": "=0.32.7",
+    "@ddd-qc/profiles-dvm": "=0.32.7",
+    "@ddd-qc/we-utils": "=0.32.7",
     "@ddd-qc/path-explorer": "=0.9.2",
     "@ddd-qc/delivery": "=0.19.2",
     "@holochain-open-dev/core-types": "0.7.0",
