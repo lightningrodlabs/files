@@ -182,7 +182,7 @@ pub fn find_private_tags_for_entry(eh: EntryHash) -> ExternResult<Vec<(EntryHash
         .collect();
     /// Emit signal
     let links = link_tuples.into_iter().map(|(_typed, link)| link).collect();
-    emit_links_signal(links)?;
+    attest_links(links)?;
     /// Done
     Ok(res)
 }
@@ -202,7 +202,7 @@ pub fn find_private_entries_with_tag(tag: String) -> ExternResult<Vec<(EntryHash
                 .map(|link| (link.target.into_entry_hash().unwrap(), tag2str(&link.tag).unwrap()))
                 .collect();
             /// Emit signal
-            emit_links_signal(links)?;
+            attest_links(links)?;
             ///
             return Ok(res);
         }

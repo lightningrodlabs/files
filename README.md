@@ -1,11 +1,11 @@
 # Files hApp
 
-[We-applet](https://github.com/lightningrodlabs/we) for sharing and sending files between agents of a We group.
+[Moss applet](https://github.com/lightningrodlabs/moss) for sharing and sending files privately between peers in a [Weave group](https://theweave.social/).
 
 
 ##  Design Goal
 
-Enable sharing of big files between agents by using the [Delivery zome module](https://github.com/ddd-mtl/delivery-zome).
+Enable sharing of big files between peers by using the [Delivery zome module](https://github.com/ddd-mtl/delivery-zome).
 
 ### Features
 
@@ -70,7 +70,7 @@ Enable sharing of big files between agents by using the [Delivery zome module](h
 To bootstrap a local network of 3 agents:
 
 ``` bash
-npm run network:local3
+npm run network3
 ```
 
 
@@ -87,24 +87,26 @@ All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifact
 
 ## Project structure
 
-| Directory                                     | Description                                                                                                                 |
-|:----------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
-| `/artifacts/`                                 | Output folder
-| `/dna/`                                       | DNA source code
-| &nbsp;&nbsp;&nbsp;&nbsp;`workdir/`            | Files DNA & We-happ work directory
-| &nbsp;&nbsp;&nbsp;&nbsp;`workdir_profiles/`   | Profiles DNA work directory
-| &nbsp;&nbsp;&nbsp;&nbsp;`workdir_standalone/` | Files standalone HAPP work directory
-| `/scripts/`                                   | Tool chain
-| `/we-applet/`                                 | The we-applet source code
-| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/`    | we-applet work directory
-| `/webapp/`                                    | The webapp source code
-| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/`    | webhapp work directory
-| `/webcomponents/`                             | The web components source code
+| Directory                                  | Description                                                                                                                 |
+|:-------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
+| `/artifacts/`                              | Output folder
+| `/assets/`                                 | media files
+| `/bin/`                                    | local holochain binaries for testing and packaging
+| `/dna/`                                    | DNA source code
+| &nbsp;&nbsp;&nbsp;&nbsp;`workdir/`         | DNA & happ work directory
+| `/scripts/`                                | Tool chain
+| `/submodules/`                             | git submodules
+| `/testdata/`                               | config and data for running we tests
+| `/we-applet/`                              | The we-applet source code
+| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | we-applet work directory
+| `/webapp/`                                 | The webapp source code
+| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | webhapp work directory
+| `/webcomponents/`                          | The web components source code
 
 ## License
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)
 
-  Copyright (C) 2023, Harris-Braun Enterprises, LLC
+  Copyright (C) 2025, Harris-Braun Enterprises, LLC
 
 This program is free software: you can redistribute it and/or modify it under the terms of the license
 provided in the LICENSE file (CAL-1.0).  This program is distributed in the hope that it will be useful,

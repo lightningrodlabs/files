@@ -56,15 +56,12 @@ export default defineConfig({
   build: {
     //emptyOutDir: true,
     outDir: DIST_FOLDER,
-    rollupOptions: {
-      output: {
-        entryFileNames: "index.js",
-        //chunkFileNames: `assets/index-chunk.js`,
-        assetFileNames: "assets[extname]",
-      },
-    }
   },
   server: {
-    open: true // This will open the browser automatically
+    open: true,
+    watch: {
+      usePolling: true,
+      interval: 1000 // Check for changes every second
+    }
   }
 });
