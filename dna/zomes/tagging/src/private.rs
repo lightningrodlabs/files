@@ -4,13 +4,6 @@ use zome_signals::*;
 use zome_tagging_integrity::*;
 use zome_utils::*;
 
-// ///
-// #[hdk_extern]
-// pub fn query_all_PrivateTag(_: ()) -> ExternResult<()> {
-//     std::panic::set_hook(Box::new(zome_panic_hook));
-//     return attest_all_local_typed::<PrivateTag>(TaggingEntryTypes::PrivateTag.try_into().unwrap())?;
-// }
-
 ///
 #[hdk_extern]
 pub fn query_all_PrivateTag(_: ()) -> ExternResult<Vec<(EntryHash, Timestamp, String)>> {
@@ -20,23 +13,12 @@ pub fn query_all_PrivateTag(_: ()) -> ExternResult<Vec<(EntryHash, Timestamp, St
       .include_entries(true)
       .action_type(ActionType::Create)
       .action_type(ActionType::Update)
-      .entry_type(entry_type);
+      .entry_type(TaggingEntryTypes::PrivateTag.try_into().unwrap());
    let records = query(query_args)?;
-   /// Form & Emit Signal
-   let pulses = tuples
-      .clone()
-      .into_iter()
-      .map(|(record, _entry)| {
-         let entry_pulse = EntryPulse::try_from_new_record(record, ValidatedBy::Me, false).unwrap();
-         return ZomeSignalProtocol::Entry(entry_pulse);
-      })
-      .collect();
-   emit_zome_signal(pulses)?;
-   /// Return
-   let res = tuples
-      .clone()
-      .into_iter()
-      .map(|(record, entry)| {
+   let res = records.iter().map(|record| {
+         let RecordEntry::Present(entry) = record.entry() else {
+            panic!("Entry should be present");
+         };
          (
             record.action().entry_hash().unwrap().to_owned(),
             record.action().timestamp(),
@@ -44,6 +26,16 @@ pub fn query_all_PrivateTag(_: ()) -> ExternResult<Vec<(EntryHash, Timestamp, St
          )
       })
       .collect();
+   /// Attest entries
+   let pulses = records
+      .into_iter()
+      .map(|record| {
+         let entry_pulse = EntryPulse::try_from_new_record(record, ValidatedBy::Me, false).unwrap();
+         return ZomeSignalProtocol::Entry(entry_pulse);
+      })
+      .collect();
+   emit_zome_signal(pulses)?;
+   /// Done
    Ok(res)
 }
 

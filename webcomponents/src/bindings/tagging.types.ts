@@ -93,7 +93,7 @@ export const TAGGING_ZOME_NAME = "tagging_integrity";
 export const PUBLIC_TAG_ROOT = "public_tags";
 
 /**
- * Integrity zome is not really necessary but it is defined because the holochain ecosystem
+ * Integrity zome is not really necessary but it is defined because the Holochain ecosystem
  * does not support well a zome that does not have one.
  */
 export enum TaggingEntryType {

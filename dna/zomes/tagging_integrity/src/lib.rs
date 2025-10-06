@@ -8,7 +8,7 @@ use hdi::prelude::*;
 pub const TAGGING_ZOME_NAME: &str = "tagging_integrity";
 pub const PUBLIC_TAG_ROOT: &str = "public_tags";
 
-/// Integrity zome is not really necessary but it is defined because the holochain ecosystem
+/// Integrity zome is not really necessary but it is defined because the Holochain ecosystem
 /// does not support well a zome that does not have one.
 
 #[hdk_entry_types]
