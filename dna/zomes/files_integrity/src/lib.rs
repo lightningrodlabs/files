@@ -8,7 +8,6 @@ pub const FILES_DEFAULT_ROLE_NAME: &'static str = "rFiles";
 
 pub const FILE_TYPE_NAME: &'static str = "split_file";
 
-
 pub const ATTACHMENTS_ROOT: &str = "public_attachments";
 
 ///-------------------------------------------------------------------------------------------------
@@ -17,7 +16,6 @@ pub const ATTACHMENTS_ROOT: &str = "public_attachments";
 
 /// Integrity zome is not really necessary but it is defined because the holochain ecosystem
 /// does not support well a zome that does not have one.
-
 use hdi::prelude::*;
 
 #[hdk_entry_types]
@@ -27,13 +25,11 @@ pub enum FilesEntry {
    FileShare(FileShare),
 }
 
-
 #[hdk_link_types]
 #[derive(Serialize, Deserialize)]
 pub enum FilesLinkTypes {
    Attachment,
 }
-
 
 /// Bogus Entry
 #[hdk_entry_helper]
@@ -41,6 +37,3 @@ pub enum FilesLinkTypes {
 pub struct FileShare {
    pub value: String,
 }
-
-
-

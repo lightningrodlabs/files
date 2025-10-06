@@ -5,7 +5,6 @@
 // use zome_delivery_api::*;
 // use crate::utils::ensure_parcel_is_file;
 
-
 // /// Return ehs of all ParcelManifest for type FILE_TYPE_NAME
 // #[hdk_extern]
 // pub fn get_private_files(_:()) -> ExternResult<Vec<(EntryHash, ParcelManifest)>> {
@@ -40,5 +39,3 @@
 //     }
 //     Ok(file_manifests)
 // }
-
-

@@ -1,14 +1,11 @@
 use hdk::prelude::*;
 use zome_delivery_api::*;
 
-
 ///
 #[hdk_extern]
 fn init(_: ()) -> ExternResult<InitCallbackResult> {
    Ok(InitCallbackResult::Pass)
 }
-
-
 
 /// Zome Callback
 #[hdk_extern(infallible)]

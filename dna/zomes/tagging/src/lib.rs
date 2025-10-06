@@ -1,9 +1,9 @@
+mod callbacks;
 mod private;
 mod public;
-mod callbacks;
 
-pub use public::*;
 pub use private::*;
+pub use public::*;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -11,18 +11,16 @@ use hdk::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, SerializedBytes)]
 pub struct TaggingInput {
-    tags: Vec<String>,
-    target: EntryHash,
-    link_tag_to_entry: String, // Base64 string of data
+   tags: Vec<String>,
+   target: EntryHash,
+   link_tag_to_entry: String, // Base64 string of data
 }
-
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, SerializedBytes)]
 pub struct UntagInput {
-    tag: String,
-    target: EntryHash,
+   tag: String,
+   target: EntryHash,
 }
-
 
 ///// Zome Callback
 //#[hdk_extern(infallible)]

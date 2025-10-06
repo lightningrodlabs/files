@@ -8,21 +8,20 @@ pub struct TaggingProperties {
    pub max_tag_name_length: u16,
 }
 
-
 /// Return the DNA properties
 pub fn get_properties() -> ExternResult<TaggingProperties> {
    //debug!("*** get_properties() called");
    let dna_info = dna_info()?;
    let props = dna_info.modifiers.properties;
    //debug!("props = {:?}", props);
-   let maybe_properties: Result<TaggingProperties, <TaggingProperties as TryFrom<SerializedBytes>>::Error> = props.try_into();
+   let maybe_properties: Result<TaggingProperties, <TaggingProperties as TryFrom<SerializedBytes>>::Error> =
+      props.try_into();
    if let Err(e) = maybe_properties {
       debug!("Deserializing TaggingZome properties failed: {:?}", e);
       return Err(wasm_error!("Deserializing TaggingZome properties failed: {:?}", e));
    }
    Ok(maybe_properties.unwrap())
 }
-
 
 // /// Helper for crate use
 // pub fn get_dna_properties() -> TaggingProperties {
