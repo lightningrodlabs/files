@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "tsc"              : "tsc",
-    "dist"             : "vite build",
+    "dist"             : "rm -rf dist && HAPP_BUILD_MODE=Retail vite build",
     "build"            : "vite dev --clearScreen false",
     "devtest"          : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run start:happ\" \"sleep 5 && npm run start:ui\"",
     "devtest:block"    : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' APPLET_VIEW='ImportFile' concurrently \"npm run start:happ\" \"npm run start:ui\"",

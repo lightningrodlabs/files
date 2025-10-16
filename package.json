@@ -58,7 +58,7 @@
 
     "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network mem",
     "new-sandbox:public" : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network --bootstrap https://bootstrap.holo.host/ webrtc wss://signal.holo.host",
-    "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network --bootstrap http://127.0.0.1:$BOOTSTRAP_PORT webrtc wss://127.0.0.1:$BOOTSTRAP_PORT",
+    "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/files.happ --run=$HC_APP_PORT -a Files network --bootstrap http://127.0.0.1:$BOOTSTRAP_PORT webrtc ws://127.0.0.1:$BOOTSTRAP_PORT",
     "spintest"           : "cross-env UI_PORT=$(port) HC_APP_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run build:watch -w webcomponents\" \"npm run spin\" \"sleep 5 && npm run start -w webapp\"",
     "spin"               : "hc-spin -n 2 --ui-port $UI_PORT artifacts/files.happ",
     "serve:run"          : "$npm_package_config_bin/kitsune2-bootstrap-srv --listen 127.0.0.1:$BOOTSTRAP_PORT",
