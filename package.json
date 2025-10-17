@@ -31,13 +31,13 @@
     "build:webapp"       : "npm run build -w webcomponents && npm run build -w webapp",
 
     "devtest:quick"      : "UI_PORT=$(port) concurrently \"npm run build -w webapp\" \"npm run start:mem\"",
-    "devtest"            : "npm run build:devtest && npm run start:mem",
-    "devtest:we"         : "npm run build:devtest && npm run devtest -w we-applet",
+    "devtest"            : "npm run build:devtest && npm run build:webapp && npm run start:mem",
+    "devtest:we"         : "npm run build:devtest && npm run build:webapp && npm run devtest -w we-applet",
     "devtest:we:block"   : "npm run build:devtest && npm run devtest:block -w we-applet",
 
     "prodtest"           : "npm run build -w webapp &&  UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start -w webapp\"",
 
-    "prodtestfull:we"    : "npm run build:devtest && npm run dist:we && npm run prodtest:we",
+    "prodtestfull:we"    : "npm run build:devtest && npm run build:webapp && npm run dist:we && npm run prodtest:we",
     "prodtest:we"        : " BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run prodtest:we-launch\"",
     "prodtest:we-launch" : "weave \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config testdata/we.prodtest.config.json --agent-idx 1 --holochain-wasm-log debug",
 
@@ -115,7 +115,7 @@
     "@theweave/api": "=0.5.2",
     "@ddd-qc/cell-proxy": "=0.32.9",
     "@ddd-qc/lit-happ": "=0.32.9",
-    "@ddd-qc/profiles-dvm": "=0.32.8",
+    "@ddd-qc/profiles-dvm": "=0.32.9",
     "@ddd-qc/we-utils": "=0.32.8",
     "@ddd-qc/path-explorer": "=0.9.2",
     "@ddd-qc/delivery": "=0.19.2",

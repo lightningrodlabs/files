@@ -18,7 +18,8 @@ const DIST_FOLDER = "."
 export default defineConfig({
   resolve: {
     alias: {
-      '@files/app': path.resolve(__dirname, '../webapp/src')
+      '@files/app': path.resolve(__dirname, '../webapp/src'),
+      '@ddd-qc/files': path.resolve(__dirname, '../webcomponents/src')
     }
   },
   plugins: [

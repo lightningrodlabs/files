@@ -674,7 +674,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const filter = this.searchInputElem.value.toLowerCase();
             const results = this._dvm.searchParcel(filter);
             console.log("searchInputElem", filter, results);
-            searchResultItems = results.map((ppEh) => html`
+            searchResultItems = results.map((ppEh:EntryId) => html`
                 <file-button    .hash=${ppEh}
                                 @tag=${(e: CustomEvent<SelectedEvent>) => {this._selectedMenuItem = e.detail; this.searchInputElem.value = ""}}
                 ></file-button>
@@ -718,7 +718,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         /** Unreplied inbounds */
         //let unrepliedInbounds: TemplateResult<1>[] = [];
         let unrepliedInbounds: TemplateResult<1>[] = Array.from(this._dvm.deliveryZvm.inbounds()[0].entries())
-                .map(([noticeEh, [notice, _ts]]) => {
+                .map(([noticeEh, [notice, _ts]]: any /*FIXME*/) => {
                 console.log("" + noticeEh.b64, this.deliveryPerspective.notices.get(noticeEh));
                 const senderKey = new AgentId(notice.sender);
                 const senderProfile = this._dvm.profilesZvm.perspective.getProfile(senderKey);
@@ -748,9 +748,9 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
         /** Unreplied outbounds */
         let outboundList = Array.from(this._dvm.deliveryZvm.outbounds().entries())
-            .map(([_distribAh, [distribution, ts, deliveryStates]]) => {
+            .map(([_distribAh, [distribution, ts, deliveryStates]]: any /* FIXME */) => {
                 const outboundItems = Array.from(deliveryStates.entries()).map(
-                    ([recipient, state]) => {
+                    ([recipient, state]: any /*FIXME*/) => {
                         const maybe = this._dvm.profilesZvm.perspective.getProfile(recipient);
                         return {
                             distribution,

@@ -3,6 +3,8 @@ import './safeDefine'
 export * from './bindings/files.proxy';
 export * from './bindings/files.types';
 
+export * as templates_webcomp_fr_fr from './generated/fr-fr.js';
+
 export * from './viewModels/files.perspective';
 export * from './viewModels/files.zvm';
 export * from './viewModels/files.dvm';
