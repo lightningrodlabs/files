@@ -7,8 +7,7 @@
   "scripts": {
     "localize:extract": "lit-localize extract",
     "localize:build": "lit-localize build",
-    "dist": "vite build",
-    "build": "vite dev --clearScreen false",
+    "build": "rm -rf dist && vite build",
     "start": "vite --port $UI_PORT --clearScreen false"
   },
   "devDependencies": {

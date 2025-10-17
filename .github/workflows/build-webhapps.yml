@@ -13,16 +13,16 @@ jobs:
         shell: bash
         run: |
           npm install
-      # Download submodules
-      - name: Download submodules
-        shell: bash
-        run: |
-          npm run install:submodules
       # install rust tools
       - name: install rust tools
         shell: bash
         run: |
           npm run install:rust
+      # install zits
+      - name: install zits
+        shell: bash
+        run: |
+          npm run install:zits
       # install hc tool
       - name: Install hc tool
         shell: bash
@@ -37,6 +37,11 @@ jobs:
         shell: bash
         run: |
           npm run build:happ
+      # Localize
+      - name: Localize
+        run: |
+          npm run extract:localize
+          npm run build:localize
       # Build webapp
       - name: Build webapp
         run: |
@@ -57,18 +62,13 @@ jobs:
           npm run package:we
       # Regroup artifacts
       - name: Regroup artifacts
-        run: |       
-          cp target/wasm32-unknown-unknown/release/zome_tagging_integrity.wasm ./artifacts
-          cp target/wasm32-unknown-unknown/release/zome_files_integrity.wasm ./artifacts
-          cp target/wasm32-unknown-unknown/release/zome_files.wasm ./artifacts
-          cp target/wasm32-unknown-unknown/release/tagging.wasm ./artifacts
-
+        run: |
+          cp target/wasm32-unknown-unknown/release/*.wasm ./artifacts
       # List uploaded files
       - name: List uploaded files
         run: ls -R
         working-directory: ./artifacts
       # "upload" artifacts
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v4
         with:
-          name: all-happ-artifact
-          path: artifacts/
+          path: artifacts

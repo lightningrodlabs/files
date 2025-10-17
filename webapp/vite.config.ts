@@ -54,8 +54,15 @@ export default defineConfig({
     'process.env.NO_WE': JSON.stringify(process.env.NO_WE || false),
   },
   build: {
-    //emptyOutDir: true,
+    emptyOutDir: true,
     outDir: DIST_FOLDER,
+      rollupOptions: {
+          output: {
+              entryFileNames: "index.js",
+              chunkFileNames: `assets/index-chunk.js`,
+              assetFileNames: "assets[extname]",
+          },
+      }
   },
   server: {
     open: true,

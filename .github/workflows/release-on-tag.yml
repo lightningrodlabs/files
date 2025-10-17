@@ -1,4 +1,4 @@
-name: Release x64
+name: release-on-tag
 
 on:
   push:

@@ -7,8 +7,8 @@
   "private": true,
   "scripts": {
     "tsc"              : "tsc",
+    "build"            : "vite build",
     "dist"             : "rm -rf dist && HAPP_BUILD_MODE=Retail vite build",
-    "build"            : "vite dev --clearScreen false",
     "devtest"          : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run start:happ\" \"sleep 5 && npm run start:ui\"",
     "devtest:block"    : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' APPLET_VIEW='ImportFile' concurrently \"npm run start:happ\" \"npm run start:ui\"",
     "start:happ"       : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files network mem",
@@ -17,7 +17,7 @@
     "start:ui"         : "vite --port $UI_PORT --clearScreen false",
 
     "serve:run"        : "hc run-local-services --bootstrap-port $BOOT_PORT --signal-port $SIGNAL_PORT",
-    "network:local2"   : "npm run build && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run start:local\" \"sleep 1 && npm run start:local\""
+    "network:local2"   : "npm run build &&  BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run start:local\" \"sleep 1 && npm run start:local\""
   },
   "devDependencies": {
     "vite": "^4.5.2",
