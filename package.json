@@ -1,6 +1,6 @@
 {
   "name": "files-dev",
-  "version": "0.1.0",
+  "version": "1.2.1",
   "config": {
     "k2_version": "0.2.17",
     "hc_version": "0.5.6",
@@ -35,7 +35,7 @@
     "devtest:we"         : "npm run build:devtest && npm run devtest -w we-applet",
     "devtest:we:block"   : "npm run build:devtest && npm run devtest:block -w we-applet",
 
-    "prodtest"           : "npm run dist -w webapp &&  UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start -w webapp\"",
+    "prodtest"           : "npm run build -w webapp &&  UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start -w webapp\"",
 
     "prodtestfull:we"    : "npm run build:devtest && npm run dist:we && npm run prodtest:we",
     "prodtest:we"        : " BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run prodtest:we-launch\"",
@@ -73,7 +73,7 @@
     "launch"             : "HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) echo pass | hc-launch --piped -n 1 artifacts/files.webhapp network mem",
     "launch:we"          : "echo pass | hc-launch --piped -n 1 artifacts/files-we_applet.webhapp network mem",
 
-    "package:webapp"     : "rm -rf artifacts/files-webapp-ui.zip && npm run dist -w webapp && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/files-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/files.webhapp",
+    "package:webapp"     : "rm -rf artifacts/files-webapp-ui.zip && npm run build -w webapp && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/files-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/files.webhapp",
     "package:we"         : "rm -rf artifacts/files-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/files-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/files-we_applet.webhapp",
     "dist:we"            : "npm run dist -w we-applet && npm run package:we",
 
@@ -82,7 +82,7 @@
     "update-version"     : "bash scripts/update-version-number.sh $npm_package_version",
     "dl-manual-release"  : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/files",
 
-    "dl-applet-release"  : "rm -rf release & mkdir -p release & gh release download we-applet-rc -D release -R lightningrodlabs/vines",
+    "dl-applet-release"  : "rm -rf release & mkdir -p release & gh release download we-applet-rc -D release -R lightningrodlabs/files",
     "unpack:webhapp"     : "./bin/unpack_webhapp release/files-we_applet.webhapp release/files.happ",
     "repackage:we"       : "rm -rf artifacts && mkdir artifacts && cp release/files.happ artifacts && npm run dist:we && npm run hash",
     "upload:we"          : "cp artifacts/files-we_applet.webhapp artifacts/files-we_applet-$npm_package_version.webhapp && gh release upload we-applet-rc artifacts/files-we_applet-$npm_package_version.webhapp",
