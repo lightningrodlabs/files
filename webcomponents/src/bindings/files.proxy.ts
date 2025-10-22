@@ -85,7 +85,8 @@ import {DistributionStrategy, ParcelManifest, ParcelChunk, ParcelDescription, Pa
 
 import {ZomeProxy} from '@ddd-qc/lit-happ';
 import {filesFunctionNames} from './files.fn';
-import {FilesUnitEnum, FilesLinkType} from './files.integrity';
+import {FilesUnitEnum} from './files.integrity';
+import {FilesLinkType} from './files.integrity';
 
 /**
  *

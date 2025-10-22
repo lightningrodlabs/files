@@ -81,7 +81,8 @@ ValidationStatus, ValidationReceipt,
 
 import {ZomeProxy} from '@ddd-qc/lit-happ';
 import {taggingFunctionNames} from './tagging.fn';
-import {TaggingUnitEnum, TaggingLinkType} from './tagging.integrity';
+import {TaggingUnitEnum} from './tagging.integrity';
+import {TaggingLinkType} from './tagging.integrity';
 
 /**
  *

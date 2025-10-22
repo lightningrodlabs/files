@@ -2,9 +2,9 @@
   "name": "files-dev",
   "version": "1.2.1",
   "config": {
-    "k2_version": "0.2.17",
     "hc_version": "0.5.6",
-    "zits_version": "1.16.8",
+    "k2_version": "0.2.17",
+    "zits_version": "1.16.9",
     "bin": "bin"
   },
   "private": true,
