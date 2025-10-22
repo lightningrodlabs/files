@@ -1,7 +1,7 @@
 ---
-manifest_version: "1"
+manifest_version: "0"
 name: Files Official We-applet
 ui:
-  bundled: "../../artifacts/files-we_applet-ui.zip"
-happ_manifest:
-  bundled: "../../artifacts/files.happ"
+  path: "../../artifacts/files-we_applet-ui.zip"
+happ:
+  path: "../../artifacts/files.happ"

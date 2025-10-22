@@ -1,5 +1,5 @@
 ---
-manifest_version: "1"
+manifest_version: "0"
 name: Files we-applet
 description: File storing & sharing happ
 roles:
@@ -8,7 +8,7 @@ roles:
       strategy: create
       deferred: true
     dna:
-      bundled: "../../artifacts/files.dna"
+      path: "../../artifacts/files.dna"
       clone_limit: 0
       # HACKISH: Redefining the properties here because otherwise the values from the dna.yaml will be deleted...
       modifiers:
