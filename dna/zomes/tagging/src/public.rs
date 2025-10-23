@@ -120,7 +120,7 @@ pub fn find_public_tags_for_entry(eh: EntryHash) -> ExternResult<Vec<String>> {
    /// Make sure entry exist and is public
    let _ = fetch_public_entry(eh.clone())?;
    /// Grab public tags
-   let link_details = get_link_details(eh, TaggingLinkTypes::PublicTags, None, GetOptions::network())?;
+   let link_details = get_links_details(LinkQuery::new(eh, TaggingLinkTypes::PublicTags.try_into_filter().unwrap()), GetStrategy::Network)?;
    let create_links: Vec<Link> = link_details
       .into_inner()
       .into_iter()
@@ -151,11 +151,11 @@ pub fn find_public_entries_with_tag(tag: String) -> ExternResult<Vec<(ActionHash
    let mut tp = root_path()?;
    tp.path.append_component(tag.clone().into());
    /// Grab entries
-   let link_details = get_link_details(
+   let link_details = get_links_details(LinkQuery::new(
       tp.path_entry_hash()?,
-      TaggingLinkTypes::PublicEntry,
-      None,
-      GetOptions::network(),
+      TaggingLinkTypes::PublicEntry.try_into_filter().unwrap(),
+   ),
+      GetStrategy::Network,
    )?;
    let mut create_links = Vec::new();
    let mut delete_links = Vec::new();
@@ -247,9 +247,9 @@ fn untag_public_entry(link_ah: ActionHash) -> ExternResult<ActionHash> {
    /// Grab reverse link
    let links = get_links(link_input(
       create_link.target_address.clone(),
-      TaggingLinkTypes::PublicTags,
+      TaggingLinkTypes::PublicTags.try_into_filter().unwrap(),
       None,
-   ))?;
+   ), GetStrategy::Network)?;
    let mut maybe_reverse_link_ah = None;
    debug!(
       "untag_public_entry() reverse links: {:?} | target: {}",

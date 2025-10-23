@@ -153,7 +153,7 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
    let tag_eh = hash_entry(PrivateTag { value: input.tag })?;
    /// Get Tag link
    let link_tuples =
-      get_typed_from_links::<PrivateTag>(link_input(input.target.clone(), TaggingLinkTypes::PrivateTags, None))?;
+      get_typed_from_links::<PrivateTag>(link_input(input.target.clone(), TaggingLinkTypes::PrivateTags.try_into_filter().unwrap(), None))?;
    let link_tuple: Vec<(PrivateTag, Link)> = link_tuples
       .into_iter()
       .filter(|(tag_entry, _link)| {
@@ -167,10 +167,10 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
    let link = link_tuple[0].1.clone();
 
    /// Delete Entry -> Tag Link
-   let _ = delete_link(link.create_link_hash)?;
+   let _ = delete_link(link.create_link_hash, GetOptions::default())?;
    /// Get reverse link
    let tag_eh = hash_entry(link_tuple[0].0.clone())?;
-   let links = get_links(link_input(tag_eh, TaggingLinkTypes::PrivateEntry, None))?;
+   let links = get_links(link_input(tag_eh, TaggingLinkTypes::PrivateEntry.try_into_filter().unwrap(), None), GetStrategy::Network)?;
    let link: Vec<Link> = links
       .into_iter()
       .filter(|link| link.target.clone().into_entry_hash() == Some(input.target.clone()))
@@ -179,7 +179,7 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
       return error("No reverse link found for private entry tag");
    }
    /// Delete Tag Link -> Entry
-   let _ = delete_link(link[0].clone().create_link_hash)?;
+   let _ = delete_link(link[0].clone().create_link_hash, GetOptions::default())?;
    /// Done
    Ok(())
 }
@@ -191,7 +191,7 @@ pub fn find_private_tags_for_entry(eh: EntryHash) -> ExternResult<Vec<(EntryHash
    /// Make sure entry exist and is private
    let _record = query_private_entry(eh.clone())?;
    /// Grab private tags
-   let link_tuples = get_typed_from_links::<PrivateTag>(link_input(eh, TaggingLinkTypes::PrivateTags, None))?;
+   let link_tuples = get_typed_from_links::<PrivateTag>(LinkQuery::new(eh, TaggingLinkTypes::PrivateTags.try_into_filter().unwrap()))?;
    let res = link_tuples
       .clone()
       .into_iter()
@@ -213,7 +213,7 @@ pub fn find_private_entries_with_tag(tag: String) -> ExternResult<Vec<(EntryHash
    for tuple in private_tags {
       if tuple.2 == tag {
          /// Found: grab links
-         let links = get_links(link_input(tuple.0, TaggingLinkTypes::PrivateEntry, None))?;
+         let links = get_links(link_input(tuple.0, TaggingLinkTypes::PrivateEntry.try_into_filter().unwrap(), None), GetStrategy::Network)?;
          let res = links
             .clone()
             .into_iter()
