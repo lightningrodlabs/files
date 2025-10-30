@@ -11,11 +11,11 @@ jobs:
     uses: ./.github/workflows/build-webhapps.yml
     secrets: inherit
 
-  upload-assets:
+  view-artifacts:
     needs: call-build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # Download previously uploaded artifacts
       - uses: actions/download-artifact@v5
         with:
