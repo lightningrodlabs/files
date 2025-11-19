@@ -194,20 +194,20 @@ export class FilesApp extends HappElement {
 
 
   /** */
-  override async perspectiveInitializedOffline(): Promise<void> {
-    console.log("<files-app>.perspectiveInitializedOffline()");
+  override async perspectiveInitializedFromLocal(): Promise<void> {
+    console.log("<files-app>.perspectiveInitializedFromLocal()");
     const maybeProfile = await this.filesDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
-    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.filesDvm.cell.address.agentId);
+    console.log("perspectiveInitializedFromLocal() maybeProfile", maybeProfile, this.filesDvm.cell.address.agentId);
     /** Done */
     this._offlinePerspectiveloaded = true;
   }
 
 
   /** */
-  override async perspectiveInitializedOnline(): Promise<void> {
-    console.log("<files-app>.perspectiveInitializedOnline()");
+  override async perspectiveInitializedFromNetwork(): Promise<void> {
+    console.log("<files-app>.perspectiveInitializedFromNetwork()");
     if (this.appletView && this.appletView.type == "main") {
-      await this.hvm.probeAll();
+      this.hvm.probeAll();
     }
     this._onlinePerspectiveloaded = true;
   }

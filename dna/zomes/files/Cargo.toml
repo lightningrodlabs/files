@@ -14,6 +14,8 @@ workspace = true
 serde.workspace = true
 hdk.workspace = true
 zome_utils.workspace = true
+zome_path.workspace = true
+zome_core.workspace = true
 
 zome_delivery_types.workspace = true
 zome_delivery_api.workspace = true

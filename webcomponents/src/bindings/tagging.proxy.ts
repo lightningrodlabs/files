@@ -120,8 +120,8 @@ export class TaggingProxy extends ZomeProxy {
     return this.call('find_private_entries_with_tag', tag);
   }
 
-  async probePublicTags(): Promise<[EntryArray, string][]> {
-    return this.call('probe_public_tags', null);
+  async probePublicTags(strategy: GetStrategy): Promise<[EntryArray, string][]> {
+    return this.call('probe_public_tags', strategy);
   }
 
   async publishPublicTag(tagValue: string): Promise<EntryArray> {

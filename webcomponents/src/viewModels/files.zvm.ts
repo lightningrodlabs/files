@@ -30,14 +30,14 @@ export class FilesZvm extends ZomeViewModel {
 
 
     /** */
-    override async initializePerspectiveOffline(): Promise<void> {
+    override async initializePerspectiveFromLocal(): Promise<void> {
         // N/A
         this._dvmParent.dumpCallLogs();
     }
 
 
     /** */
-    override async initializePerspectiveOnline(): Promise<void> {
+    override async initializePerspectiveFromNetwork(): Promise<void> {
         // N/A
     }
 

@@ -3,6 +3,7 @@ use hdk::prelude::*;
 use zome_signals::*;
 use zome_tagging_integrity::*;
 use zome_utils::*;
+use zome_path::*;
 
 ///
 #[hdk_extern]
@@ -153,7 +154,7 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
    let tag_eh = hash_entry(PrivateTag { value: input.tag })?;
    /// Get Tag link
    let link_tuples =
-      get_typed_from_links::<PrivateTag>(link_input(input.target.clone(), TaggingLinkTypes::PrivateTags.try_into_filter().unwrap(), None))?;
+      get_typed_from_links::<PrivateTag>(link_input(input.target.clone(), TaggingLinkTypes::PrivateTags.try_into_filter().unwrap(), None), GetStrategy::Network)?;
    let link_tuple: Vec<(PrivateTag, Link)> = link_tuples
       .into_iter()
       .filter(|(tag_entry, _link)| {
@@ -191,7 +192,7 @@ pub fn find_private_tags_for_entry(eh: EntryHash) -> ExternResult<Vec<(EntryHash
    /// Make sure entry exist and is private
    let _record = query_private_entry(eh.clone())?;
    /// Grab private tags
-   let link_tuples = get_typed_from_links::<PrivateTag>(LinkQuery::new(eh, TaggingLinkTypes::PrivateTags.try_into_filter().unwrap()))?;
+   let link_tuples = get_typed_from_links::<PrivateTag>(LinkQuery::new(eh, TaggingLinkTypes::PrivateTags.try_into_filter().unwrap()), GetStrategy::Network)?;
    let res = link_tuples
       .clone()
       .into_iter()

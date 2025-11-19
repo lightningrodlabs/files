@@ -2,6 +2,7 @@ use crate::attach_to_hrl::holo_hash::DnaHash;
 use hdk::prelude::*;
 use zome_files_integrity::*;
 use zome_utils::*;
+use zome_path::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AttachInput {

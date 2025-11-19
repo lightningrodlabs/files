@@ -3,6 +3,7 @@ use hdk::prelude::*;
 use zome_signals::*;
 use zome_tagging_integrity::*;
 use zome_utils::*;
+use zome_path::*;
 
 fn root_path() -> ExternResult<TypedPath> {
    let tp = Path::from(format!("{}", PUBLIC_TAG_ROOT)).typed(TaggingLinkTypes::PublicPath)?;
@@ -11,10 +12,10 @@ fn root_path() -> ExternResult<TypedPath> {
 
 ///
 #[hdk_extern]
-fn probe_public_tags(_: ()) -> ExternResult<Vec<(EntryHash, String)>> {
+fn probe_public_tags(strategy: GetStrategy) -> ExternResult<Vec<(EntryHash, String)>> {
    std::panic::set_hook(Box::new(zome_panic_hook));
    let root_tp = root_path()?;
-   let links = tp_children(&root_tp)?;
+   let links = tp_children(&root_tp, strategy)?;
    let children = links_to_paths(&root_tp, links.clone())?;
    debug!("children_links: {:?}", links);
    debug!("children: {:?}", children);
@@ -39,7 +40,7 @@ fn probe_public_tags(_: ()) -> ExternResult<Vec<(EntryHash, String)>> {
 fn publish_public_tag(tag_value: String) -> ExternResult<EntryHash> {
    std::panic::set_hook(Box::new(zome_panic_hook));
    /// Make sure Tag does not already exists
-   for (eh, tag) in probe_public_tags(())? {
+   for (eh, tag) in probe_public_tags(GetStrategy::Network)? {
       if tag == tag_value {
          return Ok(eh);
       }
@@ -62,8 +63,8 @@ fn publish_public_tag(tag_value: String) -> ExternResult<EntryHash> {
 
 ///
 pub fn fetch_public_entry(eh: EntryHash) -> ExternResult<Entry> {
-   let entry = get_entry_from_eh(eh.clone())?;
-   let entry_type = get_entry_type(&entry)?;
+   let entry = get_entry_from_eh(eh.clone(), GetStrategy::Network)?;
+   let entry_type = get_entry_type(&entry, GetStrategy::Network)?;
    if !entry_type.visibility().is_public() {
       return error("Entry is Private");
    }
@@ -82,7 +83,7 @@ fn tag_public_entry(input: TaggingInput) -> ExternResult<Vec<ActionHash>> {
    /// Make sure entry exist and is public
    let _entry = fetch_public_entry(input.target.clone())?;
    /// Grab existing public tags
-   let public_tuples = probe_public_tags(())?;
+   let public_tuples = probe_public_tags(GetStrategy::Network)?;
    let public_tags: Vec<String> = public_tuples.iter().map(|(_, tag)| tag.to_owned()).collect();
    /// Link to/from each tag (create PublicTag entry if necessary)
    let mut link_ahs = Vec::new();

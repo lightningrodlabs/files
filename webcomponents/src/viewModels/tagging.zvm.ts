@@ -1,7 +1,11 @@
 import {
+    AgentId,
     EntryId,
-    ZomeViewModelWithSignals,
-    EntryPulseMat, AgentId, LinkPulseMat, StateChangeType, holoIdReviver
+    EntryPulseMat,
+    holoIdReviver,
+    LinkPulseMat,
+    StateChangeType,
+    ZomeViewModelWithSignals
 } from "@ddd-qc/lit-happ";
 import {TaggingProxy} from "../bindings/tagging.proxy";
 import {PrivateTag, PUBLIC_TAG_ROOT, TaggingInput, UntagInput} from "../bindings/tagging.types";
@@ -9,7 +13,7 @@ import {TaggingLinkType, TaggingUnitEnum} from "../bindings/tagging.integrity";
 import {decode} from "@msgpack/msgpack";
 import {decodeComponentUtf32} from "../utils";
 import {TaggingPerspective, TaggingPerspectiveMutable, TaggingSnapshot} from "./tagging.perspective";
-
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /** */
@@ -51,18 +55,23 @@ export class TaggingZvm extends ZomeViewModelWithSignals {
     /** -- Init -- */
 
     /** */
-    override async initializePerspectiveOffline(): Promise<void> {
+    override async initializePerspectiveFromLocal(): Promise<void> {
         const tuples = await this.zomeProxy.queryAllPrivateTag();
         console.log("tagging tuples", tuples);
         for (const [_eh, _ts, tag] of tuples) {
             await this.findPrivateEntriesWithTag(tag);
         }
+        const publicTuples = await this.zomeProxy.probePublicTags(GetStrategy.Local);
+        console.log("taggingZvm.initializePerspectiveOnline()", publicTuples);
+        for (const [_eh, tag] of publicTuples) {
+            await this.findPublicEntriesWithTag(tag);
+        }
     }
 
 
     /** */
-    override async initializePerspectiveOnline(): Promise<void> {
-        const tuples = await this.zomeProxy.probePublicTags();
+    override async initializePerspectiveFromNetwork(): Promise<void> {
+        const tuples = await this.zomeProxy.probePublicTags(GetStrategy.Network);
         console.log("taggingZvm.initializePerspectiveOnline()", tuples);
         for (const [_eh, tag] of tuples) {
             await this.findPublicEntriesWithTag(tag);

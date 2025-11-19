@@ -116,16 +116,16 @@ export class FilesProxy extends ZomeProxy {
     return this.call('get_ah', eh);
   }
 
-  async getFileInfo(eh: EntryArray): Promise<ParcelManifest> {
-    return this.call('get_file_info', eh);
+  async getFileInfoLocal(eh: EntryArray): Promise<ParcelManifest> {
+    return this.call('get_file_info_local', eh);
+  }
+
+  async getFileInfoNetwork(eh: EntryArray): Promise<ParcelManifest> {
+    return this.call('get_file_info_network', eh);
   }
 
   async getPrivateFilesFrom(sender: AgentArray): Promise<EntryArray[]> {
     return this.call('get_private_files_from', sender);
-  }
-
-  async getRecordAuthor(dh: AnyDhtArray): Promise<AgentArray> {
-    return this.call('get_record_author', dh);
   }
 
   async processInbox(): Promise<void> {
