@@ -44,7 +44,7 @@ export async function getAssetInfo(
             console.log("Files/we-applet/getAssetInfo(): cellProxy?", !!cellProxy);
             const proxy/*: FilesProxy */ = new FilesProxy(cellProxy);
             console.log("Files/we-applet/getAssetInfo(): getFile()", intoDhtId(wal.hrl[1]), proxy);
-            const manifest = await proxy.getFileInfo(wal.hrl[1]);
+            const manifest = await proxy.getFileInfoLocal(wal.hrl[1]);
             console.log("Files/we-applet/getAssetInfo(): file", manifest.description);
             return {
                 icon_src: wrapPathInSvg(mdiFileOutline),
