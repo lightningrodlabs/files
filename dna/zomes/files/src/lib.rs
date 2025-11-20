@@ -1,7 +1,6 @@
 mod attach_to_hrl;
 mod callbacks;
 mod commit_private_file;
-mod get_any_record;
 mod get_file_info;
 mod get_files;
 mod get_private_files_from;
@@ -13,5 +12,3 @@ mod respond_to_file_notice;
 mod send_file;
 mod utils;
 mod write_file_chunk;
-
-extern crate zome_core;
