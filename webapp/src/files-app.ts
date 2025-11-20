@@ -1,23 +1,21 @@
-import {html, css} from "lit";
-import {state, customElement} from "lit/decorators.js";
-import {ContextProvider} from "@lit/context";
+import {css, html} from "lit";
+import {customElement, state} from "lit/decorators.js";
+import {ContextProvider, createContext} from "@lit/context";
+import {AdminWebsocket, AppWebsocket, InstalledAppId, ZomeName} from "@holochain/client";
 import {
-  AdminWebsocket,
-  AppWebsocket,
-  InstalledAppId,
-  ZomeName
-} from "@holochain/client";
-import {
-  HvmDef, HappElement, HCL,
-  BaseRoleName,
-  CloneId,
-  AppProxy, EntryId,
-  DvmDef, DnaViewModel, pascal, delay,
+    AppProxy,
+    BaseRoleName,
+    CloneId,
+    delay,
+    DnaViewModel,
+    DvmDef,
+    EntryId,
+    HappElement,
+    HCL,
+    HvmDef,
+    pascal,
 } from "@ddd-qc/lit-happ";
-import {
-  FilesDvm,
-  FILES_DEFAULT_ROLE_NAME, ProfileInfo,
-} from "@ddd-qc/files";
+import {FILES_DEFAULT_ROLE_NAME, FilesDvm, ProfileInfo,} from "@ddd-qc/files";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
 import {AppletId, AppletView, CreatableName, GroupProfile, WAL, WeaveServices} from "@theweave/api";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
@@ -26,11 +24,11 @@ import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery
 import {buildBlock} from "./files-blocks";
 import {DEFAULT_FILES_DEF} from "./happDef";
 import {setLocale} from "./localization";
-import { msg } from '@lit/localize';
+import {msg} from '@lit/localize';
 
 import "./files-main-page"
 import "@ddd-qc/files";
-import {createContext} from "@lit/context";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 const weClientContext = createContext<WeaveServices>('weave_client');
 
@@ -48,15 +46,15 @@ export class FilesApp extends HappElement {
   @state() private _hasHolochainFailed = true;
   @state() private _loaded = false;
   @state() private _hasWeProfile = false;
-  @state() private _offlinePerspectiveloaded = false;
-  @state() private _onlinePerspectiveloaded = false;
+  @state() private _localPerspectiveloaded = false;
+  @state() private _networkPerspectiveloaded = false;
   //@state() private _filesCell: Cell;
   /** ZomeName -> (AppEntryDefName, isPublic) */
   //private _allAppEntryTypes: Record<string, [string, boolean][]> = {};
   //private _dnaDef?: DnaDefinition;
 
 
-  /** All arguments should be provided when constructed explicity */
+  /** All arguments should be provided when constructed explicitly */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
     const adminUrl = _adminWs
       ? undefined
@@ -196,10 +194,13 @@ export class FilesApp extends HappElement {
   /** */
   override async perspectiveInitializedFromLocal(): Promise<void> {
     console.log("<files-app>.perspectiveInitializedFromLocal()");
-    const maybeProfile = await this.filesDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
-    console.log("perspectiveInitializedFromLocal() maybeProfile", maybeProfile, this.filesDvm.cell.address.agentId);
+    //const maybeProfile = await this.filesDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
+    //console.log("perspectiveInitializedFromLocal() maybeProfile", maybeProfile, this.filesDvm.cell.address.agentId);
+      if (this.appletView && this.appletView.type == "main") {
+          this.hvm.probeAll(GetStrategy.Local);
+      }
     /** Done */
-    this._offlinePerspectiveloaded = true;
+    this._localPerspectiveloaded = true;
   }
 
 
@@ -207,9 +208,9 @@ export class FilesApp extends HappElement {
   override async perspectiveInitializedFromNetwork(): Promise<void> {
     console.log("<files-app>.perspectiveInitializedFromNetwork()");
     if (this.appletView && this.appletView.type == "main") {
-      this.hvm.probeAll();
+      this.hvm.probeAll(GetStrategy.Network);
     }
-    this._onlinePerspectiveloaded = true;
+    this._networkPerspectiveloaded = true;
   }
 
 
@@ -217,7 +218,7 @@ export class FilesApp extends HappElement {
   override render() {
     console.log("<files-app> render()", this._loaded, this._hasHolochainFailed);
 
-    if (!this._loaded || !this._offlinePerspectiveloaded || !this._onlinePerspectiveloaded) {
+    if (!this._loaded || !this._localPerspectiveloaded || !this._networkPerspectiveloaded) {
       return html`<sl-spinner></sl-spinner>`;
     }
     if(this._hasHolochainFailed) {

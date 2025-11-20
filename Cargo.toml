@@ -31,8 +31,8 @@ ill_formed_attribute_input = "allow"
 [workspace.dependencies]
 serde = { version = "=1.0.219", default-features = false }
 holochain_serialized_bytes = "=0.0.56"
-hdi = { version = "=0.7.0-rc.0", default-features = false }
-hdk = { version = "=0.6.0-rc.0", default-features = false }
+hdi = { version = "=0.7.0", default-features = false }
+hdk = { version = "=0.6.0", default-features = false }
 
 zome_utils = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
 zome_path = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
@@ -43,8 +43,8 @@ hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/zdk", branch =
 
 delivery = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-6.0" }
 zome_delivery_integrity = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-6.0" }
-zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_types", branch = "hdk-6.0" }
-zome_delivery_api = {git = "https://github.com/ddd-mtl/delivery-zome", package = "zome_delivery_api", branch = "hdk-6.0" }
+zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-6.0" }
+zome_delivery_api = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-6.0" }
 
 
 [profile.dev]

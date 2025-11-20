@@ -80,6 +80,7 @@ import {setLocale} from "./localization";
 import {msg} from "@lit/localize";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiCog, mdiInformationOutline} from "@mdi/js";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 export const REPORT_BUG_URL = `https://github.com/lightningrodlabs/files/issues/new`;
@@ -332,7 +333,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     async refresh() {
-        await this._dvm.probeAll();
+        await this._dvm.probeAll(GetStrategy.Network);
         //await this._dvm.filesZvm.zomeProxy.getPrivateFiles();
         //await this._dvm.deliveryZvm.zomeProxy.queryAll();
         this.requestUpdate();

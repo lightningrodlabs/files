@@ -112,10 +112,6 @@ export class FilesProxy extends ZomeProxy {
     return this.call('commit_private_file', input);
   }
 
-  async getAh(eh: EntryArray): Promise<ActionArray | null> {
-    return this.call('get_ah', eh);
-  }
-
   async getFileInfoLocal(eh: EntryArray): Promise<ParcelManifest> {
     return this.call('get_file_info_local', eh);
   }

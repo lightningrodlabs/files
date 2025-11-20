@@ -12,3 +12,5 @@ mod respond_to_file_notice;
 mod send_file;
 mod utils;
 mod write_file_chunk;
+
+extern crate zome_core;
