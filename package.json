@@ -2,7 +2,7 @@
   "name": "files-dev",
   "version": "1.3.0",
   "config": {
-    "hc_version": "0.6.0-dev.28",
+    "hc_version": "0.6.0",
     "k2_version": "0.2.17",
     "zits_version": "1.17.1",
     "bin": "bin"
@@ -94,7 +94,7 @@
   },
   "devDependencies": {
     "@ddd-qc/hc-prebuilt": "0.506.2",
-    "@theweave/cli": "=0.15.3",
+    "@theweave/cli": "=0.15.5",
     "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
     "bestzip": "^2.2.0",
@@ -108,9 +108,9 @@
   },
   "dependencies": {
     "@holochain/client": "^0.20.0",
-    "@holochain-open-dev/core-types": "0.600.0-dev.2",
-    "@holochain-open-dev/profiles": "0.600.0-dev.2",
-    "@holochain-open-dev/elements": "0.600.0-dev.0",
+    "@holochain-open-dev/core-types": "0.600.0",
+    "@holochain-open-dev/profiles": "0.600.0",
+    "@holochain-open-dev/elements": "0.600.0",
     "@theweave/api": "=0.6.0",
     "@ddd-qc/cell-proxy": "=0.33.4",
     "@ddd-qc/lit-happ": "=0.33.4",

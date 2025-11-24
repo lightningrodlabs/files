@@ -12,7 +12,7 @@ members = [
   "dna/zomes/files",
   "dna/zomes/tagging_integrity",
   "dna/zomes/tagging",
-  #"sweettest" // Don't add this since cargo sucks at target specific compiliation in workspaces
+  #"sweettest" // Don't add this since cargo sucks at target-specific compiliation in workspaces
   ]
 
 [workspace.package]
