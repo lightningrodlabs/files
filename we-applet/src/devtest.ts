@@ -1,7 +1,7 @@
-import {createDefaultWeServicesMock, DevTestNames, AssetViewInfo, setupDevtest} from "@ddd-qc/we-utils";
+import {createDefaultWeServicesMock, DevTestNames, AssetViewInfo, setupDevtest, intoHrl} from "@ddd-qc/we-utils";
 import {FILES_DEFAULT_ROLE_NAME} from "@ddd-qc/files";
 import {emptyEntryAppletView} from "@ddd-qc/we-utils/dist/mocks/renderInfoMock";
-import {EntryId, snake} from "@ddd-qc/cell-proxy";
+import {DnaId, EntryId, snake} from "@ddd-qc/cell-proxy";
 import {createFilesApplet, ViewFileContext} from "./createFilesApplet";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 import {AppletView} from "@theweave/api";
@@ -52,7 +52,7 @@ export async function setupFilesEntryView() {
 
 /** */
 function createManifestEntryRenderInfo(eh: EntryId, context: ViewFileContext): AssetViewInfo {
-    const entryInfo = emptyEntryAppletView as AssetViewInfo;
+    const entryInfo = emptyEntryAppletView;// as AssetViewInfo;
     entryInfo.recordInfo = {
         roleName: FILES_DEFAULT_ROLE_NAME,
         integrityZomeName: DELIVERY_INTERGRITY_ZOME_NAME,

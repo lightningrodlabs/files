@@ -63,7 +63,7 @@ export async function createFilesApplet(
   const hcl = new HCL(profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId);
   const profilesApi = new ProfilesApi(profilesClient);
   console.log("createFilesApplet() profilesApi", profilesApi);
-  const profilesAppProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
+  const profilesAppProxy = new ExternalAppProxy(profilesApi, "FIXME_FILES", 10 * 1000);
   console.log("createFilesApplet() profilesAppProxy", profilesAppProxy);
   await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
   const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);

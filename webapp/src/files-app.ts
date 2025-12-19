@@ -10,7 +10,7 @@ import {
     DnaViewModel,
     DvmDef,
     EntryId,
-    HappElement,
+    HappElement, HcConnectionOptions,
     HCL,
     HvmDef,
     pascal,
@@ -75,7 +75,10 @@ export class FilesApp extends HappElement {
         throw Error("No appWebsocket or APP_PORT set");
       }
     }
-    super(appWs ? appWs : appPort!, appId, adminUrl, 20 * 1000);
+      const options: HcConnectionOptions = appWs
+          ? {socket: appWs, timeout: 20 * 1000}
+          : {port: appPort!, timeout: 20 * 1000, adminUrl};
+    super(options, "FIXME", appId);
     console.log("FilesApp.HVM_DEF", FilesApp.HVM_DEF);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;

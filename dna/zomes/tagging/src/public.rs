@@ -40,7 +40,7 @@ fn probe_public_tags(strategy: GetStrategy) -> ExternResult<Vec<(EntryHash, Stri
 fn publish_public_tag(tag_value: String) -> ExternResult<EntryHash> {
    std::panic::set_hook(Box::new(zome_panic_hook));
    /// Make sure Tag does not already exists
-   for (eh, tag) in probe_public_tags(GetStrategy::Network)? {
+   for (eh, tag) in probe_public_tags(GetStrategy::Local)? {
       if tag == tag_value {
          return Ok(eh);
       }
@@ -62,9 +62,9 @@ fn publish_public_tag(tag_value: String) -> ExternResult<EntryHash> {
 }
 
 ///
-pub fn fetch_public_entry(eh: EntryHash) -> ExternResult<Entry> {
-   let entry = get_entry_from_eh(eh.clone(), GetStrategy::Network)?;
-   let entry_type = get_entry_type(&entry, GetStrategy::Network)?;
+pub fn fetch_public_entry(eh: EntryHash, strategy: GetStrategy) -> ExternResult<Entry> {
+   let entry = get_entry_from_eh(eh.clone(), strategy)?;
+   let entry_type = get_entry_type(&entry, strategy)?;
    if !entry_type.visibility().is_public() {
       return error("Entry is Private");
    }
@@ -81,9 +81,9 @@ fn tag_public_entry(input: TaggingInput) -> ExternResult<Vec<ActionHash>> {
    let set: HashSet<_> = tags.drain(..).collect();
    tags.extend(set.into_iter());
    /// Make sure entry exist and is public
-   let _entry = fetch_public_entry(input.target.clone())?;
+   let _entry = fetch_public_entry(input.target.clone(), GetStrategy::Local)?;
    /// Grab existing public tags
-   let public_tuples = probe_public_tags(GetStrategy::Network)?;
+   let public_tuples = probe_public_tags(GetStrategy::Local)?;
    let public_tags: Vec<String> = public_tuples.iter().map(|(_, tag)| tag.to_owned()).collect();
    /// Link to/from each tag (create PublicTag entry if necessary)
    let mut link_ahs = Vec::new();
@@ -119,9 +119,9 @@ fn tag_public_entry(input: TaggingInput) -> ExternResult<Vec<ActionHash>> {
 pub fn find_public_tags_for_entry(eh: EntryHash) -> ExternResult<Vec<String>> {
    std::panic::set_hook(Box::new(zome_panic_hook));
    /// Make sure entry exist and is public
-   let _ = fetch_public_entry(eh.clone())?;
+   let _ = fetch_public_entry(eh.clone(), GetStrategy::Local)?; // FIXME strategy
    /// Grab public tags
-   let link_details = get_links_details(LinkQuery::new(eh, TaggingLinkTypes::PublicTags.try_into_filter().unwrap()), GetStrategy::Network)?;
+   let link_details = get_links_details(LinkQuery::new(eh, TaggingLinkTypes::PublicTags.try_into_filter().unwrap()), GetStrategy::Local)?;
    let create_links: Vec<Link> = link_details
       .into_inner()
       .into_iter()
@@ -156,7 +156,7 @@ pub fn find_public_entries_with_tag(tag: String) -> ExternResult<Vec<(ActionHash
       tp.path_entry_hash()?,
       TaggingLinkTypes::PublicEntry.try_into_filter().unwrap(),
    ),
-      GetStrategy::Network,
+      GetStrategy::Local, // FIXME strategy
    )?;
    let mut create_links = Vec::new();
    let mut delete_links = Vec::new();
@@ -250,7 +250,7 @@ fn untag_public_entry(link_ah: ActionHash) -> ExternResult<ActionHash> {
       create_link.target_address.clone(),
       TaggingLinkTypes::PublicTags.try_into_filter().unwrap(),
       None,
-   ), GetStrategy::Network)?;
+   ), GetStrategy::Local)?;
    let mut maybe_reverse_link_ah = None;
    debug!(
       "untag_public_entry() reverse links: {:?} | target: {}",

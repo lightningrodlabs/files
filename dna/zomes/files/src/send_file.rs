@@ -24,7 +24,7 @@ pub fn send_file(input: SendFileInput) -> ExternResult<ActionHash> {
    debug!(" zome_name: {:?}", zome_info()?.name);
 
    ///Make sure manifest exists and is of File type.
-   let manifest: ParcelManifest = get_typed_from_eh(input.manifest_eh.clone(), GetStrategy::Network)?;
+   let manifest: ParcelManifest = get_typed_from_eh(input.manifest_eh.clone(), GetStrategy::Local)?;
    ensure_parcel_is_file(&manifest.description)?;
 
    /// Form Parcel Reference
