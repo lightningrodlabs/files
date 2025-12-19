@@ -349,14 +349,19 @@ export class FilesApp extends HappElement {
       }
       else {
         /** Create Guest profile */
-        const profile = { nickname: "guest_" + Math.floor(Math.random() * 100),
-          fields: {lang: 'en', email: 'guest@ac.me', mailgun_domain: "mg.flowplace.org", mailgun_email: "whosin@mg.flowplace.org"}};
+        const profile = {
+          nickname: "guest_" + Math.floor(Math.random() * 100),
+          fields: {lang: 'en', email: 'guest@ac.me', mailgun_domain: "mg.flowplace.org", mailgun_email: "whosin@mg.flowplace.org"},
+        };
         console.log("<files-app> createMyProfile", this.filesDvm.profilesZvm.cell.address.agentId);
         try {
-          this.filesDvm.profilesZvm.createMyProfile(profile).then(() => this.requestUpdate());
+          this.filesDvm.profilesZvm.createMyProfile(profile).then(async () => {
+              //await delay(100);
+              this.requestUpdate();
+          });
         } catch(e:any) {
           if (!e.throttled) {
-            console.error({e});
+            console.error("createMyProfile failed: {e}");
           }
         }
         guardedView = html`<sl-spinner></sl-spinner>`;

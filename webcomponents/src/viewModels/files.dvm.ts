@@ -263,6 +263,7 @@ export class FilesDvm extends DnaViewModel {
 
     /** */
     async handleProfilesSignal(zomeSignal: ZomeSignal, from: AgentId) {
+        console.debug("FilesDvm.handleProfilesSignal()", zomeSignal);
         let all: any[] = [];
         for (let pulse of zomeSignal.pulses) {
             /** -- Handle Signal according to type -- */
