@@ -671,7 +671,7 @@ export class FilesDvm extends DnaViewModel {
         //   console.error("File '" + manifest.filename + "' is invalid base64. hash is: " + invalid_hash);
         // }
         /** */
-        const byteArray = base64ToArrayBuffer(data)
+        const byteArray = base64ToArrayBuffer(data) as ArrayBuffer;
         const blob = new Blob([byteArray], { type: filetype});
         const file = new File([blob], manifest.description.name);
         return file;

@@ -35,15 +35,15 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** -- Getters -- */
 
     get inputElem() : SlInput {
-        return this.shadowRoot!.getElementById("tag-input") as SlInput;
+        return this.shadowRoot!.getElementById("tag-input") as unknown as SlInput;
     }
 
     get dialogElem() : SlDialog {
-        return this.shadowRoot!.querySelector("sl-dialog") as SlDialog;
+        return this.shadowRoot!.querySelector("sl-dialog") as unknown as SlDialog;
     }
 
     get tagListElem() : TagList {
-        return this.shadowRoot!.querySelector("tag-list") as TagList;
+        return this.shadowRoot!.querySelector("tag-list") as unknown as TagList;
     }
 
 

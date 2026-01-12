@@ -20,7 +20,7 @@ export class TagInput extends LitElement {
 
 
     get inputElem() : SlInput {
-        return this.shadowRoot!.getElementById("tag-input") as SlInput;
+        return this.shadowRoot!.getElementById("tag-input") as unknown as SlInput;
     }
 
     /** */

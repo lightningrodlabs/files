@@ -5,7 +5,6 @@ import {Timestamp} from "@holochain/client";
 import {FrameNotification, GroupProfile, Hrl, WeaveServices, weaveUrlFromWal} from "@theweave/api";
 import {consume, createContext} from "@lit/context";
 
-
 import {
     ActionOverlay,
     countFileTypes,
@@ -151,15 +150,15 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         return this.shadowRoot!.querySelector("send-dialog") as SendDialog;
     }
     get deleteDialogElem() : SlDialog {
-        return this.shadowRoot!.getElementById("delete-dialog") as SlDialog;
+        return this.shadowRoot!.getElementById("delete-dialog") as unknown as SlDialog;
     }
 
     get searchInputElem() : SlInput {
-        return this.shadowRoot!.getElementById("search-input") as SlInput;
+        return this.shadowRoot!.getElementById("search-input") as unknown as SlInput;
     }
 
     get menuElem() : FilesMenu {
-        return this.shadowRoot!.querySelector("files-menu") as FilesMenu;
+        return this.shadowRoot!.querySelector("files-menu") as unknown as FilesMenu;
     }
 
 

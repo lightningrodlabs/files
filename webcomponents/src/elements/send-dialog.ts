@@ -119,11 +119,11 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
 
     get inputElem() : SlInput {
-        return this.shadowRoot!.getElementById("tag-input") as SlInput;
+        return this.shadowRoot!.getElementById("tag-input") as unknown as SlInput;
     }
 
     get tagListElem() : TagList {
-        return this.shadowRoot!.getElementById("selected-tag-list") as TagList;
+        return this.shadowRoot!.getElementById("selected-tag-list") as unknown as TagList;
     }
 
 

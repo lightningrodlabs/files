@@ -108,17 +108,17 @@ export function countFileTypes(descs: ParcelDescription[]): Record<string, numbe
     for (const desc of descs) {
         const type = kind2Type(desc.kind_info);
         switch (type) {
-            case FileType.Document: map[FileType.Document] += 1; break;
-            case FileType.Pdf: map[FileType.Pdf] += 1; map[FileType.Document] += 1; break;
-            case FileType.Text: map[FileType.Text] += 1; map[FileType.Document] += 1; break;
-            case FileType.Font: map[FileType.Font] += 1; break;
-            case FileType.Image: map[FileType.Image] += 1; break;
-            case FileType.Video: map[FileType.Video] += 1; break;
-            case FileType.Audio: map[FileType.Audio] += 1; break;
-            case FileType.Zip: map[FileType.Zip] += 1; break;
-            case FileType.Binary: map[FileType.Binary] += 1; break;
-            case FileType.Other: map[FileType.Other] += 1; break;
-            default: map[FileType.Other] += 1;
+            case FileType.Document: map[FileType.Document]! += 1; break;
+            case FileType.Pdf: map[FileType.Pdf]! += 1; map[FileType.Document]! += 1; break;
+            case FileType.Text: map[FileType.Text]! += 1; map[FileType.Document]! += 1; break;
+            case FileType.Font: map[FileType.Font]! += 1; break;
+            case FileType.Image: map[FileType.Image]! += 1; break;
+            case FileType.Video: map[FileType.Video]! += 1; break;
+            case FileType.Audio: map[FileType.Audio]! += 1; break;
+            case FileType.Zip: map[FileType.Zip]! += 1; break;
+            case FileType.Binary: map[FileType.Binary]! += 1; break;
+            case FileType.Other: map[FileType.Other]! += 1; break;
+            default: map[FileType.Other]! += 1;
         }
     }
     /** Done */

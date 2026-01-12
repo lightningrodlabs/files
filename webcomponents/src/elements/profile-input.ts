@@ -22,7 +22,7 @@ export class ProfileInput extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     @state() private _canShowResults: boolean = true;  // FIXME
 
     get inputElem() : SlInput {
-        return this.shadowRoot!.getElementById("tag-input") as SlInput;
+        return this.shadowRoot!.getElementById("tag-input") as unknown as SlInput;
     }
 
     /** */
