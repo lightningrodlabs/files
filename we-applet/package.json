@@ -28,12 +28,13 @@
     "concurrently": "^5.3.0",
     "deepmerge": "^4.2.2",
     "new-port-cli": "^1.0.0",
-    "tslib": "^2.4.0",
-    "typescript": "~5.2.0"
+    "tslib": "^2.8.0",
+    "typescript": "~5.9.0"
   },
   "dependencies": {
     "@files/app": "file:../webapp",
     "@ddd-qc/files": "file:../webcomponents",
-    "@mdi/js": "^7.2.0"
+    "@mdi/js": "^7.2.0",
+    "@shoelace-style/shoelace": "2.20.0"
   }
 }

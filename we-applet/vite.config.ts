@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import path from 'path';
 import checker from 'vite-plugin-checker';
 import topLevelAwait from "vite-plugin-top-level-await";
-//import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 console.log("vite: process.env.HC_APP_PORT: ", process.env.HC_APP_PORT);
@@ -38,7 +37,6 @@ export default defineConfig({
         { src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: DIST_FOLDER }
       ]
     }),
-    //dts(),
   ],
   define: {
     '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),

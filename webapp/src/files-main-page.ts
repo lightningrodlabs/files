@@ -47,6 +47,10 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 
 import {SlAlert, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
 
+import '@shoelace-style/shoelace/dist/themes/light.css';
+import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+setBasePath('/shoelace-assets');
+
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/badge/badge.js";
@@ -579,7 +583,8 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     renderHome(unrepliedInbounds: TemplateResult<1>[]) {
-        const initialized = !!(this._initialized && this._dvm.deliveryZvm.probeDhtCount);
+        // const initialized = !!(this._initialized && this._dvm.deliveryZvm.probeDhtCount); // TODO: uncomment once we can do Network get at startup
+        const initialized = this._initialized;
 
         /** Count files per type */
         const privDescriptions = Array.from(this.deliveryPerspective.privateManifests.values())
@@ -877,7 +882,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
             <sl-skeleton effect="sheen" style="margin:15px; width: 30%; height: 24px;"></sl-skeleton>
             `;
-        if (this._selectedMenuItem && this._dvm.deliveryZvm.probeDhtCount) {
+        if (this._selectedMenuItem /*&& this._dvm.deliveryZvm.probeDhtCount*/) { // TODO: uncomment once we can do Network get at startup
             console.log("_selectedMenuItem", this._selectedMenuItem)
 
             if (this._selectedMenuItem.type == SelectedType.Home) {

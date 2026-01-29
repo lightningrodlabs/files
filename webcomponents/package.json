@@ -29,14 +29,15 @@
   },
   "homepage": "https://github.com/lightningrodlabs/files",
   "devDependencies": {
-    "@lit/localize-tools": "^0.6.3",
-    "lit-analyzer": "^1.2.1",
+    "eslint-plugin-html": "^7.1.0",
+    "@lit/localize-tools": "^0.8.1",
+    "lit-analyzer": "^2.0.3",
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
     "js-base64": "^3.7.3",
     "@msgpack/msgpack": "^2.7.2",
-    "@shoelace-style/shoelace": "2.11.2",
+    "@shoelace-style/shoelace": "2.20.0",
     "@vaadin/grid": "24.2.3",
     "@vaadin/multi-select-combo-box": "24.2.3",
     "@vaadin/combo-box": "24.2.3",
@@ -44,8 +45,7 @@
     "@vaadin/list-box": "24.2.3",
     "@vaadin/select": "24.2.3",
     "@vaadin/upload": "24.2.3",
-    "eslint-plugin-html": "^7.1.0",
     "@lit/localize": "0.12.1",
-    "lit": "3.0.2"
+    "lit": "3.3.2"
   }
 }

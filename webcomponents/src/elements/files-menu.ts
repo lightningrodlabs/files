@@ -168,7 +168,8 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
     override render() {
         console.log("<files-menu>.render()", this._initialized, this._dvm.deliveryZvm.probeDhtCount, this.taggingPerspective);
 
-        const initialized = !!(this._initialized && this._dvm.deliveryZvm.probeDhtCount);
+        //const initialized = !!(this._initialized && this._dvm.deliveryZvm.probeDhtCount); // TODO: uncomment once we can do Network get at startup
+        const initialized = this._initialized
 
         //let localPublicCount = 0;
         let dhtPublicCount = 0;

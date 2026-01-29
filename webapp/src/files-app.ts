@@ -25,17 +25,16 @@ import {buildBlock} from "./files-blocks";
 import {DEFAULT_FILES_DEF} from "./happDef";
 import {setLocale} from "./localization";
 import {msg} from '@lit/localize';
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 import "./files-main-page"
 import "@ddd-qc/files";
-import {GetStrategy} from "@holochain-open-dev/core-types";
+
 
 const weClientContext = createContext<WeaveServices>('weave_client');
 
 
-/**
- *
- */
+/** */
 @customElement("files-app")
 export class FilesApp extends HappElement {
 
@@ -46,8 +45,8 @@ export class FilesApp extends HappElement {
   @state() private _hasHolochainFailed = true;
   @state() private _loaded = false;
   @state() private _hasWeProfile = false;
-  @state() private _localPerspectiveloaded = false;
-  @state() private _networkPerspectiveloaded = false;
+  @state() private _localPerspectiveLoaded = false;
+  @state() private _networkPerspectiveLoaded = false;
   //@state() private _filesCell: Cell;
   /** ZomeName -> (AppEntryDefName, isPublic) */
   //private _allAppEntryTypes: Record<string, [string, boolean][]> = {};
@@ -56,6 +55,7 @@ export class FilesApp extends HappElement {
 
   /** All arguments should be provided when constructed explicitly */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
+      console.log("FilesApp.ctor()", appWs, _adminWs, _canAuthorizeZfns, appId, appletView);
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
@@ -203,7 +203,7 @@ export class FilesApp extends HappElement {
           this.hvm.probeAll(GetStrategy.Local);
       }
     /** Done */
-    this._localPerspectiveloaded = true;
+    this._localPerspectiveLoaded = true;
   }
 
 
@@ -213,15 +213,15 @@ export class FilesApp extends HappElement {
     if (this.appletView && this.appletView.type == "main") {
       this.hvm.probeAll(GetStrategy.Network);
     }
-    this._networkPerspectiveloaded = true;
+    this._networkPerspectiveLoaded = true;
   }
 
 
   /** */
   override render() {
-    console.log("<files-app> render()", this._loaded, this._hasHolochainFailed);
+    console.log("<files-app> render()", this._loaded, this._hasHolochainFailed, this._localPerspectiveLoaded, this._networkPerspectiveLoaded);
 
-    if (!this._loaded || !this._localPerspectiveloaded || !this._networkPerspectiveloaded) {
+    if (!this._loaded || !this._localPerspectiveLoaded || !this._networkPerspectiveLoaded) {
       return html`<sl-spinner></sl-spinner>`;
     }
     if(this._hasHolochainFailed) {
@@ -357,16 +357,12 @@ export class FilesApp extends HappElement {
           fields: {lang: 'en', email: 'guest@ac.me', mailgun_domain: "mg.flowplace.org", mailgun_email: "whosin@mg.flowplace.org"},
         };
         console.log("<files-app> createMyProfile", this.filesDvm.profilesZvm.cell.address.agentId);
-        try {
-          this.filesDvm.profilesZvm.createMyProfile(profile).then(async () => {
-              //await delay(100);
-              this.requestUpdate();
-          });
-        } catch(e:any) {
-          if (!e.throttled) {
-            console.error("createMyProfile failed: {e}");
-          }
-        }
+          this.filesDvm.profilesZvm.createMyProfile(profile)
+              .then(async () => this.requestUpdate())
+              .catch((e: any) => {
+                console.error(`createMyProfile inner failed: ${JSON.stringify(e, null, 2)}`);
+                this.requestUpdate();
+              })
         guardedView = html`<sl-spinner></sl-spinner>`;
       }
     }

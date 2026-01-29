@@ -4,6 +4,7 @@ import {filesSharedStyles} from "../sharedStyles";
 import {SlInput} from "@shoelace-style/shoelace";
 import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ProfilesAltPerspective, ProfilesAltZvm, Profile} from "@ddd-qc/profiles-dvm";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -79,7 +80,7 @@ export class ProfileInput extends ZomeElement<ProfilesAltPerspective, ProfilesAl
 
         /** */
         return html`
-            <sl-input id="tag-input" placeholder="Add Recipients" clearable
+            <sl-input id="tag-input" placeholder=${msg("Add Recipients")} clearable
                       @keydown=${(_e:KeyboardEvent) => {this.requestUpdate();}}
             >
                 <sl-icon name="person-plus" slot="prefix"></sl-icon>

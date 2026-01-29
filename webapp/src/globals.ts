@@ -10,5 +10,5 @@ try {
 }
 
 //console.log("HAPP_ID =", DEFAULT_FILES_DEF.id)
-console.log("HC_APP_PORT =", HC_APP_PORT);
+console.log("  HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);

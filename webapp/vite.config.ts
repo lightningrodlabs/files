@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import path from 'path';
 import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
-//import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 console.log("vite: process.env.HC_APP_PORT: ", process.env.HC_APP_PORT);
@@ -24,12 +23,7 @@ export default defineConfig({
     }
   },
   plugins: [
-    checker({
-      typescript: true,
-      // eslint: {
-      //   lintCommand: 'eslint --ext .ts,.html . --ignore-path .gitignore',
-      // },
-    }),
+    checker({typescript: true}),
     dts(),
     viteStaticCopy({
       targets: [
@@ -38,12 +32,11 @@ export default defineConfig({
         { src: "../webapp/icon.png", dest: DIST_FOLDER },
         { src: "../webapp/add-to-pocket.svg", dest: DIST_FOLDER },
         { src: "../webapp/logo.svg", dest: DIST_FOLDER },
-        { src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css", dest: DIST_FOLDER, rename: "styles.css" },
+        //{ src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css", dest: DIST_FOLDER, rename: "styles.css" },
         //{ src: '../node_modules/@shoelace-style/shoelace', dest: DIST_FOLDER }
-        { src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: DIST_FOLDER }
+        { src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: "shoelace-assets" }
       ]
     }),
-    //dts(),
   ],
   define: {
     '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),
@@ -57,13 +50,13 @@ export default defineConfig({
   build: {
     emptyOutDir: true,
     outDir: DIST_FOLDER,
-      rollupOptions: {
+     /* rollupOptions: {
           output: {
               entryFileNames: "index.js",
               chunkFileNames: `assets/index-chunk.js`,
               assetFileNames: "assets[extname]",
           },
-      }
+      }*/
   },
   server: {
     open: true,
