@@ -194,6 +194,10 @@
   <source>Notices</source>
   <target>Notifications</target>
 </trans-unit>
+<trans-unit id="s8d3a04bff6f43055">
+  <source>Storing File</source>
+  <target>Fichier en cours de stockage</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
