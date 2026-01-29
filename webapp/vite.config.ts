@@ -27,11 +27,11 @@ export default defineConfig({
     dts(),
     viteStaticCopy({
       targets: [
-        { src: "weave.config.json", dest: DIST_FOLDER },
-        { src: "../webapp/favicon.ico", dest: DIST_FOLDER },
-        { src: "../webapp/icon.png", dest: DIST_FOLDER },
-        { src: "../webapp/add-to-pocket.svg", dest: DIST_FOLDER },
-        { src: "../webapp/logo.svg", dest: DIST_FOLDER },
+        { src: "weave.config.json", dest: "./" },
+        { src: "../assets/favicon.ico", dest: "./" },
+        { src: "../assets/icon.png", dest: "./assets" },
+        { src: "../assets/icon.png", dest: "./" },
+        { src: "../assets/favicon.png", dest: "./assets" },
         //{ src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css", dest: DIST_FOLDER, rename: "styles.css" },
         //{ src: '../node_modules/@shoelace-style/shoelace', dest: DIST_FOLDER }
         { src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: "shoelace-assets" }

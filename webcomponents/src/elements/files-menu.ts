@@ -9,6 +9,8 @@ import {SlMenu} from "@shoelace-style/shoelace";
 import {msg} from "@lit/localize";
 import {MyDictionary} from "@ddd-qc/cell-proxy";
 import {TaggingPerspectiveMutable} from "../viewModels/tagging.perspective";
+import {APP_VERSION, HAPP_SHA256} from "../generated/version";
+import {createAlert} from "../toast";
 
 
 /** */
@@ -196,8 +198,12 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
         /** render all */
         return html`
             <div>
-                <img src="assets/icon.png" width="32" height="32" alt="favicon" style="padding-left: 5px;padding-top: 5px;"/>
-                <span id="title"">Files</span>
+                <img src="assets/icon.png" width="32" height="32" alt="favicon" style="padding-left: 5px;padding-top: 5px;" @click=${() => {
+                    console.log("happ SHA256:", HAPP_SHA256);
+                    navigator.clipboard.writeText(HAPP_SHA256);
+                    createAlert("HAPP SHA256", HAPP_SHA256);
+                }} />
+                <span id="title">Files</span> <span>v${APP_VERSION}</span>
             </div>
             <sl-menu id="lhs-menu" @sl-select=${this.onSelected}>
                 <sl-menu-item class="selectedItem" value=${SelectedType.Home}>
