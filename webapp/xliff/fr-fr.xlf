@@ -4,11 +4,11 @@
 <body>
 <trans-unit id="s15e2ffb6e6776c4a">
   <source>Import Profile into Files applet</source>
-  <target>Importer le Profile dans l'application Files</target>
+  <target>Importer le profil dans l'application Files</target>
 </trans-unit>
 <trans-unit id="s6d1776247d598c8a">
   <source>wants to send you</source>
-  <target>veux vous envoyer</target>
+  <target>souhaite vous envoyer</target>
 </trans-unit>
 <trans-unit id="s13be1af9766661e9">
   <source>Accept</source>
@@ -16,7 +16,7 @@
 </trans-unit>
 <trans-unit id="s32322dc45e502559">
   <source>Decline</source>
-  <target>Décliner</target>
+  <target>Refuser</target>
 </trans-unit>
 <trans-unit id="s690714fde574c188">
   <source>Filename</source>
@@ -32,11 +32,11 @@
 </trans-unit>
 <trans-unit id="s7240da77f49acae8">
   <source>Delivery notice unsent</source>
-  <target>Avis d'envoi non-envoyé</target>
+  <target>Avis d'envoi non envoyé</target>
 </trans-unit>
 <trans-unit id="s10d7bc1609a61c61">
   <source>Delivery notice pending reception</source>
-  <target>Avis d'envoi en attent de récéption</target>
+  <target>Avis d'envoi en attente de réception</target>
 </trans-unit>
 <trans-unit id="s49067d7de7de9767">
   <source>Waiting for reply</source>
@@ -52,11 +52,11 @@
 </trans-unit>
 <trans-unit id="s636dbf26b4462793">
   <source>Group Files</source>
-  <target>Fichers communs</target>
+  <target>Fichiers partagés</target>
 </trans-unit>
 <trans-unit id="s1667105c0ecf7f6e">
   <source>Outbound Files</source>
-  <target>Fichers envoyés</target>
+  <target>Fichiers envoyés</target>
 </trans-unit>
 <trans-unit id="s946baa219fa7bcce">
   <source>Personal Files</source>
@@ -68,7 +68,7 @@
 </trans-unit>
 <trans-unit id="sbff06c1c63fda09a">
   <source>File delivery request sent</source>
-  <target>Demande d'envoi de fichier a été envoyé</target>
+  <target>Demande d'envoi de fichier envoyée</target>
 </trans-unit>
 <trans-unit id="s08c83907b56ac0a4">
   <source>to</source>
@@ -92,7 +92,7 @@
 </trans-unit>
 <trans-unit id="s13b3cc18ff685700">
   <source>Incoming file request</source>
-  <target>Demande d'envoi de fichier reçu</target>
+  <target>Demande de fichier reçue</target>
 </trans-unit>
 <trans-unit id="s8a7928dfb85975e4">
   <source>File accepted</source>
@@ -132,7 +132,7 @@
 </trans-unit>
 <trans-unit id="se2db4179fe4c9869">
   <source>Incoming file requests</source>
-  <target>Demande d'envoi de fichiers reçu</target>
+  <target>Demandes de fichiers reçues</target>
 </trans-unit>
 <trans-unit id="se449f1215ef49707">
   <source>Recent Activity</source>
@@ -144,7 +144,7 @@
 </trans-unit>
 <trans-unit id="sd5c9515a6044788b">
   <source>All Files</source>
-  <target>Tous Fichiers</target>
+  <target>Tous les fichiers</target>
 </trans-unit>
 <trans-unit id="s57ade424d57c6edf">
   <source>Sent</source>
@@ -152,36 +152,47 @@
 </trans-unit>
 <trans-unit id="s776051c2e6506aa1">
   <source>File Info</source>
+  <target>Infos du fichier</target>
 </trans-unit>
 <trans-unit id="s8641b6c3688a0cec">
   <source>Edit Profile</source>
+  <target>Modifier le profil</target>
 </trans-unit>
 <trans-unit id="s28f5c83a86c3ea50">
   <source>Failed to connect to Holochain Conductor and/or "Files" cell.</source>
+  <target>Échec de la connexion au Conductor Holochain et/ou à la cellule "Files".</target>
 </trans-unit>
 <trans-unit id="s7ecfae0c8f46352f">
   <source>New file published</source>
+  <target>Nouveau fichier publié</target>
 </trans-unit>
 <trans-unit id="safa27ca1b6a177b4">
   <source>File unpublished</source>
+  <target>Fichier dépublié</target>
 </trans-unit>
 <trans-unit id="s86b9dde1be2ae8da">
   <source>Report a Bug</source>
+  <target>Signaler un bug</target>
 </trans-unit>
 <trans-unit id="s6594524c9c17d979">
   <source>Export file list</source>
+  <target>Exporter la liste des fichiers</target>
 </trans-unit>
 <trans-unit id="s2ceb11be2290bb1b">
   <source>Cancel</source>
+  <target>Annuler</target>
 </trans-unit>
 <trans-unit id="sdc673e73b5c13aea">
   <source>Delete</source>
+  <target>Supprimer</target>
 </trans-unit>
 <trans-unit id="sce4f864763a12cc5">
   <source>In Progress</source>
+  <target>En cours</target>
 </trans-unit>
 <trans-unit id="s73112da1b80edcc6">
   <source>Notices</source>
+  <target>Notifications</target>
 </trans-unit>
 </body>
 </file>
