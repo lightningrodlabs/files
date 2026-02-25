@@ -1,58 +1,65 @@
 import {
-    DnaViewModel,
-    ZvmDef,
     ActionId,
-    EntryId,
     AgentId,
-    ZomeSignal,
-    ZomeSignalProtocolType,
-    TipProtocol,
+    assertIsDefined,
+    DnaViewModel,
+    EntryId,
+    EntryIdMap,
     EntryPulse,
     LinkPulse,
     materializeEntryPulse,
     materializeLinkPulse,
-    ZomeSignalProtocol,
-    ZomeSignalProtocolVariantEntry,
-    TipProtocolVariantEntry,
     StateChangeType,
-    TipProtocolVariantLink, ZomeSignalProtocolVariantLink, assertIsDefined, EntryIdMap,
+    TipProtocol,
+    TipProtocolVariantEntry,
+    TipProtocolVariantLink,
+    ZomeSignal,
+    ZomeSignalProtocol,
+    ZomeSignalProtocolType,
+    ZomeSignalProtocolVariantEntry,
+    ZomeSignalProtocolVariantLink,
+    ZvmDef,
 } from "@ddd-qc/lit-happ";
 import {
     DELIVERY_ZOME_NAME,
-    DeliveryEntryType, DeliveryNotice,
+    DeliveryEntryType,
+    DeliveryNotice,
     DeliveryProperties,
     DeliveryZvm,
     ParcelChunk,
     ParcelKindVariantManifest,
     ParcelManifest,
     ReceptionAck,
-    ReceptionProof, ReplyAck,
+    ReceptionProof,
+    ReplyAck,
 } from "@ddd-qc/delivery";
-import {SignalCb, AppSignal, Signal, SignalType} from "@holochain/client";
+import {AppSignal, Signal, SignalCb, SignalType} from "@holochain/client";
 import {FilesZvm} from "./files.zvm";
 import {
-    base64ToArrayBuffer,
     arrayBufferToBase64Async,
+    base64ToArrayBuffer,
     FileHashB64,
     prettyFileSize,
     sha256,
     SplitObject
 } from "../utils";
-import { decode } from "@msgpack/msgpack";
+import {decode} from "@msgpack/msgpack";
 import {
     FilesCb,
     FilesDvmPerspective,
     FilesNotificationType,
     FilesNotificationVariantDistributionToRecipientComplete,
     FilesNotificationVariantNewNoticeReceived,
-    FilesNotificationVariantReceptionComplete, FilesNotificationVariantReplyReceived, UploadState
+    FilesNotificationVariantReceptionComplete,
+    FilesNotificationVariantReplyReceived,
+    UploadState
 } from "./files.perspective";
 import {TaggingZvm} from "./tagging.zvm";
 import {FILES_DEFAULT_ROLE_NAME} from "../bindings/files.types";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {ProfilesAltLinkType} from "@ddd-qc/profiles-dvm/dist/bindings/profilesAlt.integrity";
 import {MyDictionary} from "@ddd-qc/cell-proxy";
-
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /**
@@ -237,6 +244,15 @@ export class FilesDvm extends DnaViewModel {
     //     this._perspective.notificationLogs.push([maybeParcel.deleteInfo[0], FilesNotificationType.PublicSharingRemoved, notif]);
     //     this.notifySubscribers();
     // }
+
+
+    // TODO: remove this and use same system as in Vines instead
+    private _livePeers: AgentId[] = [];
+
+    /** */
+    override get livePeers() {
+        return this._livePeers;
+    }
 
 
     /** */
@@ -500,7 +516,7 @@ export class FilesDvm extends DnaViewModel {
             await this.taggingZvm.untagPublicEntryAll(eh);
         }
         /** */
-        await this.deliveryZvm.probeDht();
+        await this.deliveryZvm.probeDht(GetStrategy.Local);
     }
 
 
