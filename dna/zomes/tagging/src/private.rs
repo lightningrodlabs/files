@@ -168,7 +168,7 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
    let link = link_tuple[0].1.clone();
 
    /// Delete Entry -> Tag Link
-   let _ = delete_link(link.create_link_hash, GetOptions::default())?;
+   let _ = delete_link(link.create_link_hash, GetOptions::local())?; // private entries are local
    /// Get reverse link
    let tag_eh = hash_entry(link_tuple[0].0.clone())?;
    let links = get_links(link_input(tag_eh, TaggingLinkTypes::PrivateEntry.try_into_filter().unwrap(), None), GetStrategy::Local)?;
@@ -180,7 +180,7 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
       return error("No reverse link found for private entry tag");
    }
    /// Delete Tag Link -> Entry
-   let _ = delete_link(link[0].clone().create_link_hash, GetOptions::default())?;
+   let _ = delete_link(link[0].clone().create_link_hash, GetOptions::local())?; // private entries are local
    /// Done
    Ok(())
 }

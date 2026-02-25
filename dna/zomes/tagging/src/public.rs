@@ -236,10 +236,11 @@ pub fn find_public_entries_with_tag(tag: String) -> ExternResult<Vec<(ActionHash
 #[hdk_extern]
 #[feature(zits_blocking)]
 fn untag_public_entry(link_ah: ActionHash) -> ExternResult<ActionHash> {
+   let strategy = GetStrategy::Network;
    std::panic::set_hook(Box::new(zome_panic_hook));
    debug!("untag_public_entry() {}", link_ah);
    /// Grab create_link
-   let Some(record) = get(link_ah.clone(), GetOptions::network())? else {
+   let Some(record) = get(link_ah.clone(), strategy.clone().into())? else {
       return zome_error!("No link found at given hash");
    };
    let Action::CreateLink(create_link) = record.signed_action.action() else {
@@ -250,10 +251,9 @@ fn untag_public_entry(link_ah: ActionHash) -> ExternResult<ActionHash> {
       create_link.target_address.clone(),
       TaggingLinkTypes::PublicTags.try_into_filter().unwrap(),
       None,
-   ), GetStrategy::Local)?;
+   ), strategy.clone())?;
    let mut maybe_reverse_link_ah = None;
-   debug!(
-      "untag_public_entry() reverse links: {:?} | target: {}",
+   debug!("untag_public_entry() reverse links: {:?} | target: {}",
       links,
       create_link.target_address.clone()
    );
@@ -267,8 +267,8 @@ fn untag_public_entry(link_ah: ActionHash) -> ExternResult<ActionHash> {
       return zome_error!("Reverse link not found");
    };
    /// Delete both
-   let ah = delete_link_relaxed(link_ah)?;
-   let _ = delete_link_relaxed(reverse_link_ah)?;
+   let ah = delete_link_relaxed(link_ah, strategy.clone().into())?;
+   let _ = delete_link_relaxed(reverse_link_ah, strategy.clone().into())?;
    // Done
    Ok(ah)
 }
