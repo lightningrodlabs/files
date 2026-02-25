@@ -32,8 +32,6 @@ export default defineConfig({
         { src: "../assets/icon.png", dest: "./assets" },
         { src: "../assets/icon.png", dest: "./" },
         { src: "../assets/favicon.png", dest: "./assets" },
-        //{ src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css", dest: DIST_FOLDER, rename: "styles.css" },
-        //{ src: '../node_modules/@shoelace-style/shoelace', dest: DIST_FOLDER }
         { src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: "shoelace-assets" }
       ]
     }),
