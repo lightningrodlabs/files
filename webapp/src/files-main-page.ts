@@ -239,6 +239,9 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
     override async firstUpdated() {
         console.log("<files-main-page> firstUpdated()", this.appletId);
 
+        await this._dvm.probeAll(GetStrategy.Local);
+
+
         // /** Notifier */
         // const maybeNotifier = await this._dvm.notificationsZvm.selectNotifier();
         // console.log("firstUpdated() maybeNotifier:", maybeNotifier? encodeHashToBase64(maybeNotifier) : "none");
@@ -336,7 +339,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     /** */
     async refresh() {
-        await this._dvm.probeAll(GetStrategy.Network);
+        await this._dvm.probeAll(GetStrategy.Local);
         //await this._dvm.filesZvm.zomeProxy.getPrivateFiles();
         //await this._dvm.deliveryZvm.zomeProxy.queryAll();
         this.requestUpdate();

@@ -236,7 +236,7 @@ pub fn find_public_entries_with_tag(tag: String) -> ExternResult<Vec<(ActionHash
 #[hdk_extern]
 #[feature(zits_blocking)]
 fn untag_public_entry(link_ah: ActionHash) -> ExternResult<ActionHash> {
-   let strategy = GetStrategy::Network;
+   let strategy = GetStrategy::Local;
    std::panic::set_hook(Box::new(zome_panic_hook));
    debug!("untag_public_entry() {}", link_ah);
    /// Grab create_link
