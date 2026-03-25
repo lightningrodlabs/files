@@ -50,33 +50,41 @@ export class FilePreview extends DnaElement<FilesDvmPerspective, FilesDvm> {
             this._manifest = await this._dvm.deliveryZvm.fetchFileInfo(this.hash);
             //console.log(`<file-preview>.willUpdate() ${this._manifest.description.size} < ${this._dvm.dnaProperties.maxChunkSize}?`);
             if (this._manifest && this._manifest.description.size < this._dvm.dnaProperties.maxChunkSize) {
-                const mime = kind2mime(this._manifest.description.kind_info);
-                //const fileType = kind2Type(this._manifest.description.kind_info);
-                this._maybeFile = (await this._dvm.fetchFile(this.hash, this._manifest))[1];
-
-                const reader = new FileReader();
-                if (this._maybeBlobUrl) {
-                    URL.revokeObjectURL(this._maybeBlobUrl);
-                    this._maybeBlobUrl = undefined;
-                }
-                //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
-                reader.onload = (event) => {
-                    console.log("FileReader onload", event, mime)
-                    const res = event.target!.result!;
-                    const blob = new Blob([res], { type: mime });
-                    this._maybeBlobUrl = URL.createObjectURL(blob);
-                    console.log("FileReader blob", blob, this._maybeBlobUrl)
-                    //this.requestUpdate();
-                    this._loading = false;
-                };
-                //reader.readAsDataURL(this._maybeFile);
-                reader.readAsArrayBuffer(this._maybeFile);
+                /*await*/ this.loadFile();
             } else {
                 this._loading = false;
             }
         }
     }
 
+
+    async loadFile() {
+      if (!this._manifest || !this.hash) {
+        this._loading = false;
+        return;
+      }
+      const mime = kind2mime(this._manifest.description.kind_info);
+      //const fileType = kind2Type(this._manifest.description.kind_info);
+      this._maybeFile = (await this._dvm.fetchFile(this.hash, this._manifest))[1];
+
+      const reader = new FileReader();
+      if (this._maybeBlobUrl) {
+        URL.revokeObjectURL(this._maybeBlobUrl);
+        this._maybeBlobUrl = undefined;
+      }
+      //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
+      reader.onload = (event) => {
+        console.log("FileReader onload", event, mime)
+        const res = event.target!.result!;
+        const blob = new Blob([res], { type: mime });
+        this._maybeBlobUrl = URL.createObjectURL(blob);
+        console.log("FileReader blob", blob, this._maybeBlobUrl)
+        //this.requestUpdate();
+        this._loading = false;
+      };
+      //reader.readAsDataURL(this._maybeFile);
+      reader.readAsArrayBuffer(this._maybeFile);
+    }
 
     /** */
     override render() {
@@ -95,8 +103,10 @@ export class FilePreview extends DnaElement<FilesDvmPerspective, FilesDvm> {
         const mime = kind2mime(this._manifest.description.kind_info);
         const fileType = kind2Type(this._manifest.description.kind_info);
 
-        let preview = html`<div id="preview">File "${this._manifest.description.name}" too big for preview</div>`;
-        if (this._maybeFile) {
+        //const phrase = msg("File") + ' "' + this._manifest.description.name + '" ' +  msg("too big for preview");
+        //let preview = html`<div id="preview">${phrase}</div>`;
+      let preview = html`<sl-button variant="neutral" @click=${() => {this._loading = true; this.loadFile().then(() => this.requestUpdate())}}>${msg("Load Preview")}</sl-button>`;
+      if (this._maybeFile) {
             switch (fileType) {
                 // case FileType.Text:
                 //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);

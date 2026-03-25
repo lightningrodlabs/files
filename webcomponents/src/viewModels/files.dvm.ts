@@ -36,12 +36,11 @@ import {
 import {AppSignal, Signal, SignalCb, SignalType} from "@holochain/client";
 import {FilesZvm} from "./files.zvm";
 import {
-    arrayBufferToBase64Async,
-    base64ToArrayBuffer,
-    FileHashB64,
-    prettyFileSize,
-    sha256,
-    SplitObject
+  base64ToArrayBuffer,
+  FileHashB64, fileToBase64,
+  prettyFileSize,
+  sha256,
+  SplitObject
 } from "../utils";
 import {decode} from "@msgpack/msgpack";
 import {
@@ -178,9 +177,10 @@ export class FilesDvm extends DnaViewModel {
 
     /** */
     async cacheFileLocalStorage(file: File) {
-        const content = await file.arrayBuffer();
-        const contentB64 = await arrayBufferToBase64Async(content);
-        if (contentB64.length > 1 * 1024 * 1024) {
+      //const content = await file.arrayBuffer();
+      // const contentB64 = await arrayBufferToBase64Async(content);
+      const contentB64 = await fileToBase64(file);
+      if (contentB64.length > 1 * 1024 * 1024) {
             console.log("FilesDvm.cacheFile() Aborted. File is too big for caching", contentB64.length);
             return;
         }
@@ -577,13 +577,13 @@ export class FilesDvm extends DnaViewModel {
 
 
     /** */
-    startPublishFile(file: File, splitObj: SplitObject, tags: string[], _peersToSignal: AgentId[], callback?: FilesCb): boolean{
+    startPublishFile(file: File, splitObj: SplitObject, tags: string[], _peersToSignal: AgentId[], callback?: FilesCb): boolean {
         console.log('FilesDvm.startPublishFile()', file, tags);
         if (this._perspective.uploadStates[splitObj.dataHash]) {
             console.error("File commit already in progress");
             return false;
         }
-        /** Check if file already present */
+        /** Check if the file is already present */
         const maybeExist = this.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
         if (maybeExist) {
             console.warn("File already stored locally");

@@ -55,7 +55,7 @@ export class FilesApp extends HappElement {
 
   /** All arguments should be provided when constructed explicitly */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
-      console.log("FilesApp.ctor()", appWs, _adminWs, _canAuthorizeZfns, appId, appletView);
+    console.log("FilesApp.ctor()", appWs, _adminWs, _canAuthorizeZfns, appId, appletView);
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT

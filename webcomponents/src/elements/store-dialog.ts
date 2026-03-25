@@ -165,12 +165,17 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                    this._loading = true;
                                    let succeeded = false;
                                    try {
-                                        succeeded = this._dvm.startPublishFile(this._file!, this._splitObj!, this._selectedTags, this._dvm.profilesZvm.perspective.agents,(manifestEh: EntryId) => {
-                                        console.log("<store-dialog>.onUploadDone()", manifestEh, this);
-                                        this.dispatchEvent(new CustomEvent<EntryId>('created', {detail: manifestEh, bubbles: true, composed: true}));
-                                        this._loading = false;
-                                        if (this.dialogElem) this.dialogElem.open = false;
-                                       });
+                                        succeeded = this._dvm.startPublishFile(
+                                          this._file!, 
+                                          this._splitObj!, 
+                                          this._selectedTags, 
+                                          this._dvm.profilesZvm.perspective.agents,
+                                          (manifestEh: EntryId) => {
+                                            console.log("<store-dialog>.onUploadDone()", manifestEh, this);
+                                            this.dispatchEvent(new CustomEvent<EntryId>('created', {detail: manifestEh, bubbles: true, composed: true}));
+                                            this._loading = false;
+                                            if (this.dialogElem) this.dialogElem.open = false;
+                                           });
                                    } catch(e:any) {
                                        console.warn("filesDvm.startPublishFile() Failed", e);
                                        str = e;

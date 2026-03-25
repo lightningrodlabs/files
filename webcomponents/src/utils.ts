@@ -33,25 +33,38 @@ export function dayTimestamp(ts: number): string {
         return "N/A";
     }
     const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-    const date_str =     date.toLocaleDateString('en-US', { 'year': 'numeric', 'month': '2-digit', 'day': '2-digit' }); // "24 January 2024"
+    const date_str = date.toLocaleDateString('en-US', { 'year': 'numeric', 'month': '2-digit', 'day': '2-digit' }); // "24 January 2024"
     return date_str;
 }
 
 
-export async function arrayBufferToBase64Async(buffer: ArrayBuffer): Promise<string> {
-    const blob = new Blob([buffer]);
+export async function fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => {
             const dataUrl  = reader.result as string;
             // Remove the data URL prefix (e.g., "data:application/octet-stream;base64,")
-            const base64 = dataUrl .substring(dataUrl.indexOf(',') + 1);
+            let base64 = dataUrl.split(',')[1];
+            if (!base64) {
+              reject(new Error('Failed to extract Base64 string from Data URL'));
+              return;
+            }
+            if ((base64.length % 4) > 0) {
+              base64 += '='.repeat(4 - (base64.length % 4));
+            }
+            const base64Regex = /^[A-Za-z0-9+/]+[=]{0,2}$/;
+            if (!base64Regex.test(base64)) {
+              reject(new Error('Invalid Base64 string'));
+            }
             resolve(base64);
         };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
+        reader.onerror = () => {
+          reject(new Error(`File read failed: ${reader.error?.message}`));
+        };
+        reader.readAsDataURL(file);
     });
 }
+
 
 /** */
 export function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -70,6 +83,7 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
 
 /** */
 export function base64ToArrayBuffer(base64: string): ArrayBufferLike {
+    console.log("base64ToArrayBuffer()", base64.length);
     const binary_string = window.atob(base64);
     const len = binary_string.length;
     const bytes = new Uint8Array(len);
@@ -97,7 +111,7 @@ export async function sha256(message: string): Promise<FileHashB64> {
     /* Crypto */
     const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
     res = encodeHashToBase64(new Uint8Array(hashBuffer));
-    console.log("sha256() crypto", res);
+    //console.log("sha256() crypto", res);
     /* */
     return res;
 }
@@ -131,10 +145,11 @@ export async function splitFile(file: File, chunkMaxSize: number): Promise<Split
     //   const invalid_hash = sha256(file.content);
     //   console.error("File '" + file.name + "' is invalid base64. hash is: " + invalid_hash);
     // }
-    const content = await file.arrayBuffer();
-    const contentB64 = await arrayBufferToBase64Async(content);
+    // const content = await file.arrayBuffer();
+    // const contentB64 = await arrayBufferToBase64Async(content);
+    const contentB64 = await fileToBase64(file);
     const splitObj = await splitData(contentB64, chunkMaxSize);
-    console.log("splitObj: ", splitObj);
+    //console.debug("splitObj: ", splitObj);
     return splitObj;
 }
 
