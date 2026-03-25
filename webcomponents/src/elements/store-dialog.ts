@@ -66,6 +66,10 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
                 return;
             }
+            if (file.size <= 0) {
+              toastError(`File is empty.`)
+              return;
+            }
             this._file = file;
             splitFile(file, this._dvm.dnaProperties.maxChunkSize).then((obj) => this._splitObj = obj);
             this.dialogElem.open = true;
@@ -95,7 +99,7 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
         let content = html`Preparing upload...`;
 
         if (this.wait && this._splitObj && this.perspective.uploadStates[this._splitObj.dataHash]) {
-            let pct = Math.ceil(this.perspective.uploadStates[this._splitObj.dataHash]!.written_chunks / this.perspective.uploadStates[this._splitObj.dataHash]!.splitObj.numChunks * 100);
+            let pct = Math.ceil(this.perspective.uploadStates[this._splitObj.dataHash]!.chunksWritten / this.perspective.uploadStates[this._splitObj.dataHash]!.splitObj.numChunks * 100);
             content = html`<sl-progress-bar .value=${pct}>${pct}%</sl-progress-bar>`;
         }
 

@@ -38,8 +38,12 @@ export function dayTimestamp(ts: number): string {
 }
 
 
+//const BASE64_REGEX = /^[A-Za-z0-9+/]+[=]{0,2}$/;
+
+/** */
 export async function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
+  console.log("fileToBase64()", file.name, file.size);
+  return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => {
             const dataUrl  = reader.result as string;
@@ -52,10 +56,9 @@ export async function fileToBase64(file: File): Promise<string> {
             if ((base64.length % 4) > 0) {
               base64 += '='.repeat(4 - (base64.length % 4));
             }
-            const base64Regex = /^[A-Za-z0-9+/]+[=]{0,2}$/;
-            if (!base64Regex.test(base64)) {
-              reject(new Error('Invalid Base64 string'));
-            }
+            // if (!BASE64_REGEX.test(base64)) {
+            //   reject(new Error('Invalid Base64 string'));
+            // }
             resolve(base64);
         };
         reader.onerror = () => {
@@ -68,7 +71,7 @@ export async function fileToBase64(file: File): Promise<string> {
 
 /** */
 export function arrayBufferToBase64(buffer: ArrayBuffer): string {
-    console.log("arrayBufferToBase64()");
+    //console.log("arrayBufferToBase64()");
     let binary = '';
     const bytes = new Uint8Array(buffer);
     const len = bytes.byteLength;
@@ -76,6 +79,9 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
         binary += String.fromCharCode(bytes[i]!);
     }
     const base64 = window.btoa(binary);
+    // if (!BASE64_REGEX.test(base64)) {
+    //   throw Error('Invalid Base64 string');
+    // }
     //const binary_string = window.atob(base64); // Check if correct
     return base64;
 }
@@ -84,6 +90,9 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
 /** */
 export function base64ToArrayBuffer(base64: string): ArrayBufferLike {
     console.log("base64ToArrayBuffer()", base64.length);
+    // if (!BASE64_REGEX.test(base64)) {
+    //   throw Error('Invalid Base64 string');
+    // }
     const binary_string = window.atob(base64);
     const len = binary_string.length;
     const bytes = new Uint8Array(len);
@@ -117,18 +126,6 @@ export async function sha256(message: string): Promise<FileHashB64> {
 }
 
 
-
-/** */
-function chunkSubstr(str: string, size: number): Array<string> {
-    const numChunks = Math.ceil(str.length / size);
-    const chunks = new Array<string>(numChunks);
-    for (let i = 0, y = 0; i < numChunks; ++i, y += size) {
-        chunks[i] = str.substring(y, y + size);
-    }
-    return chunks;
-}
-
-
 /** */
 export interface SplitObject {
     dataHash: FileHashB64,
@@ -145,9 +142,9 @@ export async function splitFile(file: File, chunkMaxSize: number): Promise<Split
     //   const invalid_hash = sha256(file.content);
     //   console.error("File '" + file.name + "' is invalid base64. hash is: " + invalid_hash);
     // }
-    // const content = await file.arrayBuffer();
-    // const contentB64 = await arrayBufferToBase64Async(content);
-    const contentB64 = await fileToBase64(file);
+    const content = await file.arrayBuffer();
+    const contentB64 = arrayBufferToBase64(content);
+    //const contentB64 = await fileToBase64(file);
     const splitObj = await splitData(contentB64, chunkMaxSize);
     //console.debug("splitObj: ", splitObj);
     return splitObj;
@@ -159,7 +156,7 @@ export async function splitData(full_data_string: string, chunkMaxSize: number):
     console.log("splitData()", full_data_string.length, chunkMaxSize);
     const hash = await sha256(full_data_string);
     console.log("splitData() hash", hash);
-    const chunks = chunkSubstr(full_data_string, chunkMaxSize);
+    const chunks = chunkify(full_data_string, chunkMaxSize);
     return {
         dataHash: hash,
         numChunks: chunks.length,
@@ -168,7 +165,18 @@ export async function splitData(full_data_string: string, chunkMaxSize: number):
 }
 
 
+/** */
+function chunkify(str: string, size: number): Array<string> {
+  const numChunks = Math.ceil(str.length / size);
+  const chunks = new Array<string>(numChunks);
+  for (let i = 0, y = 0; i < numChunks; ++i, y += size) {
+    chunks[i] = str.substring(y, y + size);
+  }
+  return chunks;
+}
 
+
+/** */
 export function getCompletionPct(deliveryZvm: DeliveryZvm, notice: DeliveryNotice, missingChunks: Set<EntryHashB64>): number {
     //console.log("<inbound-stack> getCompletionPct()", missingChunks.size);
     const eh = new EntryId(notice.summary.parcel_reference.parcel_eh);

@@ -35,7 +35,6 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
-    "js-base64": "^3.7.3",
     "@msgpack/msgpack": "^2.7.2",
     "@shoelace-style/shoelace": "2.20.0",
     "@vaadin/grid": "24.2.3",

@@ -36,8 +36,9 @@ import {
 import {AppSignal, Signal, SignalCb, SignalType} from "@holochain/client";
 import {FilesZvm} from "./files.zvm";
 import {
+  arrayBufferToBase64,
   base64ToArrayBuffer,
-  FileHashB64, fileToBase64,
+  FileHashB64,
   prettyFileSize,
   sha256,
   SplitObject
@@ -177,9 +178,9 @@ export class FilesDvm extends DnaViewModel {
 
     /** */
     async cacheFileLocalStorage(file: File) {
-      //const content = await file.arrayBuffer();
-      // const contentB64 = await arrayBufferToBase64Async(content);
-      const contentB64 = await fileToBase64(file);
+      const content = await file.arrayBuffer();
+      const contentB64 = arrayBufferToBase64(content);
+      //const contentB64 = await fileToBase64(file);
       if (contentB64.length > 1 * 1024 * 1024) {
             console.log("FilesDvm.cacheFile() Aborted. File is too big for caching", contentB64.length);
             return;
@@ -365,8 +366,7 @@ export class FilesDvm extends DnaViewModel {
                     if (this._perspective.uploadStates[manifest.data_hash]!.callback) {
                         this._perspective.uploadStates[manifest.data_hash]!.callback!(pulse.eh);
                     }
-                    /*await*/
-                    this.cacheFileLocalStorage(this._perspective.uploadStates[manifest.data_hash]!.file);
+                    /*await*/ this.cacheFileLocalStorage(this._perspective.uploadStates[manifest.data_hash]!.file);
                     delete this._perspective.uploadStates[manifest.data_hash];
                 }
             }
@@ -379,22 +379,21 @@ export class FilesDvm extends DnaViewModel {
                 console.log("ParcelChunk signal", uploadState, manifestPair);
                 if (!manifestPair && uploadState) {
                     /** We are the original creator of this file */
-                    if (!uploadState.chunks) {
-                        uploadState.chunks = [];
-                    }
-                    uploadState.chunks.push(pulse.eh); // FIXME ?
+                    uploadState.chunksReceived += 1;
                     //const index = uploadState.chunks.length;
                     /** Commit manifest if it was the last chunk */
                     if (this.isMainView) {
-                        if (uploadState.chunks.length == uploadState.splitObj.numChunks) {
+                        if (uploadState.chunksReceived == uploadState.splitObj.numChunks) {
+                            /**  re-order chunks and commit manifest */
+
                             if (uploadState.isPrivate) {
                                 this.filesZvm.commitPrivateManifest(uploadState.file, uploadState.splitObj.dataHash, uploadState.chunks)
                             } else {
                                 this.filesZvm.publishFileManifest(uploadState.file, uploadState.splitObj.dataHash, uploadState.chunks);
                             }
                         } else {
-                            /** Otherwise commit next batch */
-                            if (uploadState.chunks.length == uploadState.written_chunks) {
+                            /** Otherwise commit the next batch */
+                            if (uploadState.chunksReceived == uploadState.chunksWritten) {
                                 this.writeChunks(chunk.data_hash);
                             }
                         }
@@ -565,7 +564,8 @@ export class FilesDvm extends DnaViewModel {
             isPrivate: true,
             chunks: [],
             index: 0,
-            written_chunks: 0,
+            chunksWritten: 0,
+            chunksReceived: 0,
         };
         this.notifySubscribers();
 
@@ -603,7 +603,8 @@ export class FilesDvm extends DnaViewModel {
             isPrivate: false,
             chunks: [],
             index: 0,
-            written_chunks: 0,
+            chunksWritten: 0,
+            chunksReceived: 0,
             callback,
         } as UploadState;
         this.notifySubscribers();
@@ -617,8 +618,9 @@ export class FilesDvm extends DnaViewModel {
     }
 
 
-    /** */
+    /** Write chunks to source-chain. Try to fit as many chunks as possible per zome call. */
     async writeChunks(dataHash: string): Promise<void> {
+        //console.log("writeChunks()", dataHash);
         if (!this._perspective.uploadStates[dataHash]) {
             throw Promise.reject("Missing uploadState");
         }
@@ -629,17 +631,27 @@ export class FilesDvm extends DnaViewModel {
         /** Form chunks from splitObj */
         const chunks = [];
         for (let i = index; i < index + num_chunks && i < splitObj.numChunks; i += 1) {
-            chunks.push({data_hash: splitObj.dataHash, data: splitObj.chunks[i]} as ParcelChunk)
+            const chunk: ParcelChunk = { data_hash: splitObj.dataHash, data: splitObj.chunks[i]!};
+            chunks.push(chunk);
+            const hash = await sha256(chunk.data);
+            console.debug("writeChunks() hash", i, hash);
         }
-        this._perspective.uploadStates[dataHash]!.written_chunks += chunks.length;
+        this._perspective.uploadStates[dataHash]!.chunksWritten += chunks.length;
         this._perspective.uploadStates[dataHash]!.index += chunks.length;
-        console.log("writeChunks()", chunks.length, this._perspective.uploadStates[dataHash]!.written_chunks)
+        //console.log("writeChunks()", chunks.length, this._perspective.uploadStates[dataHash]!.chunksWritten)
         /** Write */
+        let ehs;
         if (this._perspective.uploadStates[dataHash]!.isPrivate) {
-            await this.filesZvm.zomeProxy.writePrivateFileChunks(chunks);
+            ehs = await this.filesZvm.zomeProxy.writePrivateFileChunks(chunks);
         } else {
-            await this.filesZvm.zomeProxy.writePublicFileChunks(chunks);
+            ehs = await this.filesZvm.zomeProxy.writePublicFileChunks(chunks);
         }
+        /** Store in order */
+        ehs.map((eh) => {
+          const id = new EntryId(eh);
+          //console.debug("writeChunks() hash ehs", id);
+          this._perspective.uploadStates[dataHash]!.chunks.push(id);
+        });
     }
 
 

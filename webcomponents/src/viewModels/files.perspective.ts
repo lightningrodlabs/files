@@ -12,7 +12,8 @@ export interface UploadState {
     splitObj: SplitObject,
     chunks: EntryId[],
     index: number,
-    written_chunks: number,
+    chunksReceived: number,
+    chunksWritten: number,
     callback?: FilesCb,
 }
 

@@ -103,10 +103,18 @@ export class FilePreview extends DnaElement<FilesDvmPerspective, FilesDvm> {
         const mime = kind2mime(this._manifest.description.kind_info);
         const fileType = kind2Type(this._manifest.description.kind_info);
 
-        //const phrase = msg("File") + ' "' + this._manifest.description.name + '" ' +  msg("too big for preview");
-        //let preview = html`<div id="preview">${phrase}</div>`;
-      let preview = html`<sl-button variant="neutral" @click=${() => {this._loading = true; this.loadFile().then(() => this.requestUpdate())}}>${msg("Load Preview")}</sl-button>`;
-      if (this._maybeFile) {
+        let preview = html`<div id="preview">${msg("No preview available for this file type.")}</div>`;
+        if (fileType != FileType.Binary && fileType != FileType.Zip && fileType != FileType.Font && fileType != FileType.Other) {
+          preview = html`
+              <sl-button variant="neutral" 
+                         @click=${() => {
+                            this._loading = true;
+                            this.loadFile().then(() => this.requestUpdate())
+                        }}>
+                  ${msg("Load Preview")}
+              </sl-button>`;
+        }
+        if (this._maybeFile) {
             switch (fileType) {
                 // case FileType.Text:
                 //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);
