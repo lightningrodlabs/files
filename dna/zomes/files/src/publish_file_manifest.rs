@@ -8,7 +8,7 @@ use zome_files_integrity::{FILE_TYPE_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME};
 
 /// Public equivalent of commit_private_file()
 #[hdk_extern]
-#[feature(zits_blocking = "PublicParcel")]
+#[feature(zits_blocking_PublicParcel)]
 pub fn publish_file_manifest(input: WriteManifestInput) -> ExternResult<(EntryHash, ParcelDescription)> {
    std::panic::set_hook(Box::new(zome_panic_hook));
    let description = ParcelDescription {
