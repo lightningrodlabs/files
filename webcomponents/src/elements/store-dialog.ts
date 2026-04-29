@@ -5,11 +5,11 @@ import {FilesDvm} from "../viewModels/files.dvm";
 import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput} from "@shoelace-style/shoelace";
-import {prettyFileSize, splitFile, SplitObject} from "../utils";
+import {isFileValid, prettyFileSize, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
 import {TagList} from "./tag-list";
 import {kind2Icon} from "../fileTypeUtils";
-import {msg} from "@lit/localize";
+import {msg, str} from "@lit/localize";
 
 
 
@@ -62,12 +62,7 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
         input.onchange = (e:any) => {
             console.log("<store-dialog> target download file", e);
             const file = e.target.files[0];
-            if (file.size > this._dvm.dnaProperties.maxParcelSize) {
-                toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
-                return;
-            }
-            if (file.size <= 0) {
-              toastError(`File is empty.`)
+            if (!isFileValid(file, this._dvm.dnaProperties)) {
               return;
             }
             this._file = file;
@@ -159,13 +154,13 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                if (this._localOnly) {
                                    const succeeded = this._dvm.startCommitPrivateFile(this._file!, this._splitObj!, this._selectedTags);
                                    if (!succeeded) {
-                                       const str = msg("File already stored locally");
-                                       toastError(str);
-                                       this.dispatchEvent(new CustomEvent('reject', {detail: str, bubbles: true, composed: true}));
+                                       const msg42 = msg("File already stored locally");
+                                       toastError(msg42);
+                                       this.dispatchEvent(new CustomEvent('reject', {detail: msg42, bubbles: true, composed: true}));
                                        this.dialogElem.open = false;
                                    }
                                } else {
-                                   let str = msg("File already published to group or stored locally");
+                                   let msg44 = msg("File already published to group or stored locally");
                                    this._loading = true;
                                    let succeeded = false;
                                    try {
@@ -182,12 +177,12 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                            });
                                    } catch(e:any) {
                                        console.warn("filesDvm.startPublishFile() Failed", e);
-                                       str = e;
+                                       msg44 = msg(str`Failure: ${e}`);
                                    }
                                    console.log("<store-dialog>.click", succeeded);
                                    if (!succeeded) {
-                                       toastError(str);
-                                       this.dispatchEvent(new CustomEvent('reject', {detail: str, bubbles: true, composed: true}));
+                                       toastError(msg44);
+                                       this.dispatchEvent(new CustomEvent('reject', {detail: msg44, bubbles: true, composed: true}));
                                        this.dialogElem.open = false;
                                        this._loading = false;
                                    } else {

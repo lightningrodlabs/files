@@ -1,8 +1,10 @@
-import {DeliveryNotice, DeliveryZvm} from "@ddd-qc/delivery";
+import {DeliveryNotice, DeliveryProperties, DeliveryZvm} from "@ddd-qc/delivery";
 // @ts-ignore
 import _sodium from 'libsodium-wrappers-sumo';
 import {EntryId} from "@ddd-qc/lit-happ";
 import {encodeHashToBase64, EntryHashB64} from "@holochain/client";
+import {toastError} from "./toast";
+import {msg, str} from "@lit/localize";
 
 
 /** */
@@ -210,4 +212,25 @@ export function decodeComponentUtf32(input: Uint8Array): string {
 
     // Convert array of code points to string
     return String.fromCodePoint(...codePoints);
+}
+
+
+export function isFileValid(file: File, dnaProperties: DeliveryProperties): boolean {
+  if (file.size > dnaProperties.maxParcelSize) {
+    toastError(msg(str`File is too big: ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(dnaProperties.maxParcelSize)}`))
+    return false;
+  }
+  if (file.size <= 0) {
+    toastError(msg(`File is empty.`));
+    return false;
+  }
+  if (file.name.length < dnaProperties.minParcelNameLength) {
+    toastError(msg(str`File name is too short: ${file.name.length}. Minimum file name length: ${dnaProperties.minParcelNameLength}`));
+    return false;
+  }
+  if (file.name.length > dnaProperties.maxParcelNameLength) {
+    toastError(msg(str`File name is too long: ${file.name.length}. Maximum file name length: ${dnaProperties.maxParcelNameLength}`));
+    return false;
+  }
+  return true;
 }

@@ -91,14 +91,12 @@ export interface UntagInput {
   target: EntryArray
 }
 
-export const TAGGING_ZOME_NAME = "tagging_integrity";
+export const TAGGING_DEFAULT_COORDINATOR_ZOME_NAME = "zTagging";
+
+export const TAGGING_DEFAULT_INTEGRITY_ZOME_NAME = "tagging_integrity";
 
 export const PUBLIC_TAG_ROOT = "public_tags";
 
-/**
- * Integrity zome is not really necessary but it is defined because the Holochain ecosystem
- * does not support well a zome that does not have one.
- */
 export enum TaggingEntryType {
 	PrivateTag = 'PrivateTag',
 }

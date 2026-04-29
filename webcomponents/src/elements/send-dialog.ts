@@ -5,7 +5,7 @@ import {FilesDvm} from "../viewModels/files.dvm";
 import {filesSharedStyles} from "../sharedStyles";
 import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {SlDialog, SlInput,} from "@shoelace-style/shoelace";
-import {prettyFileSize, splitFile, SplitObject} from "../utils";
+import {isFileValid, prettyFileSize, splitFile, SplitObject} from "../utils";
 import {toastError} from "../toast";
 import {TagList} from "./tag-list";
 import {kind2Icon} from "../fileTypeUtils";
@@ -71,13 +71,12 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
         input.onchange = (e:any) => {
             console.log("<send-dialog> target download file", e);
             const file = e.target.files[0];
-                if (file.size > this._dvm.dnaProperties.maxParcelSize) {
-                    toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
-                    return;
-                }
-                this._file = file;
-                splitFile(file, this._dvm.dnaProperties.maxChunkSize).then((obj) => this._splitObj = obj);
-                this.dialogElem.open = true;
+            if (!isFileValid(file, this._dvm.dnaProperties)) {
+              return;
+            }
+            this._file = file;
+            splitFile(file, this._dvm.dnaProperties.maxChunkSize).then((obj) => this._splitObj = obj);
+            this.dialogElem.open = true;
             }
         input.click();
     }
@@ -228,7 +227,7 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                            @click=${(_e:any) => {
                              const succeeded = this._dvm.startCommitPrivateAndSendFile(this._file!, this._splitObj!, this._recipients, this._selectedTags);
                              if (!succeeded) {
-                                 toastError("Failed to start sending file");
+                                 toastError(msg("Failed to start sending file"));
                              }
                              this._file = undefined;
                              this._splitObj = undefined;
