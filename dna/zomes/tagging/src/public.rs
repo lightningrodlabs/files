@@ -29,7 +29,7 @@ fn probe_public_tags(strategy: GetStrategy) -> ExternResult<Vec<(EntryHash, Stri
       tags.push((child.path_entry_hash()?, str));
    }
    /// Signal
-   attest_links(links)?;
+   attest_links(links, ValidatedBy::Network)?;
    /// Done
    Ok(tags)
 }
@@ -139,7 +139,7 @@ pub fn find_public_tags_for_entry(eh: EntryHash) -> ExternResult<Vec<String>> {
       .collect();
    let tags = create_links.iter().map(|link| tag2str(&link.tag).unwrap()).collect();
    /// Signal
-   attest_links(create_links)?;
+   attest_links(create_links, ValidatedBy::Network)?;
    /// Done
    Ok(tags)
 }
@@ -177,9 +177,9 @@ pub fn find_public_entries_with_tag(tag: String) -> ExternResult<Vec<(ActionHash
    }
    /// Signal
    debug!("find_public_entries_with_tag() {}| {}", tag.clone(), create_links.len());
-   attest_links(create_links.clone())?;
+   attest_links(create_links.clone(), ValidatedBy::Network)?;
    for delete in delete_links {
-      attest_link(delete, StateChange::Delete(false))?;
+      attest_link(delete, StateChange::Delete(false), ValidatedBy::Network)?;
    }
    /// Into tags
    let tags = create_links
