@@ -86,7 +86,7 @@ import {DistributionStrategy, ParcelManifest, ParcelChunk, ParcelDescription, Pa
 
 export interface AttachInput {
   hrl: [DnaArray, EntryArray]
-  manifestEh: EntryArray
+  manifest_eh: EntryArray
 }
 
 export interface WriteManifestInput {

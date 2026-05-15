@@ -14,7 +14,7 @@ pub const ATTACHMENTS_ROOT: &str = "public_attachments";
 /// Declaration of this zome's entry types
 ///-------------------------------------------------------------------------------------------------
 
-/// Integrity zome is not really necessary but it is defined because the holochain ecosystem
+/// Integrity zome is not really necessary, but it is defined because the holochain ecosystem
 /// does not support well a zome that does not have one.
 use hdi::prelude::*;
 

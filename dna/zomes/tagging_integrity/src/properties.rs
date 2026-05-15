@@ -22,6 +22,12 @@ pub struct TaggingProperties {
    pub max_tag_name_length: u16,
 }
 
+impl TaggingProperties {
+   pub fn new(min_tag_name_length: u8, max_tag_name_length: u16) -> Self {
+      Self { min_tag_name_length, max_tag_name_length }
+   }
+}
+
 /// Return the DNA properties
 pub fn get_properties() -> ExternResult<TaggingProperties> {
    //debug!("*** get_properties() called");
@@ -48,5 +54,40 @@ impl TaggingProperties {
       }
       ///
       Ok(ValidateCallbackResult::Valid)
+   }
+}
+
+
+#[cfg(test)]
+mod tests {
+   use super::*;
+
+   fn assert_invalid(properties: TaggingProperties) {
+      let result = properties.validate().expect("validation should not fail");
+      match result {
+         ValidateCallbackResult::Invalid(_message) => (),
+         other => panic!("expected invalid validation result, got {:?}", other),
+      }
+   }
+
+   fn assert_valid(properties: TaggingProperties) {
+      let result = properties.validate().expect("validation should not fail");
+      match result {
+         ValidateCallbackResult::Valid => (),
+         other => panic!("expected valid validation result, got {:?}", other),
+      }
+   }
+
+   #[test]
+   fn valid_properties() {
+      assert_valid(TaggingProperties::new(1, 3));
+      assert_valid(TaggingProperties::new(3, 3));
+   }
+
+   #[test]
+   fn invalid_properties() {
+      assert_invalid(TaggingProperties::new(0, 0));
+      assert_invalid(TaggingProperties::new(10, 3));
+      assert_invalid(TaggingProperties::new(10, 0));
    }
 }

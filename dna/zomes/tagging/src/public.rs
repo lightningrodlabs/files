@@ -1,12 +1,12 @@
-use crate::TaggingInput;
 use hdk::prelude::*;
 use zome_signals::*;
 use zome_tagging_integrity::*;
 use zome_utils::*;
 use zome_path::*;
+use crate::TaggingInput;
 
 fn root_path() -> ExternResult<TypedPath> {
-   let tp = Path::from(format!("{}", PUBLIC_TAG_ROOT)).typed(TaggingLinkTypes::PublicPath)?;
+   let tp = Path::from(format!("{}", PUBLIC_TAG_ROOT)).typed(TaggingLinkTypes::PublicPath)?.with_strategy(GetStrategy::Local);
    Ok(tp)
 }
 

@@ -7,7 +7,7 @@ use zome_path::*;
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AttachInput {
    hrl: (DnaHash, EntryHash),
-   manifestEh: EntryHash,
+   manifest_eh: EntryHash,
 }
 
 /// Link a File From a We HRL
@@ -21,7 +21,7 @@ pub fn attach_to_hrl(input: AttachInput) -> ExternResult<ActionHash> {
    /// Create link
    let ah = create_link(
       tp.path_entry_hash()?,
-      input.manifestEh,
+      input.manifest_eh,
       FilesLinkTypes::Attachment,
       LinkTag::from(()),
    )?;
@@ -47,15 +47,15 @@ pub fn get_files_from_hrl(hrl: (DnaHash, EntryHash)) -> ExternResult<Vec<EntryHa
 ///
 fn hrl_path(hrl: (DnaHash, EntryHash)) -> ExternResult<TypedPath> {
    let mut tp = root_path()?;
-   let dnaComp = hash2comp(hrl.0);
-   let ehComp = hash2comp(hrl.1);
-   tp.path.append_component(dnaComp);
-   tp.path.append_component(ehComp);
+   let dna_comp = hash2comp(hrl.0);
+   let eh_comp = hash2comp(hrl.1);
+   tp.path.append_component(dna_comp);
+   tp.path.append_component(eh_comp);
    Ok(tp)
 }
 
 ///
 fn root_path() -> ExternResult<TypedPath> {
-   let tp = Path::from(format!("{}", ATTACHMENTS_ROOT)).typed(FilesLinkTypes::Attachment)?;
+   let tp = Path::from(format!("{}", ATTACHMENTS_ROOT)).typed(FilesLinkTypes::Attachment)?.with_strategy(GetStrategy::Local);
    Ok(tp)
 }
