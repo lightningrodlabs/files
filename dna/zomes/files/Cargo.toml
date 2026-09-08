@@ -20,4 +20,4 @@ zome_core.workspace = true
 zome_delivery_types.workspace = true
 zome_delivery_api.workspace = true
 
-zome_files_integrity = {path = "../files_integrity" }
+zome_files_integrity.workspace = true

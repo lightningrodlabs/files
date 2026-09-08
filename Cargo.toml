@@ -34,28 +34,24 @@ holochain_serialized_bytes = "=0.0.57"
 hdi = { version = "=0.8.0", default-features = false, features = ["trace"] }
 hdk = { version = "=0.7.0", default-features = false }
 
-# zdk / delivery-zome 0.7 lines. Local sibling checkouts until ddd-mtl/zdk main-0.7 and
-# ddd-mtl/delivery-zome hdk-7.0 are pushed; swap back to the git form once published.
-#zome_utils = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7" }
-#zome_path = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7" }
-#zome_signals = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7" }
-#zome_core = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7" }
-#hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7", package="profiles_alt_coordinator" }
-#delivery = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-7.0" }
-#zome_delivery_integrity = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-7.0" }
-#zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-7.0" }
-#zome_delivery_api = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-7.0" }
-zome_utils = { path = "../zdk/crates/zome_utils" }
-zome_path = { path = "../zdk/crates/zome_path" }
-zome_signals = { path = "../zdk/crates/zome_signals" }
-zome_core = { path = "../zdk/zomes/zome_core" }
-hc_zome_profiles_coordinator = { path = "../zdk/zomes/profiles_alt_coordinator", package = "profiles_alt_coordinator" }
-hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", tag = "v0.700.0" }
+# zdk / delivery-zome 0.7 lines, rev-pinned. Never a branch: a branch ref floats, and for a
+# zome a non-reproducible build means a non-reproducible DNA hash.
+zome_utils = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+zome_path = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+zome_signals = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+zome_core = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+hc_zome_profiles_coordinator = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816", package = "profiles_alt_coordinator" }
+hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", tag = "v0.701.0" }
 
-delivery = { path = "../delivery-zome/crates/delivery_coordinator" }
-zome_delivery_integrity = { path = "../delivery-zome/crates/delivery_integrity" }
-zome_delivery_types = { path = "../delivery-zome/crates/delivery_types" }
-zome_delivery_api = { path = "../delivery-zome/crates/delivery_api" }
+delivery = { git = "https://github.com/ddd-mtl/delivery-zome", rev = "a464a528a79cdee540b39a56ab447137b5194e8d", package = "delivery" }
+zome_delivery_integrity = { git = "https://github.com/ddd-mtl/delivery-zome", rev = "a464a528a79cdee540b39a56ab447137b5194e8d" }
+zome_delivery_types = { git = "https://github.com/ddd-mtl/delivery-zome", rev = "a464a528a79cdee540b39a56ab447137b5194e8d" }
+zome_delivery_api = { git = "https://github.com/ddd-mtl/delivery-zome", rev = "a464a528a79cdee540b39a56ab447137b5194e8d" }
+
+# First-party integrity zomes, reached through the workspace so no member carries a
+# relative path out of its own directory (Gate G2).
+zome_files_integrity = { path = "dna/zomes/files_integrity" }
+zome_tagging_integrity = { path = "dna/zomes/tagging_integrity" }
 
 
 [profile.dev]

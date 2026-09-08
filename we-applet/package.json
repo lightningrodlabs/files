@@ -6,18 +6,17 @@
   "typings": "./dist/index.d.ts",
   "private": true,
   "scripts": {
-    "tsc"              : "tsc",
-    "build"            : "vite build",
-    "dist"             : "rm -rf dist && HAPP_BUILD_MODE=Retail vite build",
-    "devtest"          : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run start:happ\" \"sleep 5 && npm run start:ui\"",
-    "devtest:block"    : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' APPLET_VIEW='ImportFile' concurrently \"npm run start:happ\" \"npm run start:ui\"",
-    "start:happ"       : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files",
-    "start:happ:local" : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files",
-    "start:local"      : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run start:happ:local\" \"npm run start:ui\"",
-    "start:ui"         : "vite --port $UI_PORT --clearScreen false",
-
-    "serve:run"        : "hc run-local-services --bootstrap-port $BOOT_PORT --signal-port $SIGNAL_PORT",
-    "network:local2"   : "npm run build &&  BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run start:local\" \"sleep 1 && npm run start:local\""
+    "tsc": "tsc",
+    "build": "vite build",
+    "dist": "rm -rf dist && HAPP_BUILD_MODE=Retail vite build",
+    "devtest": "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run start:happ\" \"sleep 5 && npm run start:ui\"",
+    "devtest:block": "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' APPLET_VIEW='ImportFile' concurrently \"npm run start:happ\" \"npm run start:ui\"",
+    "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files",
+    "start:happ:local": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files network -b \"http://127.0.0.1:$BOOT_PORT\" quic \"http://127.0.0.1:$BOOT_PORT/relay\"",
+    "start:local": "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run start:happ:local\" \"npm run start:ui\"",
+    "start:ui": "vite --port $UI_PORT --clearScreen false",
+    "serve:run": "kitsune2-bootstrap-srv --listen 127.0.0.1:$BOOT_PORT",
+    "network:local2": "npm run build &&  BOOT_PORT=$(port) concurrently \"npm run serve:run\" \"npm run start:local\" \"sleep 1 && npm run start:local\""
   },
   "devDependencies": {
     "vite": "^4.5.2",
@@ -29,7 +28,7 @@
     "deepmerge": "^4.2.2",
     "new-port-cli": "^1.0.0",
     "tslib": "^2.8.0",
-    "typescript": "~5.9.0"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@files/app": "file:../webapp",

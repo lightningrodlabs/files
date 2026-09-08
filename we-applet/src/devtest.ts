@@ -4,36 +4,11 @@ import {emptyEntryAppletView} from "@ddd-qc/we-utils/dist/mocks/renderInfoMock";
 import {EntryId, snake} from "@ddd-qc/cell-proxy";
 import {createFilesApplet, ViewFileContext} from "./createFilesApplet";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
-import {AppletView} from "@theweave/api";
 
 export const devtestNames: DevTestNames = {
     installed_app_id: "Files",
     provisionedRoleName: FILES_DEFAULT_ROLE_NAME,
 }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Block Views
-//----------------------------------------------------------------------------------------------------------------------
-
-// export type BlockViewInfo = {
-//     type: "block";
-//     block: string;
-//     context: any;
-// }
-
-/** */
-export function setupFilesBlockView(blockName: string) {
-    const context: ViewFileContext = {
-        detail: "none",
-    }
-    const appletView = {
-        type: "block",
-        block: blockName,
-        context,
-    } as AppletView;
-    return setupDevtest(createFilesApplet, devtestNames, createDefaultWeServicesMock, appletView);
-}
-
 
 //----------------------------------------------------------------------------------------------------------------------
 // Entry Views

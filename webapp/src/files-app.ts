@@ -21,7 +21,6 @@ import {AppletId, AppletView, CreatableName, GroupProfile, WAL, WeaveServices} f
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
-import {buildBlock} from "./files-blocks";
 import {DEFAULT_FILES_DEF} from "./happDef";
 import {setLocale} from "./localization";
 import {msg} from '@lit/localize';
@@ -240,10 +239,6 @@ export class FilesApp extends HappElement {
     if (this.appletView) {
       switch (this.appletView.type) {
         case "main":
-          break;
-        case "block":
-          const blockViewInfo = this.appletView as any;
-          view = buildBlock(this, blockViewInfo);
           break;
         case "asset":
           const assetViewInfo = this.appletView as AssetViewInfo;
