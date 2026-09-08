@@ -11,8 +11,8 @@
     "dist"             : "rm -rf dist && HAPP_BUILD_MODE=Retail vite build",
     "devtest"          : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run start:happ\" \"sleep 5 && npm run start:ui\"",
     "devtest:block"    : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' APPLET_VIEW='ImportFile' concurrently \"npm run start:happ\" \"npm run start:ui\"",
-    "start:happ"       : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files network mem",
-    "start:happ:local" : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
+    "start:happ"       : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files",
+    "start:happ:local" : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/files.happ --run=$HC_APP_PORT -a Files",
     "start:local"      : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run start:happ:local\" \"npm run start:ui\"",
     "start:ui"         : "vite --port $UI_PORT --clearScreen false",
 

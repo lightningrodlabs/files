@@ -129,10 +129,11 @@ pub fn find_public_tags_for_entry(eh: EntryHash) -> ExternResult<Vec<String>> {
          if maybe_deletes.len() > 0 {
             return None;
          }
-         let Action::CreateLink(create) = create_sah.hashed.content.clone() else {
+         let create = create_sah.hashed.content.clone();
+         if !matches!(create.data, ActionData::CreateLink(_)) {
             panic!("get_link_details() should return a CreateLink Action")
-         };
-         let link = link_from_create(create_sah.action_address().to_owned(), &create);
+         }
+         let link = link_from_create(create_sah.action_address().to_owned(), &create).unwrap();
          Some(link)
       })
       .flatten()
@@ -161,17 +162,19 @@ pub fn find_public_entries_with_tag(tag: String) -> ExternResult<Vec<(ActionHash
    let mut create_links = Vec::new();
    let mut delete_links = Vec::new();
    for (create_sah, maybe_deletes) in link_details.into_inner() {
-      let Action::CreateLink(create) = create_sah.hashed.content.clone() else {
+      let create = create_sah.hashed.content.clone();
+      if !matches!(create.data, ActionData::CreateLink(_)) {
          return zome_error!("get_link_details() should return a CreateLink Action");
-      };
+      }
       if maybe_deletes.len() > 0 {
-         let Action::DeleteLink(delete) = maybe_deletes[0].hashed.content.clone() else {
-            return zome_error!("get_link_details() should return a CreateLink Action");
-         };
-         let delete_link = link_from_delete(&delete, &create);
+         let delete = maybe_deletes[0].hashed.content.clone();
+         if !matches!(delete.data, ActionData::DeleteLink(_)) {
+            return zome_error!("get_link_details() should return a DeleteLink Action");
+         }
+         let delete_link = link_from_delete(&delete, &create)?;
          delete_links.push(delete_link);
       } else {
-         let create_link = link_from_create(create_sah.action_address().to_owned(), &create);
+         let create_link = link_from_create(create_sah.action_address().to_owned(), &create)?;
          create_links.push(create_link);
       }
    }
@@ -243,7 +246,7 @@ fn untag_public_entry(link_ah: ActionHash) -> ExternResult<ActionHash> {
    let Some(record) = get(link_ah.clone(), strategy.clone().into())? else {
       return zome_error!("No link found at given hash");
    };
-   let Action::CreateLink(create_link) = record.signed_action.action() else {
+   let ActionData::CreateLink(create_link) = &record.signed_action.action().data else {
       return zome_error!("No CreateLink found at given hash");
    };
    /// Grab reverse link

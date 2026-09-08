@@ -31,20 +31,31 @@ ill_formed_attribute_input = "allow"
 [workspace.dependencies]
 serde = { version = "=1.0.228", default-features = false }
 holochain_serialized_bytes = "=0.0.57"
-hdi = { version = "=0.7.1", default-features = false }
-hdk = { version = "=0.6.1", default-features = false }
+hdi = { version = "=0.8.0", default-features = false, features = ["trace"] }
+hdk = { version = "=0.7.0", default-features = false }
 
-zome_utils = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_path = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_signals = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_core = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", branch = "main-0.6" }
-hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6", package="profiles_alt_coordinator" }
+# zdk / delivery-zome 0.7 lines. Local sibling checkouts until ddd-mtl/zdk main-0.7 and
+# ddd-mtl/delivery-zome hdk-7.0 are pushed; swap back to the git form once published.
+#zome_utils = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7" }
+#zome_path = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7" }
+#zome_signals = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7" }
+#zome_core = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7" }
+#hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/zdk", branch = "main-0.7", package="profiles_alt_coordinator" }
+#delivery = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-7.0" }
+#zome_delivery_integrity = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-7.0" }
+#zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-7.0" }
+#zome_delivery_api = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-7.0" }
+zome_utils = { path = "../zdk/crates/zome_utils" }
+zome_path = { path = "../zdk/crates/zome_path" }
+zome_signals = { path = "../zdk/crates/zome_signals" }
+zome_core = { path = "../zdk/zomes/zome_core" }
+hc_zome_profiles_coordinator = { path = "../zdk/zomes/profiles_alt_coordinator", package = "profiles_alt_coordinator" }
+hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", tag = "v0.700.0" }
 
-delivery = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-6.0" }
-zome_delivery_integrity = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-6.0" }
-zome_delivery_types = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-6.0" }
-zome_delivery_api = {git = "https://github.com/ddd-mtl/delivery-zome", branch = "hdk-6.0" }
+delivery = { path = "../delivery-zome/crates/delivery_coordinator" }
+zome_delivery_integrity = { path = "../delivery-zome/crates/delivery_integrity" }
+zome_delivery_types = { path = "../delivery-zome/crates/delivery_types" }
+zome_delivery_api = { path = "../delivery-zome/crates/delivery_api" }
 
 
 [profile.dev]

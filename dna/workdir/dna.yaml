@@ -26,7 +26,7 @@ coordinator:
     #- name: zPathExplorer
     #  path: ../../target/wasm32-unknown-unknown/release/path_explorer.wasm
     - name: zDelivery
-      path: ../../target/wasm32-unknown-unknown/release/delivery.wasm
+      path: ../../target/wasm32-unknown-unknown/release/delivery_zome.wasm
       dependencies:
         - name: zDeliveryIntegrity
     - name: zTagging

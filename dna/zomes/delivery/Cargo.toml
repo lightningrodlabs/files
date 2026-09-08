@@ -1,10 +1,11 @@
 [package]
-name = "delivery"
+name = "delivery_zome"
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true
 
 [lib]
+name = "delivery_zome"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
