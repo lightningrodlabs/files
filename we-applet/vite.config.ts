@@ -38,6 +38,17 @@ export default defineConfig({
       ]
     }),
   ],
+  optimizeDeps: {
+    esbuildOptions: {
+      // @ddd-qc/cell-proxy uses top-level await. vite-plugin-top-level-await
+      // only transforms the rollup build, not esbuild's dev prebundling, so the
+      // dev server needs a target that supports TLA natively. Without this,
+      // `vite dev` fails with "Top-level await is not available in the
+      // configured target environment". Only affects dev prebundling; the
+      // production build still goes through the plugin.
+      target: 'esnext',
+    },
+  },
   define: {
     '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),
     'process.env.HAPP_BUILD_MODE': JSON.stringify(HAPP_BUILD_MODE),

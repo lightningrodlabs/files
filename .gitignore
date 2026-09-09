@@ -29,3 +29,6 @@ bin/
 
 # Specific files
 hash_zome*
+
+# Local bootstrap coordinates written by the Moss dev run
+.kitsune2_bootstrap_srv

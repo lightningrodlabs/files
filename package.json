@@ -1,7 +1,7 @@
 {
   "name": "files-dev",
-  "version": "1.6.0",
-  "dnaVersion": "1.6.0",
+  "version": "1.7.0",
+  "dnaVersion": "1.7.0",
   "config": {
     "hc_version": "0.7.0",
     "zits_version": "1.17.2",
@@ -79,7 +79,13 @@
     "weave-hash": "node scripts/weave-hash.mjs",
     "release:happ": "bash scripts/release-happ.sh",
     "release:webhapp": "APP_VER=$(node -p \"require('./package.json').version\") && git tag v$APP_VER && git push origin v$APP_VER",
-    "build:bindings": "bash scripts/ts-bindings.sh"
+    "build:bindings": "bash scripts/ts-bindings.sh",
+    "weave": "env -u ELECTRON_RUN_AS_NODE TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"target\":\"es2020\",\"esModuleInterop\":true}' weave",
+    "start:ui:we": "HAPP_BUILD_MODE=Retail npm run start:ui -w we-applet -- --no-open",
+    "launch:moss": "concurrently \"UI_PORT=1420 npm run start:ui:we\" \"sleep 1 && npm run weave -- --agent-idx 1 --dev-config we_dev/config.ts\" \"sleep 20 && npm run weave -- --agent-idx 2 --sync-time 45000 --dev-config we_dev/config.ts\"",
+    "launch:moss-1": "concurrently \"UI_PORT=1420 npm run start:ui:we\" \"sleep 1 && npm run weave -- --agent-idx 1 --dev-config we_dev/config.ts\"",
+    "start:moss": "npm run build:happ && npm run launch:moss",
+    "start:moss-1": "npm run build:happ && npm run launch:moss-1"
   },
   "devDependencies": {
     "@ddd-qc/hc-prebuilt": "0.601.0",
@@ -89,27 +95,27 @@
     "bestzip": "^2.2.0",
     "concurrently": "^6.2.1",
     "jest": "^29.5.0",
+    "js-yaml": "^4.1.0",
+    "json-parse-better-errors": "^1.0.1",
     "new-port-cli": "^1.0.0",
     "ts-jest": "^29.1.0",
-    "json-parse-better-errors": "^1.0.1",
     "tslib": "^2.8.0",
-    "typescript": "^5.9.3",
-    "js-yaml": "^4.1.0"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@holochain/client": "^0.21.0",
-    "@holochain-open-dev/core-types": "^0.700.0",
-    "@holochain-open-dev/profiles": "^0.701.0",
-    "@holochain-open-dev/elements": "^0.700.0",
-    "@theweave/api": "0.7.0-dev.3",
     "@ddd-qc/cell-proxy": "^0.36.0",
-    "@ddd-qc/lit-happ": "^0.36.0",
-    "@ddd-qc/we-utils": "^0.36.0",
-    "@ddd-qc/profiles-dvm": "^0.36.0",
-    "@ddd-qc/path-explorer": "^1.36.0",
     "@ddd-qc/delivery": "^0.22.0",
+    "@ddd-qc/lit-happ": "^0.36.0",
+    "@ddd-qc/path-explorer": "^1.36.0",
+    "@ddd-qc/profiles-dvm": "^0.37.0",
+    "@ddd-qc/we-utils": "^0.36.0",
+    "@holochain-open-dev/core-types": "^0.700.0",
+    "@holochain-open-dev/elements": "^0.700.0",
+    "@holochain-open-dev/profiles": "^0.701.0",
+    "@holochain/client": "^0.21.0",
     "@lit/context": "1.1.6",
     "@lit/localize": "0.12.2",
+    "@theweave/api": "0.7.0-dev.3",
     "lit": "3.3.2"
   },
   "engines": {
