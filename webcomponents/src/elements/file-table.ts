@@ -10,6 +10,8 @@ import {TagList} from "./tag-list";
 import {kind2Type} from "../fileTypeUtils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {msg} from "@lit/localize";
+import {unsafeSVG} from "lit/directives/unsafe-svg.js";
+import {ADD_TO_POCKET_SVG} from "../svgIcons";
 import {EntryHashB64} from "@holochain/client";
 import {TaggingPerspectiveMutable} from "../viewModels/tagging.perspective";
 import {Hrl} from "@theweave/api";
@@ -91,7 +93,7 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
         return html`
             <vaadin-grid id="grid"
                          .items=${this.items}>
-                <vaadin-grid-selection-column .hidden=${this.noselect}></vaadin-grid-selection-column>
+                <vaadin-grid-selection-column width="42px" flex-grow="0" .hidden=${this.noselect}></vaadin-grid-selection-column>
                 <vaadin-grid-column path="description" header=${msg("Filename")}
                                     ${columnBodyRenderer<FileTableItem>(
                                             ({ description }) => html`<span>${description.name}</span>`,
@@ -99,14 +101,14 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
                                     )}>
                 </vaadin-grid-column>
                 
-                <vaadin-grid-column path="description" header=${msg("Size")} width="80px"
+                <vaadin-grid-column path="description" header=${msg("Size")} width="72px" flex-grow="0"
                                     ${columnBodyRenderer<FileTableItem>(
                                 ({ description }) => html`<span>${prettyFileSize(description.size)}</span>`,
                             [],
                                     )}
                                     ${columnFooterRenderer(() => html`<span>${prettyFileSize(totalSize)} ${msg("total")}</span>`, [totalSize])}
                 ></vaadin-grid-column>
-                <vaadin-grid-column path="description" header=${msg("Type")}
+                <vaadin-grid-column path="description" header=${msg("Type")} width="90px" flex-grow="0"
                                     ${columnBodyRenderer<FileTableItem>(
                                             ({ description }) => html`<span>${kind2Type(description.kind_info)}</span>`,
                                             [],
@@ -149,20 +151,20 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
                                     [],
                                     )}
                 ></vaadin-grid-column>
-                <vaadin-grid-column path="timestamp" header=${msg("Date")}
+                <vaadin-grid-column path="timestamp" header=${msg("Date")} width="110px" flex-grow="0"
                                     ${columnBodyRenderer<FileTableItem>(
                                             ({ timestamp }) => html`<span>${dayTimestamp(timestamp)}</span>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
-                <vaadin-grid-column path="isLocal" header=${msg("Local")} width="80px"
+                <vaadin-grid-column path="isLocal" header=${msg("Local")} width="64px" flex-grow="0"
                                     .hidden=${this.type == "personal" || this.nolocal}
                                     ${columnBodyRenderer<FileTableItem>(
                                             ({ isLocal }) => html`<span>${isLocal? msg("Yes") : msg("No")}</span>`,
                                             [],
                                     )}
                 ></vaadin-grid-column>
-                <vaadin-grid-column path="isPrivate" header=${msg("Private")} width="80px"
+                <vaadin-grid-column path="isPrivate" header=${msg("Private")} width="70px" flex-grow="0"
                                     .hidden=${this.type == "group" || this.type == "personal"}
                                     ${columnBodyRenderer<FileTableItem>(
                                             ({ isPrivate }) => html`<span>${isPrivate? msg("Yes") : msg("No")}</span>`,
@@ -170,12 +172,12 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
                                     )}
                 ></vaadin-grid-column>
                 <vaadin-grid-column
-                        path="ppEh" header="" width="160px" style="text-overflow: clip;"
+                        path="ppEh" header="" width="60px" flex-grow="0" style="text-overflow: clip;"
                         ${columnBodyRenderer<FileTableItem>(
                                 ({ppEh}) => {
                                     if (this.selectable == "") {
                                         return html`
-                                            <sl-tooltip content=${msg("Select")} hoist>
+                                            <sl-tooltip placement="bottom" content=${msg("Select")} hoist>
                                               <sl-button size="small" variant="primary"
                                                          @click=${async (_e:any) => {
                                                              this.dispatchEvent(new CustomEvent<EntryId>('selected', {
@@ -193,67 +195,50 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
                                         const item = this.items.filter((item) => item.ppEh == ppEh);
                                         const isPublic = item.length > 0 && !item[0]!.isPrivate;
                                         //console.log("isPublic", isPublic, item, ppEh)
+                                        /** All row actions live behind one menu. Previously these were
+                                         *  individual buttons, some shown or hidden depending on state,
+                                         *  which made the column wide and its width inconsistent between
+                                         *  rows. One trigger is a fixed, predictable width. */
                                         return html`
-                                            <sl-tooltip content=${msg("Download")} hoist>
-                                              <sl-button size="small" variant="primary"
-                                                         @click=${async (_e:any) => {
-                                                            this.dispatchEvent(new CustomEvent<EntryId>('download', {
-                                                                detail: new EntryId(ppEh),
-                                                                bubbles: true,
-                                                                composed: true
-                                                            }));
-                                                        }}>
-                                                  <sl-icon name="download"></sl-icon>
-                                              </sl-button>
-                                            </sl-tooltip>
-                                            ${!isPublic && !this.view? html`
-                                            <sl-tooltip content=${msg("Send")} hoist>
-                                              <sl-button size="small" variant="primary"
-                                                         @click=${async (_e:any) => {
-                                                            this.dispatchEvent(new CustomEvent<EntryId>('send', {
-                                                                detail: new EntryId(ppEh),
-                                                                bubbles: true,
-                                                                composed: true
-                                                            }));
-                                                        }}>
-                                                  <sl-icon name="send"></sl-icon>
-                                              </sl-button>
-                                            </sl-tooltip>`: html``}
-                                            
-                                            <sl-tooltip content=${msg("Copy File Link")} hoist>
-                                              <sl-button size="small" variant="neutral"
-                                                         @click=${async (_e:any) => this.copyMessageLink(intoDhtId(ppEh))}>
-                                                  <sl-icon name="link-45deg"></sl-icon>
-                                              </sl-button>
-                                            </sl-tooltip>
-
-                                            <sl-tooltip content=${msg("View")} hoist>
-                                              <sl-button size="small" variant="neutral"
-                                                         @click=${async (_e:any) => {
-                                                            this.dispatchEvent(new CustomEvent<EntryId>('view', {
-                                                                detail: new EntryId(ppEh),
-                                                                bubbles: true,
-                                                                composed: true
-                                                            }));
-                                                        }}>
-                                                  <sl-icon name="info-lg"></sl-icon>
-                                              </sl-button>
-                                            </sl-tooltip>  
-                                            ${isPublic && !this.view? html`
-                                            <sl-tooltip content=${msg("Unshare")} hoist>
-                                              <sl-button size="small" variant="danger"
-                                                         @click=${async (_e:any) => {
-                                                  console.log("Dispatching delete Event", ppEh)
-                                                  this.dispatchEvent(new CustomEvent<EntryId>('delete', {
-                                                      detail: new EntryId(ppEh),
-                                                      bubbles: true,
-                                                      composed: true
-                                                  }));
+                                            <sl-dropdown placement="bottom-end" hoist>
+                                              <sl-icon-button slot="trigger" name="three-dots" label=${msg("Actions")}></sl-icon-button>
+                                              <sl-menu @sl-select=${(e:any) => {
+                                                  const value = e.detail.item.value;
+                                                  const id = new EntryId(ppEh);
+                                                  switch (value) {
+                                                      case "download":
+                                                          this.dispatchEvent(new CustomEvent<EntryId>('download', {detail: id, bubbles: true, composed: true}));
+                                                          break;
+                                                      case "send":
+                                                          this.dispatchEvent(new CustomEvent<EntryId>('send', {detail: id, bubbles: true, composed: true}));
+                                                          break;
+                                                      case "pocket":
+                                                          this.copyMessageLink(intoDhtId(ppEh));
+                                                          break;
+                                                      case "view":
+                                                          this.dispatchEvent(new CustomEvent<EntryId>('view', {detail: id, bubbles: true, composed: true}));
+                                                          break;
+                                                  }
                                               }}>
-                                                  <sl-icon name="trash"></sl-icon>
-                                              </sl-button>
-                                            </sl-tooltip>
-                                            `: html``}
+                                                <sl-menu-item value="download">
+                                                    <sl-icon slot="prefix" name="download"></sl-icon>
+                                                    ${msg("Download")}
+                                                </sl-menu-item>
+                                                ${!isPublic && !this.view? html`
+                                                <sl-menu-item value="send">
+                                                    <sl-icon slot="prefix" name="send"></sl-icon>
+                                                    ${msg("Send")}
+                                                </sl-menu-item>` : html``}
+                                                <sl-menu-item value="pocket">
+                                                    <span slot="prefix" class="pocket-icon">${unsafeSVG(ADD_TO_POCKET_SVG)}</span>
+                                                    ${msg("Add to Pocket")}
+                                                </sl-menu-item>
+                                                <sl-menu-item value="view">
+                                                    <sl-icon slot="prefix" name="info-lg"></sl-icon>
+                                                    ${msg("File Info")}
+                                                </sl-menu-item>
+                                              </sl-menu>
+                                            </sl-dropdown>
                                         `
                                     }
                                 },
@@ -278,9 +263,41 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
               }
               #grid {
                 height: 100%;
+                /* The horizontal scrollbar was only grabbable on its last pixel:
+                   the grid's own bottom edge sat over it. Reserving the gutter
+                   gives the scrollbar its full height as a hit target. */
+                scrollbar-gutter: stable;
+              }
+              /* Default vaadin cell padding is generous; with this many columns it
+                 was the main reason the table needed so much width before the
+                 horizontal scrollbar appeared. */
+              vaadin-grid::part(cell) {
+                padding-left: 6px;
+                padding-right: 6px;
+              }
+              vaadin-grid::part(header-cell) {
+                padding-left: 6px;
+                padding-right: 6px;
               }
               .add-tag {
                 font-size: 1.0rem;
+              }
+              /* The pocket artwork is an inline SVG rather than an sl-icon, so it
+                 needs the sizing, centring and colour that sl-icon would give it.
+                 currentColor makes it follow the button's text colour (white on
+                 the filled variants) instead of the black baked into the source. */
+              .pocket-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                line-height: 0;
+                color: currentColor;
+              }
+              .pocket-icon svg {
+                width: 1.1rem;
+                height: 1.1rem;
+                display: block;
+                fill: currentColor;
               }
             `
         ];
