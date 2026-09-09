@@ -87,23 +87,13 @@ fn commit_private_tag(tag_value: String) -> ExternResult<EntryHash> {
    Ok(eh)
 }
 
-/// Get entry at eh and check if its Private
-pub fn query_private_entry(eh: EntryHash) -> ExternResult<Record> {
-   let record = get_local_from_eh(eh)?;
-   let maybe_visibility = record
-      .signed_action
-      .action()
-      .entry_data()
-      .map(|(_, entry_type)| entry_type.visibility());
-   let Some(visiblity) = maybe_visibility else {
-      return zome_error!("Visiblity not found");
-   };
-   if visiblity.is_public() {
-      return zome_error!("Entry is Public");
-   }
-   /// Done
-   Ok(record)
-}
+/// A personal tag can go on anything: a private file of mine, a file I shared
+/// with the group, or a file someone else shared. The tag entry and both links
+/// are mine and private either way, so there is nothing to check the target
+/// against. This used to require the target to be a private entry in this
+/// agent's own source chain, which meant a file could not be tagged the moment
+/// it was shared, and a file shared by someone else could never be tagged at
+/// all. Group tags are a separate thing, added when a file is shared.
 
 #[hdk_extern]
 fn tag_private_entry(input: TaggingInput) -> ExternResult<()> {
@@ -112,8 +102,6 @@ fn tag_private_entry(input: TaggingInput) -> ExternResult<()> {
    let mut tags = input.tags.clone();
    let set: HashSet<_> = tags.drain(..).collect();
    tags.extend(set.into_iter());
-   /// Make sure entry exist and is private
-   let _record = query_private_entry(input.target.clone())?;
    /// Grab existing private tags
    let private_tuples = query_all_PrivateTag(())?;
    let private_tags: Vec<String> = private_tuples.iter().map(|(_, _create, tag)| tag.to_owned()).collect();
@@ -149,8 +137,6 @@ fn tag_private_entry(input: TaggingInput) -> ExternResult<()> {
 #[feature(zits_blocking)]
 fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   /// Make sure entry exist and is private
-   let _record = query_private_entry(input.target.clone())?;
    let tag_eh = hash_entry(PrivateTag { value: input.tag })?;
    /// Get Tag link
    let link_tuples =
@@ -189,8 +175,6 @@ fn untag_private_entry(input: UntagInput) -> ExternResult<()> {
 #[hdk_extern]
 pub fn find_private_tags_for_entry(eh: EntryHash) -> ExternResult<Vec<(EntryHash, String)>> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   /// Make sure entry exist and is private
-   let _record = query_private_entry(eh.clone())?;
    /// Grab private tags
    let link_tuples = get_typed_from_links::<PrivateTag>(LinkQuery::new(eh, TaggingLinkTypes::PrivateTags.try_into_filter().unwrap()), GetStrategy::Local)?;
    let res = link_tuples
