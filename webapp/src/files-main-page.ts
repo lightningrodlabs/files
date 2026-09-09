@@ -1086,6 +1086,16 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                 image=${avatarUrl}
                                 @click=${() => this.profileDialogElem.open = true}></sl-avatar>
                     </sl-tooltip>
+                    <!-- Add/Share lives in the header rather than as a bottom-right FAB:
+                         every page has room here, and it stops the floating button
+                         overlapping the file list and its scrollbar. It keeps the
+                         primary (blue) variant, so no .top-btn grey background. -->
+                    <sl-tooltip placement="bottom-end" content=${msg("Send/Share file")} style="--show-delay: 400;">
+                        <sl-button id="fab-publish" variant="primary" size="medium" circle
+                                   @click=${(_e:any) => {this.actionOverlayElem.open();}}>
+                            <sl-icon name="plus-lg" label=${msg("Add")}></sl-icon>
+                        </sl-button>
+                    </sl-tooltip>
                     <sl-button class="top-btn" variant="default" size="medium" disabled>
                         <sl-icon name="bell" label="notifications"></sl-icon>
                     </sl-button>
@@ -1169,7 +1179,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         </sl-dialog>
         <action-overlay
                 id="act-overlay"
-                @sl-after-hide=${(_e:any) => {this.fabElem.style.display = "block"}}
+                @sl-after-hide=${(_e:any) => {}}
                 @ao-send=${() => this.sendDialogElem.open()}
                 @ao-publish=${() => this.storeDialogElem.open(false)}
                 @ao-store=${() =>  this.storeDialogElem.open(true)}
@@ -1208,14 +1218,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             </div>
                         </div>
                     `
-                : html`
-                <sl-tooltip placement="left" content="Send/Share file" style="--show-delay: 200;">
-                    <sl-button id="fab-publish" size="large" variant="primary" circle
-                               @click=${(_e:any) => {this.actionOverlayElem.open(); this.fabElem.style.display = "none"}}>
-                        <sl-icon name="plus-lg" label="Add"></sl-icon>
-                    </sl-button>
-                </sl-tooltip>
-        `}
+                : html``}
             <inbound-stack .profiles=${this._dvm.profilesZvm.perspective}></inbound-stack>
         </div>
         `;
@@ -1251,11 +1254,13 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
               #fab-publish {
               }
 
+              /* In-header size: matches the 40px .top-btn row. No FAB drop shadow
+                 now that it sits in the bar rather than floating over the list. */
               #fab-publish::part(base) {
                 font-weight: bold;
-                font-size: 32px;
-                box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
-                /*--sl-input-height-medium: 48px;*/
+                font-size: 20px;
+                width: 40px;
+                height: 40px;
               }
 
               #main {
