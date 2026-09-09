@@ -107,6 +107,9 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
 
     @state() private _initialized = false;
     @state() private _viewFileEh?: EntryId;
+    /** Whether the file open in the File Info dialog is published, i.e. whether
+     *  Archive applies to it. Archive unpublishes the public parcel. */
+    @state() private _viewFileIsPublic: boolean = false;
 
     @property() appletId: string = "";
     @property() groupProfiles: GroupProfile[] = [];
@@ -175,7 +178,12 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** -- Handle global events -- */
     onDownload(e: CustomEvent<EntryId>) {this._dvm.downloadFile(e.detail)}
     onSend(e: CustomEvent<EntryId>) {this.sendDialogElem.open(e.detail)}
-    onViewFile(e: CustomEvent<EntryId>) {this._viewFileEh = e.detail; this.viewFileDialogElem.open = true;}
+    onViewFile(e: CustomEvent<EntryId>) {
+        this._viewFileEh = e.detail;
+        const pprm = this.deliveryPerspective.publicParcels.get(e.detail);
+        this._viewFileIsPublic = !!pprm && !pprm.deleteInfo;
+        this.viewFileDialogElem.open = true;
+    }
     onDeleteFile(e: CustomEvent<EntryId>) {console.log("@delete", e.detail); this._deletableFile = e.detail; this.deleteDialogElem.open = true;}
     onCopy(e: CustomEvent<Hrl>) {
         const wurl = weaveUrlFromWal({hrl: e.detail});
@@ -423,7 +431,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
             const publicManifest = this.deliveryPerspective.publicParcels.get(manifestEh)!;
             variant = 'warning';
             icon = "x-octagon";
-            title = msg("File unpublished");
+            title = msg("File archived");
             message = `"${publicManifest.description.name}"`;
         }
         if (FilesNotificationType.PrivateCommitComplete == type) {
@@ -1164,7 +1172,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         </div>
         <!-- dialogs -->
         <sl-dialog id="view-file-dialog" label=${msg("File Info")}>
-            <file-view .hash=${this._viewFileEh}></file-view>
+            <file-view .hash=${this._viewFileEh} .canArchive=${this._viewFileIsPublic}></file-view>
         </sl-dialog> 
         <sl-dialog id="profile-dialog" label=${msg("Edit Profile")}>
             <files-edit-profile
@@ -1186,16 +1194,17 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
         ></action-overlay>
         <store-dialog></store-dialog>
         <send-dialog></send-dialog>
-        <sl-dialog id="delete-dialog">
-            <div>Remove Public file?</div>
-            <file-preview .hash=${this._deletableFile}></file-preview>
+        <!-- Archiving is reached from the File Info dialog, which already shows the
+             file, so this only needs to confirm the action. -->
+        <sl-dialog id="delete-dialog" label=${msg("Archive file")}>
+            <div>${msg("Confirm archiving")}</div>
             <sl-button slot="footer" variant="neutral"
                        @click=${(_e:any) => {this._deletableFile = undefined; this.deleteDialogElem.open = false;}}>
                 ${msg("Cancel")}
             </sl-button>
             <sl-button slot="footer" variant="danger"
                        @click=${async (_e:any) => this.deletePublicFile()}>
-                ${msg("Delete")}
+                ${msg("Archive")}
             </sl-button>
         </sl-dialog>
         <!-- stack -->
