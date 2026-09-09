@@ -15,7 +15,7 @@ import {
     HvmDef,
     pascal,
 } from "@ddd-qc/lit-happ";
-import {FILES_DEFAULT_ROLE_NAME, FilesDvm, ProfileInfo,} from "@ddd-qc/files";
+import {FILES_DEFAULT_ROLE_NAME, FilesDvm, ProfileInfo, toastError,} from "@ddd-qc/files";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals";
 import {AppletId, AppletView, CreatableName, GroupProfile, WAL, WeaveServices} from "@theweave/api";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
@@ -44,6 +44,10 @@ export class FilesApp extends HappElement {
   @state() private _hasHolochainFailed = true;
   @state() private _loaded = false;
   @state() private _hasWeProfile = false;
+  /** True once the initial profile probe has completed, so the profile prompt is
+   *  only shown after we actually know whether a profile exists. Probing can take
+   *  a moment on launch; showing the prompt before it resolves flashes the wrong UI. */
+  @state() private _profileProbed = false;
   @state() private _localPerspectiveLoaded = false;
   @state() private _networkPerspectiveLoaded = false;
   //@state() private _filesCell: Cell;
@@ -196,6 +200,12 @@ export class FilesApp extends HappElement {
   /** */
   override async perspectiveInitializedFromLocal(): Promise<void> {
     console.log("<files-app>.perspectiveInitializedFromLocal()");
+    /** Hydrate the profiles perspective before deciding whether to show the
+     *  profile prompt. probeAllProfiles() is best-effort and does not throw, so
+     *  the flag is set either way; the guard uses it to tell "not loaded yet"
+     *  apart from "no profile". */
+    await this.filesDvm.profilesZvm.probeAllProfiles(GetStrategy.Local);
+    this._profileProbed = true;
     //const maybeProfile = await this.filesDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
     //console.log("perspectiveInitializedFromLocal() maybeProfile", maybeProfile, this.filesDvm.cell.address.agentId);
       if (this.appletView && this.appletView.type == "main") {
@@ -213,6 +223,29 @@ export class FilesApp extends HappElement {
       this.hvm.probeAll(GetStrategy.Network);
     }
     this._networkPerspectiveLoaded = true;
+  }
+
+
+  /** Pull a human-readable message out of a Holochain client error.
+   *  These are not Error instances, so `.message` is usually undefined and
+   *  String(err) degrades to "[object Object]". The shapes seen in practice:
+   *    { requestIndex, failure: { name, message } }   // conductor call failure
+   *    { type: "error", data: { type, data } }        // app websocket error
+   *    HolochainError { name, message }               // client-side
+   */
+  private static describeError(err: unknown): string {
+    const anyErr = err as any;
+    const candidates = [
+      anyErr?.failure?.message,
+      anyErr?.data?.data,
+      anyErr?.data?.message,
+      anyErr?.message,
+    ];
+    for (const c of candidates) {
+      if (typeof c === "string" && c.length > 0) return c;
+    }
+    if (typeof err === "string") return err;
+    try { return JSON.stringify(err); } catch { return String(err); }
   }
 
 
@@ -309,7 +342,19 @@ export class FilesApp extends HappElement {
     /** Import profile from We */
     let guardedView = view;
     const maybeMyProfile = this.filesDvm.profilesZvm.getMyProfile();
-    console.log("<files-app> Profile", this._hasWeProfile, maybeMyProfile);
+    console.log("<files-app> Profile", this._hasWeProfile, maybeMyProfile, this._profileProbed);
+    if (!maybeMyProfile && !this._profileProbed) {
+      /** Still looking. Do not show the profile prompt yet — an empty perspective
+       *  here means "not loaded", not "no profile". */
+      return html`
+        <cell-context .cell=${this.filesDvm.cell}>
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; gap:12px;">
+            <sl-spinner style="font-size: 2rem;"></sl-spinner>
+            <div style="opacity:0.7;">${msg("Loading your profile…")}</div>
+          </div>
+        </cell-context>
+      `;
+    }
     if(!maybeMyProfile) {
       if (this._hasWeProfile) {
         guardedView = html`
@@ -326,14 +371,41 @@ export class FilesApp extends HappElement {
                     .profile=${this._weProfilesDvm? this._weProfilesDvm.profilesZvm.getMyProfile() : undefined}
                     @save-profile=${async (e: CustomEvent<ProfileInfo>) => {
                       console.log("onSaveProfile() app ", e.detail);
-                      await this.filesDvm.profilesZvm.createMyProfile(e.detail.profile);
-                      /** Wait for perspective to update */
-                      /** TODO: add a timeout */
+                      try {
+                        await this.filesDvm.profilesZvm.createMyProfile(e.detail.profile);
+                      } catch (err) {
+                        /** The guard above reads the local perspective synchronously, so this
+                         *  form can be shown before the initial probe has hydrated it — i.e.
+                         *  when a profile already exists on chain. The coordinator then
+                         *  correctly rejects the duplicate with
+                         *  Guest("Agent already has a Profile"). Treat that as "already done":
+                         *  re-probe and carry on, rather than failing in front of the user. */
+                        const msgStr = FilesApp.describeError(err);
+                        if (msgStr.includes("already has a Profile")) {
+                          console.warn("createMyProfile: profile already existed; re-probing", msgStr);
+                          await this.filesDvm.profilesZvm.probeAllProfiles(GetStrategy.Local);
+                        } else {
+                          /** Anything else is a real failure and must not be silent: an
+                           *  unhandled rejection here previously left the button doing
+                           *  nothing at all, with no indication why. */
+                          console.error("createMyProfile failed", err);
+                          toastError(`Could not save your profile: ${msgStr}`);
+                          return;
+                        }
+                      }
+                      /** Wait for the perspective to catch up, but bounded — this loop had no
+                       *  timeout and would spin forever if the profile never appeared. */
                       let maybeMeProfile;
+                      const deadline = Date.now() + 5000;
                       do {
                           maybeMeProfile = this.filesDvm.profilesZvm.getMyProfile();
+                          if (maybeMeProfile) break;
                           await delay(20);
-                      } while (!maybeMeProfile)
+                      } while (Date.now() < deadline)
+                      if (!maybeMeProfile) {
+                        console.error("Profile did not appear in the perspective within 5s");
+                        toastError("Your profile was saved but did not load. Try reloading the window.");
+                      }
                       this.requestUpdate();
                     }}
                     @lang-selected=${(e: CustomEvent) => {
