@@ -134,7 +134,8 @@ export class StoreDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                     </tag-list>
                     `}
                 </div>
-                <tag-input .tags=${allTags}
+                <tag-input placeholder=${this._localOnly? msg("Add personal tag") : msg("Add group tag")}
+                           .tags=${allTags}
                            @new-tag=${(e:CustomEvent<string>) => {console.log("e", e); this.onAddNewTag(e)}}
                            @selected=${(e:any) => {this._selectedTags.push(e.detail); this.requestUpdate(); if (this.tagListElem) this.tagListElem.requestUpdate();}}
                 ></tag-input>

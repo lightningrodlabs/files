@@ -1,6 +1,7 @@
 import {css, html, LitElement} from "lit";
 import {property, customElement} from "lit/decorators.js";
 import {filesSharedStyles} from "../sharedStyles";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -13,6 +14,10 @@ export class TagList extends LitElement {
     @property() tags: string[] = [];
     @property() selectable?: string;
     @property() deletable?: string;
+    /** "group" | "personal". Sets the colour and the hover text. Left empty the
+     *  tags render plain and unexplained, which is right outside the file list
+     *  where the surrounding label already says what they are. */
+    @property() kind: string = "";
 
 
     /** */
@@ -25,8 +30,8 @@ export class TagList extends LitElement {
     override render() {
         //console.log("<tag-list>.render()", this.tags, this.selectable, this.deletable);
         const tagItems = this.tags.map((str) => {
-            return html`
-                <div class="tag ${this.selectable == ""? "selectable" : ""}" @click=${(_e:any) => {
+            const tag = html`
+                <div class="tag ${this.kind == "personal"? "personal" : ""} ${this.selectable == ""? "selectable" : ""}" @click=${(_e:any) => {
                 if (this.selectable == "") {
                     this.dispatchEvent(new CustomEvent('selected', {detail: str, bubbles: true, composed: true}))
                 }
@@ -39,7 +44,14 @@ export class TagList extends LitElement {
                         </sl-icon-button>`
                         : html``
                     }            
-                </div>`
+                </div>`;
+            if (this.kind == "") {
+                return tag;
+            }
+            return html`
+                <sl-tooltip placement="bottom" content=${this.kind == "personal"? msg("personal tag") : msg("group tag")} hoist>
+                    ${tag}
+                </sl-tooltip>`;
         });
         return html`${tagItems}`;
     }
@@ -56,6 +68,10 @@ export class TagList extends LitElement {
                 flex-direction: row;
                 gap: 5px;
                 flex-wrap: wrap;
+              }
+
+              .personal {
+                background: #28b25d;
               }
 
               .selectable:hover {
