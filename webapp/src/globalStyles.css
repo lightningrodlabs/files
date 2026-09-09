@@ -1,0 +1,15 @@
+/**
+ * App-wide defaults.
+ *
+ * Shoelace's theme defines the font tokens but never applies them: the page
+ * keeps the browser default, which is a serif. Anything that renders plain text
+ * rather than a Shoelace component -- headings, dialog bodies, table cells, our
+ * own elements' markup -- therefore came out in a different face from the
+ * components beside it. font-family inherits through shadow boundaries, so
+ * setting it once on the root is what makes the whole app agree; Vaadin is
+ * pointed at the same token so the grid matches too.
+ */
+:root {
+  font-family: var(--sl-font-sans);
+  --lumo-font-family: var(--sl-font-sans);
+}

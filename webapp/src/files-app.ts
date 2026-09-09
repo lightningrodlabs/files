@@ -360,7 +360,7 @@ export class FilesApp extends HappElement {
         guardedView = html`
           <div
               style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom: 10px;margin:auto: min-width:400px;">
-            <h1 style="font-family: arial;color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
+            <h1 style="color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
                                                                 style="padding-left: 5px;padding-top: 5px;"/> Files</h1>
             <div class="column" style="align-items: center;">
               <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">

@@ -6,6 +6,11 @@ import {FilesDvmPerspective} from "../viewModels/files.perspective";
 import {DeliveryPerspective} from "@ddd-qc/delivery";
 import {filesSharedStyles} from "../sharedStyles";
 import {SlMenu} from "@shoelace-style/shoelace";
+/** sl-menu-label was never registered anywhere, so the tag headings were
+ *  rendering as an unknown element: no shadow root, hence no ::part(base)
+ *  to style and no Shoelace font, which is why they came out in a different
+ *  face from the items under them. */
+import "@shoelace-style/shoelace/dist/components/menu-label/menu-label.js";
 import {msg} from "@lit/localize";
 import {MyDictionary} from "@ddd-qc/cell-proxy";
 import {TaggingPerspectiveMutable} from "../viewModels/tagging.perspective";
@@ -148,7 +153,7 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
             .filter(([_tag, idMap]) => idMap.size > 0)
             .map(([tag, array]) => {
             return html`
-            <sl-menu-item isPrivate=${isPrivate} isTag="true">
+            <sl-menu-item class="tag-item" isPrivate=${isPrivate} isTag="true">
                 <sl-icon slot="prefix" name="tag"></sl-icon>
                 ${tag}
                 <sl-badge slot="suffix" variant="neutral" pill>${array.size}</sl-badge>
@@ -287,6 +292,22 @@ export class FilesMenu extends DnaElement<FilesDvmPerspective, FilesDvm> {
               }
               sl-menu-item {
                 margin-bottom: 7px;
+              }
+              /* Tags are a list under a heading, not top-level destinations, so
+                 they do not need the spacing the main menu items have. */
+              sl-menu-item.tag-item {
+                margin-bottom: 0px;
+              }
+              sl-menu-item.tag-item::part(base) {
+                padding-top: 2px;
+                padding-bottom: 2px;
+              }
+              /* Line the headings up with the item labels. */
+              sl-menu-label::part(base) {
+                padding: 8px 12px 2px 12px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #4c5c68;
               }
               .selectedItem {
                 background: #FFFFFF;

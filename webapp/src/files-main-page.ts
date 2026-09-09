@@ -48,6 +48,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {SlAlert, SlButton, SlDialog, SlInput} from "@shoelace-style/shoelace";
 
 import '@shoelace-style/shoelace/dist/themes/light.css';
+import './globalStyles.css';
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 setBasePath('/shoelace-assets');
 
@@ -65,6 +66,7 @@ import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
+import "@shoelace-style/shoelace/dist/components/popup/popup.js";
 import "@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js";
 import "@shoelace-style/shoelace/dist/components/radio/radio.js";
 import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js";
@@ -1094,16 +1096,6 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                                 image=${avatarUrl}
                                 @click=${() => this.profileDialogElem.open = true}></sl-avatar>
                     </sl-tooltip>
-                    <!-- Add/Share lives in the header rather than as a bottom-right FAB:
-                         every page has room here, and it stops the floating button
-                         overlapping the file list and its scrollbar. It keeps the
-                         primary (blue) variant, so no .top-btn grey background. -->
-                    <sl-tooltip placement="bottom-end" content=${msg("Send/Share file")} style="--show-delay: 400;">
-                        <sl-button id="fab-publish" variant="primary" size="medium" circle
-                                   @click=${(_e:any) => {this.actionOverlayElem.open();}}>
-                            <sl-icon name="plus-lg" label=${msg("Add")}></sl-icon>
-                        </sl-button>
-                    </sl-tooltip>
                     <sl-button class="top-btn" variant="default" size="medium" disabled>
                         <sl-icon name="bell" label="notifications"></sl-icon>
                     </sl-button>
@@ -1164,6 +1156,18 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                         ${searchResultItems}
                     </div>
                     </sl-popup>
+                    <!-- Add/Share lives in the header rather than as a bottom-right FAB:
+                         every page has room here, and it stops the floating button
+                         overlapping the file list and its scrollbar. #topBar is
+                         row-reverse, so last in source is leftmost on screen: this
+                         sits at the far left, before the search bar. It keeps the
+                         primary (blue) variant, so no .top-btn grey background. -->
+                    <sl-tooltip placement="bottom-start" content=${msg("Send/Share file")} style="--show-delay: 400;">
+                        <sl-button id="fab-publish" variant="primary" size="medium" circle
+                                   @click=${(_e:any) => {this.actionOverlayElem.open();}}>
+                            <sl-icon name="plus-lg" label=${msg("Add")}></sl-icon>
+                        </sl-button>
+                    </sl-tooltip>
                 </div>
                 <div id="mainArea">
                     ${mainArea}
@@ -1244,6 +1248,10 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 height: 100vh;
                 /*padding-top: 3px;*/
                 background: #F7FBFE;
+                /* The grid scrolls itself. Without this a wide table pushed the
+                   whole applet past the viewport and the window grew its own
+                   scrollbars on top of the grid's. */
+                overflow: hidden;
               }
 
               #view-file-dialog::part(body) {
@@ -1276,6 +1284,8 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 background: #F7FBFE;
                 display: flex;
                 height: 100%;
+                min-width: 0;
+                overflow: hidden;
                 flex-direction: row;
                 /*padding-left: 15px;*/
                 /*padding: 15px 10px 10px 15px;*/
@@ -1291,11 +1301,16 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
                 flex-direction: column;
                 flex: 1 1 auto;
                 min-height: 0px;
+                /* A flex item defaults to min-width:auto, i.e. it refuses to
+                   shrink below its content. The grid's fixed columns then set a
+                   floor on the whole page width. */
+                min-width: 0;
                 overflow: clip;
               }
 
               #rhs {
                 width: 100%;
+                min-width: 0;
                 margin: 0px 5px 0px 15px;
                 display: flex;
                 flex-direction: column;
@@ -1304,6 +1319,7 @@ export class FilesMainPage extends DnaElement<FilesDvmPerspective, FilesDvm> {
               #topBar {
                 display: flex;
                 flex-direction: row-reverse;
+                align-items: center;
                 gap: 5px;
                 margin-top: 3px;
               }
