@@ -74,17 +74,17 @@ export const filesSharedStyles = css`
     box-shadow: none;
   }
 
-  .tag span {
-    margin-top: 2px;
-  }
-
   .tag {
     display: flex;
-    background: #bbc5ce;
+    /* The pill is a flex box, so without this the label is stretched rather than
+       centred, and it rides high whenever the row is taller than the text. */
+    align-items: center;
+    line-height: 1.5;
+    background: #0d5897;
     font-size: small;
-    padding: 3px;
-    color: #232121;
-    /*border-radius: 15px;*/
+    padding: 0px 4px;
+    border-radius: 4px;
+    color: white;
   }
   
 `;

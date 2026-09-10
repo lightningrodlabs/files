@@ -24,6 +24,10 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
     /** Enable action bar */
     @property() showActionBar: boolean = true
 
+    /** Only a published (public) file can be archived — archiving unpublishes the
+     *  public parcel. Set by the caller, which knows whether this file is public. */
+    @property({type: Boolean}) canArchive: boolean = false
+
     /** Observed perspective from zvm */
     // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
     // filesPerspective!: FileSharePerspective;
@@ -71,7 +75,26 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
             <div style="padding-bottom: 10px;">MIME: ${kind2mime(this._manifest.description.kind_info)}</div>
             <file-preview .hash=${this.hash}></file-preview>
             ${this.showActionBar
-                    ? html`<sl-button variant="primary" @click=${(_e:any) => {this._dvm.downloadFile(this.hash!)}}>Download</sl-button>`
+                    ? html`
+                      <div id="actionBar">
+                        <!-- Archive sits to the LEFT of Download. It does not delete the
+                             file: it unpublishes the public parcel, so the bytes and the
+                             manifest remain. Named accordingly. -->
+                        ${this.canArchive? html`
+                        <sl-button variant="danger" @click=${(_e:any) => {
+                            this.dispatchEvent(new CustomEvent<EntryId>('delete', {
+                                detail: this.hash!,
+                                bubbles: true,
+                                composed: true,
+                            }));
+                        }}>
+                            <sl-icon slot="prefix" name="archive"></sl-icon>
+                            ${msg("Archive")}
+                        </sl-button>` : html``}
+                        <sl-button variant="primary" @click=${(_e:any) => {this._dvm.downloadFile(this.hash!)}}>
+                            ${msg("Download")}
+                        </sl-button>
+                      </div>`
                     : html``
             }
         `;
@@ -91,6 +114,17 @@ export class FileView extends DnaElement<FilesDvmPerspective, FilesDvm> {
                   padding-right: 5px;
               }
               
+              #actionBar {
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  padding-top: 8px;
+              }
+              /* Download sits at the far right, Archive to its left. */
+              #actionBar sl-button[variant="primary"] {
+                  margin-left: auto;
+              }
+
               #title {
                   font-size: 1.5rem;
               }

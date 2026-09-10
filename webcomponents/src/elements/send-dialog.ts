@@ -210,7 +210,8 @@ export class SendDialog extends DnaElement<FilesDvmPerspective, FilesDvm> {
                             </tag-list>
                     `}
                 </div>
-                <tag-input .tags=${allTags}
+                <tag-input placeholder=${msg("Add personal tag")}
+                           .tags=${allTags}
                            @new-tag=${(e:any) => {console.log("e", e); this.onAddNewPrivateTag(e)}}
                            @selected=${(e:any) => {this._selectedTags.push(e.detail); this.requestUpdate(); if (this.tagListElem) this.tagListElem.requestUpdate();}}
                 ></tag-input>

@@ -13,6 +13,10 @@ export class TagInput extends LitElement {
 
 
     @property() tags: string[] = [];
+    /** What kind of tag this input adds. The same control adds group tags when
+     *  publishing a file and personal tags everywhere else, and only the caller
+     *  knows which. */
+    @property() placeholder: string = msg("Add tag");
 
     @state() private _selectedTags: string[] = [];
 
@@ -76,7 +80,7 @@ export class TagInput extends LitElement {
 
         /** */
         return html`
-            <sl-input id="tag-input" placeholder=${msg("Add tag")} clearable
+            <sl-input id="tag-input" placeholder=${this.placeholder} clearable
                       @keydown=${(e: KeyboardEvent) => {
                           console.log("sl-keydown", this.inputElem.value, e);
                           if (e.keyCode == 13) {
@@ -111,6 +115,13 @@ export class TagInput extends LitElement {
                 gap: 15px;
                 max-width: 500px;
                 flex-wrap: wrap;
+              }
+
+              sl-input {
+                /* The field is near-black, so the tokens Shoelace resolves these
+                   from -- both dark by default -- have to be inverted with it. */
+                --sl-input-placeholder-color: #8fa3b8;
+                --sl-input-icon-color: #c6d3df;
               }
 
               sl-input::part(base) {
