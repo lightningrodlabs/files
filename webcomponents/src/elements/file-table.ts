@@ -283,7 +283,7 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
                      which. Group tags are everyone's, personal tags are only mine. -->
                 <vaadin-grid-column path="ppEh" header=${msg("Tags")}
                                     ${columnBodyRenderer<FileTableItem>(
-                                            ({ ppEh, description }) => html`
+                                            ({ ppEh, description, isPrivate }) => html`
                                                 <div class="tag-cell">
                                                     <tag-list kind="group"
                                                               .tags=${this._zvm.perspective.getTargetPublicTags(new EntryId(ppEh))}
@@ -304,6 +304,10 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
                                                          trigger is underneath it, and hovering the panel kept
                                                          waking the tooltip. The panel's own placeholder says
                                                          what it does. -->
+                                                    <!-- 0.6 line: the tagging zome only accepts a personal tag
+                                                         on one of my own private files (tag_private_entry checks
+                                                         query_private_entry), so the "+" is offered only there. -->
+                                                    ${isPrivate? html`
                                                     <sl-dropdown id="add-tag-${ppEh}" placement="bottom-start" hoist
                                                                  @sl-show=${(e: Event) => this.onAddTagShow(e)}>
                                                         <sl-icon-button slot="trigger" class="add-tag" name="plus-circle-dotted"
@@ -322,6 +326,7 @@ export class FileTable extends ZomeElement<TaggingPerspectiveMutable, TaggingZvm
                                                             ></tag-input>
                                                         </div>
                                                     </sl-dropdown>
+                                                    `: html``}
                                                 </div>
                                             `,
                                             [],
